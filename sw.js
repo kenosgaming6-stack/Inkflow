@@ -1,5 +1,5 @@
 /* StallBook offline cache: serve from the phone first, refresh in the background. */
-const CACHE = 'stallbook-v2';
+const CACHE = 'stallbook-v3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

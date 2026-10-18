@@ -13,23 +13,23 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* StallBook v2. Rule for every screen: look at the top, read the middle, touch the bottom. */
+/* StallBook v3. Rule for every screen: look at the top, read the middle, touch the bottom. Give and Collect never leave the list. */
 :root{
   --paper:#FFFFFF;--page:#E4E8F0;--rule:#CBDAEE;--margin:#E0545A;--ink:#24307A;--text:#1A1D26;--muted:#555B69;--faint:#6F7585;
-  --owe:#BE2329;--owe-bg:#FDECEC;--paid:#17703F;--paid-bg:#E3F3E9;--warn:#7A4E00;--warn-bg:#FFEFC7;
+  --owe:#BE2329;--owe-bg:#FDECEC;--paid:#17703F;--paid-bg:#E3F3E9;--warn:#7A4E00;--warn-bg:#FFEFC7;--held:#B76E00;
   --on-btn:#FFFFFF;--key:#ECEFF5;--key-text:#1A1D26;--line:#DFE3EC;--sheet:#FFFFFF;--shade:rgba(5,8,18,.5);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --paper:#171A23;--page:#0B0D12;--rule:#283450;--margin:#A33C43;--ink:#B4C0FF;--text:#ECEEF4;--muted:#A9AFBE;--faint:#8A90A1;
-    --owe:#FF8086;--owe-bg:#3A1A1E;--paid:#62D69A;--paid-bg:#14301F;--warn:#FFD27A;--warn-bg:#382B0D;
+    --owe:#FF8086;--owe-bg:#3A1A1E;--paid:#62D69A;--paid-bg:#14301F;--warn:#FFD27A;--warn-bg:#382B0D;--held:#FFB547;
     --on-btn:#0D0F15;--key:#252935;--key-text:#ECEEF4;--line:#2B303E;--sheet:#1B1E28;--shade:rgba(0,0,0,.6);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --paper:#171A23;--page:#0B0D12;--rule:#283450;--margin:#A33C43;--ink:#B4C0FF;--text:#ECEEF4;--muted:#A9AFBE;--faint:#8A90A1;
-  --owe:#FF8086;--owe-bg:#3A1A1E;--paid:#62D69A;--paid-bg:#14301F;--warn:#FFD27A;--warn-bg:#382B0D;
+  --owe:#FF8086;--owe-bg:#3A1A1E;--paid:#62D69A;--paid-bg:#14301F;--warn:#FFD27A;--warn-bg:#382B0D;--held:#FFB547;
   --on-btn:#0D0F15;--key:#252935;--key-text:#ECEEF4;--line:#2B303E;--sheet:#1B1E28;--shade:rgba(0,0,0,.6);
   color-scheme:dark;
 }
@@ -284,6 +284,78 @@ a{color:inherit;text-decoration:none}
   .kp.pay .key,.kp .key{min-height:44px;font-size:22px}.note{min-height:36px}.disp .v{font-size:34px}.disp{padding:8px 12px}
   .hero .n{font-size:44px}.btn{min-height:52px}.btn.tall{min-height:58px}.sq{min-height:52px}.find{min-height:52px}.dock{gap:6px}
 }
+/* v3 */
+.stock{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:center;padding:10px 12px;border-radius:18px;background:var(--key)}
+.stock .big{grid-row:span 2;display:flex;flex-direction:column;align-items:center;min-width:76px}
+.stock .big b{font-size:54px;line-height:.95;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.stock .big b.z{color:var(--paid)}
+.stock .big span{font-size:13px;font-weight:700;color:var(--muted)}
+.stock .dl{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700;color:var(--ink);min-width:0}
+.stock .dl span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stock .dl button{flex:none;min-width:42px;height:36px;border-radius:10px;background:var(--paper);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:4px;font-weight:700;font-size:14px;padding:0 8px}
+.stock .info{display:flex;flex-direction:column;gap:5px;min-width:0}
+.sbar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--paper);border:1px solid var(--line)}
+.sbar .g{background:var(--ink)}.sbar .h{background:var(--held)}
+.leg{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:13px;color:var(--muted)}
+.leg b{color:var(--text)}.leg .h{color:var(--warn);font-weight:700}
+.emptybar{display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;border-radius:12px;background:var(--paid-bg);color:var(--paid);font-weight:700;font-size:15px;text-align:left}
+.emptybar span{flex:1}
+.csum{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:18px;background:var(--key)}
+.csum .cl{flex:1;display:flex;flex-direction:column;min-width:0}
+.csum small{font-size:13px;color:var(--muted);font-weight:700}
+.csum .cl b{font-size:34px;line-height:1.05;color:var(--owe);font-variant-numeric:tabular-nums}
+.csum .cl b.ok{color:var(--paid)}
+.csum .cr{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.csum .cr b{font-size:19px;color:var(--paid);font-variant-numeric:tabular-nums}
+.mini{padding:7px 12px;border-radius:9px;background:var(--paper);color:var(--ink);font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.qbox{flex:none;min-width:48px;height:46px;padding:0 10px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);font-size:21px;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.row.editing{background:var(--key)}
+.qstep{display:flex;align-items:center;gap:6px}
+.qstep button{width:46px;height:46px;border-radius:50%;background:var(--paper);border:1.5px solid var(--line);font-size:24px;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center}
+.qstep b{min-width:34px;text-align:center;font-size:22px;color:var(--ink)}
+.qok{flex:none;width:50px;height:46px;border-radius:12px;background:var(--ink);color:var(--on-btn);display:flex;align-items:center;justify-content:center}
+.hpill{flex:none;font-size:12px;font-weight:700;padding:3px 8px;border-radius:7px;background:var(--paper);color:var(--warn);border:1.5px solid var(--held)}
+.row.held{background:var(--warn-bg)}
+.locchip{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;padding:9px 12px;border-radius:12px;background:var(--key);color:var(--ink);font-weight:700;font-size:15px;max-width:100%;text-align:left}
+.landmark{font-size:13px;color:var(--faint);margin-top:-4px}
+.qty{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.qty button{height:54px;border-radius:13px;background:var(--key);font-size:22px;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;text-align:center}
+.qty button.on{background:var(--ink);color:var(--on-btn)}
+.togs{display:flex;gap:8px}
+.tog{flex:1;min-height:46px;border-radius:12px;border:1.5px solid var(--line);font-weight:700;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;text-align:center}
+.tog.sm{flex:none;width:58px;font-size:18px}
+.tog.on{background:var(--key);color:var(--ink);border-color:var(--ink)}
+.tog.on.w{background:var(--warn-bg);border-color:var(--held);color:var(--warn)}
+.tog.on.g{background:var(--paid-bg);border-color:var(--paid);color:var(--paid)}
+.btn.hold{background:var(--held);color:var(--on-btn)}
+.btn.danger{background:var(--owe);color:var(--on-btn)}
+.lnk{flex:none;font-weight:700;font-size:14px;color:var(--ink);padding:8px 6px}
+.lab{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--faint)}
+.over{padding:10px 12px;border-radius:12px;background:var(--warn-bg);color:var(--warn);font-weight:700;font-size:14px;display:flex;flex-direction:column;gap:8px}
+.over .bar .chip{flex:1;text-align:center;background:var(--paper)}
+.over .bar .chip.on{background:var(--ink);color:var(--on-btn)}
+.chip em{font-style:normal;font-weight:400;opacity:.85;margin-left:4px}
+.seg.mini2 button{min-height:36px;font-size:14px}
+.sheet .kp .key{min-height:46px}
+.amt small.ok{color:var(--paid);font-weight:700}
+.sub.wrap{white-space:normal}
+.row.paidtoday .name,.row.paidtoday .amt{color:var(--faint)}
+.radio{display:flex;flex-direction:column;gap:6px}
+.radio button{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line);font-weight:700;font-size:15px;color:var(--ink);text-align:left}
+.radio button::before{content:"";width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:none}
+.radio button.on{border-color:var(--ink);background:var(--key)}
+.radio button.on::before{border:6px solid var(--ink)}
+.sum4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;text-align:center}
+.sum4 div{padding:8px 4px;border-radius:12px;background:var(--key);display:flex;flex-direction:column}
+.sum4 b{font-size:22px;color:var(--ink)}.sum4 small{font-size:12px;color:var(--muted)}
+.sum4 .ok b{color:var(--paid)}.sum4 .w b{color:var(--warn)}
+.addrow{display:flex;gap:8px}
+.addrow input{flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1.5px solid var(--ink);background:var(--paper);font-size:17px;outline:none}
+.townrow{display:flex;flex-direction:column;gap:2px;padding:12px;border-bottom:1.5px solid var(--line)}
+.townrow b{color:var(--ink)}
+.townrow span{font-size:14px;color:var(--muted)}
+.tabdot{position:absolute;top:8px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 2px var(--paper)}
+@media (max-height:700px){.stock .big b{font-size:46px}.qty button{height:48px}.sheet .kp .key{min-height:40px}.csum .cl b{font-size:28px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -292,20 +364,26 @@ a{color:inherit;text-decoration:none}
 <script>
 'use strict';
 /*
-  StallBook v2: a credit book for market traders.
+  StallBook v3: a credit book for market traders.
   One file, works offline, data stays on this phone (back it up to WhatsApp).
+  Give and Collect never leave the list. Book is where you look things up.
 
-  Data:
-    cars     one per car load: items (sizes, count, price), costs, phase giving|out
-    people   name, phone, place, stall note
-    entries  append-only book lines:
-      give    bags given on credit; off = when they left the car (null = still waiting in the car)
-      pay     money in (cash or momo)
+  Data (saved under 'stallbook_v2'; older books are upgraded when they load):
+    locs     towns and spots {id, town, spot}; spot '' means the whole town
+    people   name, phone, loc (where she sells now), note (landmark)
+    cars     one per delivery: label, items (product or size, count, price), costs, phase giving|out
+    entries  append-only book lines; nothing is overwritten:
+      give    bags for a customer, with the spot it happened at (loc).
+              off = when the bags left the vehicle; null = held for her
+      hand    held bags handed over (ref = the give, by = who collected)
+      pay     money in (cash or momo); with = the give she paid for on the spot
       back    bags brought back against a give
-      cash    bags sold for cash
+      cash    bags sold for cash to nobody in particular
+      stock   bags in or out of a delivery: count fixed, kept for next, sent back, spoiled
+      move    she now sells somewhere else (from, to)
       promise she said she will pay on a day
       note    kind 'refused'
-      undo    cancels another entry (lines are never erased)
+      undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
@@ -332,10 +410,10 @@ const IC = {
   more:'<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
   cloud:'<path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.1 9.6 4.2 4.2 0 0 0 7 18z"/>',
   cloudok:'<path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.1 9.6 4.2 4.2 0 0 0 7 18z"/><path d="M9.5 13.5l2 2 3.5-4"/>',
-  run:'<path d="M5 12h14M13 6l6 6-6 6"/>',
   eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   ok:'<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',
-  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  pin:'<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>'
 };
 const svg = (n, s) => `<svg class="i"${s ? ` style="width:${s}px;height:${s}px"` : ''} viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
 
@@ -352,12 +430,14 @@ function kDate(k) { const [y, m, d] = k.split('-').map(Number); return new Date(
 function addDaysK(k, n) { const d = kDate(k); d.setDate(d.getDate() + n); return dayKey(d); }
 function diffK(a, b) { return Math.round((kDate(a) - kDate(b)) / 864e5); }
 function dmy(x) { const d = typeof x === 'string' && x.length === 10 ? kDate(x) : new Date(x); return d.getDate() + ' ' + MON[d.getMonth()]; }
+function hm(x) { const d = new Date(x); return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); }
 function dayWord(k) { const n = diffK(k, todayK()); if (n === 0) return 'today'; if (n === 1) return 'tomorrow'; if (n === -1) return 'yesterday'; if (n > 1 && n < 7) return WD[kDate(k).getDay()] + ' ' + dmy(k); return dmy(k); }
 function fmt(n) { const r = r2(n); return Math.abs(r).toLocaleString('en-US', {minimumFractionDigits: r % 1 ? 2 : 0, maximumFractionDigits: 2}); }
 const money = n => (r2(n) < 0 ? '−' : '') + '₵' + fmt(n);
 /* SMS text stays in the plain GSM alphabet (no ₵ or ½), so one message holds 160 letters instead of 70 and costs less. */
 const smsMoney = n => 'GHS ' + fmt(n);
 const unit = () => S.settings.unit || 'bag';
+const Unit = () => unit()[0].toUpperCase() + unit().slice(1);
 function bagsNum(n) { const w = Math.floor(n + 1e-9); const h = Math.abs(n - w - 0.5) < 0.01; return ((w ? String(w) : '') + (h ? '½' : '')) || '0'; }
 function bagsTxt(n) { return bagsNum(n) + ' ' + unit() + (n > 1 || n === 0 ? 's' : ''); }
 function smsBags(n) { const t = Math.round(n * 2) / 2; return (t % 1 ? t.toFixed(1) : String(t)) + ' ' + unit() + (t > 1 ? 's' : ''); }
@@ -376,15 +456,29 @@ function similar(a, b) {
 
 /* ---------- storage ---------- */
 function blank() {
-  return {v: 2, settings: {seller: '', momo: '', item: 'Onions', unit: 'bag', price: 650, cycle: 14, sound: true, hand: 'right', via: 'sms'},
-    places: [], people: [], cars: [], entries: [], carry: 0, lastBackup: null, changedAt: null, lastPlace: ''};
+  return {v: 3, settings: {seller: '', momo: '', item: 'Onions', unit: 'bag', price: 650, cycle: 14, sound: true, hand: 'right', via: 'sms', half: true},
+    locs: [], people: [], cars: [], entries: [], carry: 0, lastBackup: null, changedAt: null, lastLoc: '', setup: false};
 }
+/* Brings any older book up to v3. Safe to run on every load. */
 function normalize(s) {
-  const b = blank(); const o = Object.assign(b, s || {});
-  o.settings = Object.assign(blank().settings, (s && s.settings) || {});
-  ['places', 'people', 'cars', 'entries'].forEach(k => { if (!Array.isArray(o[k])) o[k] = []; });
-  o.cars.forEach(c => { c.items = c.items && c.items.length ? c.items : [{id: 'i1', name: '', count: 0, price: o.settings.price}]; c.costs = c.costs || []; c.adjust = Number(c.adjust) || 0; c.moved = Number(c.moved) || 0; c.phase = c.phase === 'giving' ? 'giving' : 'out'; });
-  o.v = 2; return o;
+  const src = s || {};
+  const o = Object.assign(blank(), src);
+  o.settings = Object.assign(blank().settings, src.settings || {});
+  ['locs', 'people', 'cars', 'entries'].forEach(k => { if (!Array.isArray(o[k])) o[k] = []; });
+  const townLoc = name => { let l = o.locs.find(x => x.town.toLowerCase() === String(name).toLowerCase() && !x.spot); if (!l) { l = {id: uid(), town: String(name), spot: ''}; o.locs.push(l); } return l.id; };
+  (Array.isArray(src.places) ? src.places : []).forEach(pl => { if (pl) townLoc(pl); });
+  o.people.forEach(p => { if (!p.loc && p.place) p.loc = townLoc(p.place); delete p.place; if (p.note === undefined) p.note = ''; if (p.loc === undefined) p.loc = ''; });
+  if (!o.lastLoc && src.lastPlace) o.lastLoc = townLoc(src.lastPlace);
+  delete o.places; delete o.lastPlace;
+  o.cars.forEach(c => {
+    c.items = c.items && c.items.length ? c.items : [{id: 'i1', name: '', count: 0, price: o.settings.price}];
+    c.costs = c.costs || []; c.label = c.label || ''; c.phase = c.phase === 'giving' ? 'giving' : 'out';
+    if (Number(c.adjust)) o.entries.push({id: uid(), date: c.date, type: 'stock', carId: c.id, bags: Number(c.adjust), reason: 'count'});
+    if (Number(c.moved)) o.entries.push({id: uid(), date: c.finishedAt || c.date, type: 'stock', carId: c.id, bags: -Number(c.moved), reason: 'next'});
+    delete c.adjust; delete c.moved; delete c.askedEmpty;
+  });
+  if (o.people.length || o.cars.length) o.setup = true;
+  o.v = 3; return o;
 }
 /* Version 1 kept "pages" and "took/paid" lines. Everything carries over; the old copy is left untouched. */
 function fromV1(o) {
@@ -401,7 +495,7 @@ function fromV1(o) {
     pages = [{id: uid(), date: first, bags: (o.car && o.car.count) || 0, done: true}];
   }
   s.cars = pages.map(pg => ({
-    id: pg.id, date: pg.date,
+    id: pg.id, date: pg.date, label: '',
     items: (pg.items && pg.items.length ? pg.items : [{id: 'i1', name: '', count: Number(pg.bags) || 0, price: s.settings.price}]).map(i => ({id: i.id, name: i.name || '', count: Number(i.count) || 0, price: Number(i.price) || 0})),
     adjust: 0, moved: Number(pg.moved) || 0, costs: [],
     phase: (pg.phase === 'giving' || (!pg.phase && !pg.done)) ? 'giving' : 'out'
@@ -426,7 +520,7 @@ function load() {
 function save() { if (V.demo) return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
 let S = null;
-let V = {tab: 'give', stack: [], gq: '', bq: '', place: 'all', sort: 'owes', giveState: 'off', pay: {terms: [], cur: ''}, method: 'cash'};
+let V = {tab: 'give', stack: [], gq: '', bq: '', cq: '', fTown: '', fLoc: '', sort: 'owes', bseg: 'people', pay: null};
 S = load();
 
 /* Derived data is cached per change. */
@@ -434,10 +528,17 @@ let VER = 0, CACHE = null;
 function commit() { VER++; if (!V.demo) S.changedAt = nowIso(); save(); }
 function C() {
   if (CACHE && CACHE.v === VER && CACHE.S === S) return CACHE;
-  const c = {v: VER, S, undone: new Set(), byPid: new Map(), led: new Map(), byId: new Map()};
-  for (const e of S.entries) { c.byId.set(e.id, e); if (e.type === 'undo') c.undone.add(e.ref); }
+  const c = {v: VER, S, undone: new Set(), activeUndo: new Set(), byPid: new Map(), led: new Map(), byId: new Map(), hand: new Map(), linked: new Map()};
+  const undos = [], refs = new Map();
+  for (const e of S.entries) { c.byId.set(e.id, e); if (e.type === 'undo') { undos.push(e); if (!refs.has(e.ref)) refs.set(e.ref, []); refs.get(e.ref).push(e); } }
+  const memo = new Map();
+  const active = u => { if (memo.has(u.id)) return memo.get(u.id); memo.set(u.id, true); const r = !(refs.get(u.id) || []).some(active); memo.set(u.id, r); return r; };
+  undos.forEach(u => { if (active(u)) { c.activeUndo.add(u.id); const t = c.byId.get(u.ref); if (t && t.type !== 'undo') c.undone.add(u.ref); } });
   for (const e of S.entries) {
-    if (e.type === 'undo' || c.undone.has(e.id) || !e.pid) continue;
+    if (e.type === 'undo' || c.undone.has(e.id)) continue;
+    if (e.type === 'hand') c.hand.set(e.ref, e);
+    if (e.type === 'pay' && e.with) c.linked.set(e.with, e);
+    if (!e.pid) continue;
     if (!c.byPid.has(e.pid)) c.byPid.set(e.pid, []);
     c.byPid.get(e.pid).push(e);
   }
@@ -445,14 +546,69 @@ function C() {
   CACHE = c; return c;
 }
 const live = e => e.type !== 'undo' && !C().undone.has(e.id);
+const byId = id => C().byId.get(id);
+/* When the bags left the vehicle: right away, or when held bags were handed over. null = still held. */
+function givenAt(e) { if (e.off) return e.off; const h = C().hand.get(e.id); return h ? h.date : null; }
 function add(e) { e.id = uid(); e.date = e.date || nowIso(); S.entries.push(e); commit(); return e; }
-function undoEntry(id) { const c = C(); const e = c.byId.get(id); if (!e || c.undone.has(id) || e.type === 'undo') return; S.entries.push({id: uid(), date: nowIso(), type: 'undo', ref: id, pid: e.pid || null, carId: e.carId || null}); commit(); }
+/* Cross a line out. A cash payment made with a give is crossed out with it. */
+function undoEntry(id, kind) {
+  const c = C(); const e = c.byId.get(id); if (!e || e.type === 'undo' || c.undone.has(id)) return null;
+  const u = {id: uid(), date: nowIso(), type: 'undo', ref: id, pid: e.pid || null, carId: e.carId || null}; if (kind) u.kind = kind;
+  S.entries.push(u);
+  if (e.type === 'give') { const lp = c.linked.get(e.id); if (lp) S.entries.push({id: uid(), date: u.date, type: 'undo', ref: lp.id, pid: lp.pid, carId: null, kind: kind || ''}); }
+  if (e.type === 'move') { const p = person(e.pid); if (p && p.loc === e.to) { p.loc = e.from || ''; if (e.markFrom !== undefined) p.note = e.markFrom; } }
+  commit(); return u;
+}
+/* Bring a crossed-out line back (Undo on a release or a correction). */
+function revive(id) {
+  const c = C(); const e = c.byId.get(id); if (!e) return;
+  const ids = [id].concat(e.type === 'give' ? S.entries.filter(x => x.type === 'pay' && x.with === id).map(x => x.id) : []);
+  ids.forEach(t => S.entries.filter(u => u.type === 'undo' && u.ref === t && c.activeUndo.has(u.id)).forEach(u => S.entries.push({id: uid(), date: nowIso(), type: 'undo', ref: u.id, pid: u.pid || null, carId: u.carId || null})));
+  commit();
+}
+function undoKind(id) { const c = C(); const u = S.entries.find(x => x.type === 'undo' && x.ref === id && c.activeUndo.has(x.id)); return u ? (u.kind || '') : ''; }
+/* A correction keeps the old line (crossed out) and writes a new one with the same time and place. */
+function fixGive(id, ch) {
+  const c = C(); const old = c.byId.get(id); if (!old || c.undone.has(id)) return null;
+  const at = givenAt(old), lp = c.linked.get(old.id), hand = c.hand.get(old.id);
+  undoEntry(id, 'fix');
+  const n = Object.assign({}, old, ch, {id: uid(), fixes: old.id, fixedAt: nowIso(), off: at || null, date: old.date});
+  if (hand && hand.by) n.by = hand.by;
+  n.amount = r2(n.bags * n.price);
+  S.entries.push(n);
+  if (lp) S.entries.push(Object.assign({}, lp, {id: uid(), pid: n.pid, amount: n.amount, with: n.id, loadId: n.id}));
+  commit(); return n;
+}
+function unfix(newId) { const n = byId(newId); if (!n) return; undoEntry(newId); revive(n.fixes); }
+
 const person = id => S.people.find(p => p.id === id);
 const carById = id => S.cars.find(c => c.id === id);
 const carsNewest = () => S.cars.slice().sort((a, b) => cmp(b.date, a.date));
 const givingCar = () => carsNewest().find(c => c.phase === 'giving') || null;
+const carName = car => (car.label ? car.label + ' · ' : '') + dmy(car.date);
 
-/* Her money: loads (bags that left the car), cleared oldest first unless a payment names a load. */
+/* ---------- places ---------- */
+const locById = id => S.locs.find(l => l.id === id) || null;
+function locTxt(id) { const l = locById(id); if (!l) return ''; return l.spot ? l.town + ' · ' + l.spot : l.town; }
+function getLoc(town, spot) {
+  town = String(town || '').trim(); spot = String(spot || '').trim(); if (!town) return '';
+  let l = S.locs.find(x => x.town.toLowerCase() === town.toLowerCase() && (x.spot || '').toLowerCase() === spot.toLowerCase());
+  if (!l) { const t = S.locs.find(x => x.town.toLowerCase() === town.toLowerCase()); l = {id: uid(), town: t ? t.town : town, spot}; S.locs.push(l); }
+  return l.id;
+}
+const towns = () => [...new Set(S.locs.map(l => l.town))].sort((a, b) => cmp(a.toLowerCase(), b.toLowerCase()));
+const spotsOf = town => S.locs.filter(l => l.town === town && l.spot).sort((a, b) => cmp(a.spot.toLowerCase(), b.spot.toLowerCase()));
+function inFilter(p) { if (!V.fTown) return true; const l = locById(p.loc); if (!l || l.town !== V.fTown) return false; return !V.fLoc || p.loc === V.fLoc; }
+function movePerson(pid, to, mark) {
+  const p = person(pid); if (!p) return;
+  const markTo = mark === undefined ? p.note : mark;
+  if (p.loc === to && p.note === markTo) return;
+  add({type: 'move', pid, from: p.loc || '', to: to || '', markFrom: p.note || '', mark: markTo || ''});
+  p.loc = to || ''; p.note = markTo || ''; commit();
+}
+
+/* ---------- her money ---------- */
+/* Loads are bags that left the vehicle. Payments clear the oldest first unless one names a load. */
 function ledger(pid) {
   const c = C(); if (c.led.has(pid)) return c.led.get(pid);
   const es = c.byPid.get(pid) || [];
@@ -460,7 +616,8 @@ function ledger(pid) {
   const loads = [], waiting = [], pays = [], promises = [], refusals = [];
   for (const e of es) {
     if (e.type === 'give') {
-      if (e.off) loads.push({id: e.id, e, carId: e.carId, itemId: e.itemId, date: e.off, bags: e.bags, price: e.price, amount: e.amount, backBags: 0, backAmt: 0, left: 0, clearedAt: null, due: addDaysK(dayKey(e.off), cyc)});
+      const at = givenAt(e);
+      if (at) loads.push({id: e.id, e, carId: e.carId, itemId: e.itemId, date: at, bags: e.bags, price: e.price, amount: e.amount, backBags: 0, backAmt: 0, left: 0, clearedAt: null, due: addDaysK(dayKey(at), cyc)});
       else waiting.push(e);
     } else if (e.type === 'pay') pays.push(e);
     else if (e.type === 'promise') promises.push(e);
@@ -486,7 +643,6 @@ function ledger(pid) {
   if (loose) extra += apply(loose, nowIso(), null, null);
   const owed = r2(sum(loads, L => L.left));
   const bal = r2(owed - extra);
-  /* promises: kept if she paid between making it and the day; a newer promise replaces an older one */
   const t = todayK();
   const proms = promises.map((p, i) => {
     const kept = pays.some(x => x.date >= p.date && dayKey(x.date) <= p.on);
@@ -506,7 +662,7 @@ function ledger(pid) {
 /* Where she stands today, for sorting who to chase. sev >= 3 means "collect now". */
 function status(pid) {
   const L = ledger(pid); const t = todayK();
-  if (L.bal <= 0.001) return {k: 'clear', sev: 0, label: L.bal < -0.001 ? money(-L.bal) + ' extra' : 'Paid up', cls: 'ok'};
+  if (L.bal <= 0.001) return {k: 'clear', sev: 0, label: L.bal < -0.001 ? money(-L.bal) + ' credit' : 'Paid up', cls: 'ok'};
   const open = L.loads.filter(x => x.left > 0.001);
   const due = open.length ? open[0].due : null;
   if (L.refusedOpen) return {k: 'refused', sev: 5, label: 'Refused to pay', cls: 'r', due};
@@ -523,7 +679,6 @@ function status(pid) {
   if (dd === -1) return {k: 'soon', sev: 1, label: 'Due tomorrow', cls: 'w', due};
   return {k: 'later', sev: 0, label: 'Due ' + dmy(due), cls: '', due};
 }
-/* How she pays: loads cleared on time out of loads that are finished or overdue. */
 function record(pid) {
   const L = ledger(pid); const t = todayK();
   const cleared = L.loads.filter(x => x.clearedAt);
@@ -537,20 +692,33 @@ function recordTag(pid) {
   return `<span class="tag ${k >= 0.8 ? 'ok' : k >= 0.5 ? 'w' : 'r'}">On time ${r.onTime} of ${r.total}</span>`;
 }
 function debtors() { return S.people.map(p => ({p, L: ledger(p.id), st: status(p.id)})).filter(x => x.L.bal > 0.001); }
+function usualQty(pid) {
+  const gs = (C().byPid.get(pid) || []).filter(e => e.type === 'give').slice(-6); if (!gs.length) return 1;
+  const cnt = new Map(); gs.forEach(e => cnt.set(e.bags, (cnt.get(e.bags) || 0) + 1));
+  let best = gs[gs.length - 1].bags, bc = 0; gs.slice().reverse().forEach(e => { const n = cnt.get(e.bags); if (n > bc) { bc = n; best = e.bags; } });
+  return best;
+}
+function recentDup(pid, carId) {
+  const gs = (C().byPid.get(pid) || []).filter(e => e.type === 'give' && e.carId === carId); const last = gs[gs.length - 1];
+  if (!last) return null; const mins = Math.floor((Date.now() - new Date(last.fixedAt || last.date)) / 6e4);
+  return mins <= 15 ? {bags: last.bags, mins} : null;
+}
+
+/* ---------- stock on one delivery: loaded = given + sold for cash + held + left ---------- */
 function carStats(cid) {
   const car = carById(cid); const c = C();
-  const items = car.items.map(i => Object.assign({}, i, {off: 0, wait: 0, cash: 0, back: 0}));
+  const items = car.items.map(i => Object.assign({}, i, {off: 0, wait: 0, cash: 0, back: 0, adj: 0}));
   const it = id => items.find(i => i.id === id) || items[0];
-  let credit = 0, cashAmt = 0, cashBags = 0;
+  let credit = 0, cashAmt = 0, cashBags = 0, carAdj = 0, countAdj = 0; const stock = [];
   for (const e of S.entries) {
     if (e.carId !== cid || !live(e)) continue;
-    if (e.type === 'give') { const I = it(e.itemId); if (e.off) { I.off += e.bags; credit += e.amount; } else I.wait += e.bags; }
+    if (e.type === 'give') { const I = it(e.itemId); if (givenAt(e)) { I.off += e.bags; credit += e.amount; } else I.wait += e.bags; }
     else if (e.type === 'cash') { it(e.itemId).cash += e.bags; cashAmt += e.amount; cashBags += e.bags; }
     else if (e.type === 'back') { const g = c.byId.get(e.ref); it(g ? g.itemId : null).back += e.bags; credit -= e.amount; }
+    else if (e.type === 'stock') { stock.push(e); if (e.reason === 'count') countAdj += e.bags; if (e.itemId) it(e.itemId).adj += e.bags; else carAdj += e.bags; }
   }
-  items.forEach(I => { I.inCar = I.count - I.off - I.cash + I.back; I.free = I.inCar - I.wait; });
-  const total = sum(items, I => I.count) + car.adjust;
-  const inCar = sum(items, I => I.inCar) + car.adjust - car.moved;
+  items.forEach(I => { I.inCar = I.count - I.off - I.cash + I.back + I.adj; I.free = I.inCar - I.wait; });
+  const inCar = sum(items, I => I.inCar) + carAdj;
   const wait = sum(items, I => I.wait), off = sum(items, I => I.off);
   let collected = 0, out = 0; const ids = new Set();
   for (const p of S.people) {
@@ -560,9 +728,10 @@ function carStats(cid) {
   }
   const costs = sum(car.costs || [], x => Number(x.amount) || 0);
   credit = r2(credit); collected = r2(collected); out = r2(out);
-  return {car, items, total, inCar, wait, off, free: inCar - wait, cash: cashBags, cashAmt: r2(cashAmt), credit, collected, out, costs,
-    people: [...ids], profitNow: r2(cashAmt + collected - costs), profitAll: r2(cashAmt + credit - costs)};
+  return {car, items, loaded: sum(items, I => I.count) + countAdj, inCar, wait, off, given: off + cashBags, free: inCar - wait, cash: cashBags, cashAmt: r2(cashAmt),
+    credit, collected, out, costs, stock, people: [...ids], profitNow: r2(cashAmt + collected - costs), profitAll: r2(cashAmt + credit - costs)};
 }
+function heldOn(cid) { return S.entries.filter(e => e.type === 'give' && e.carId === cid && live(e) && !givenAt(e)); }
 function needsBackup() { return !V.demo && !!S.changedAt && S.entries.length > 0 && (!S.lastBackup || S.changedAt > S.lastBackup); }
 
 /* ---------- messages (plain letters, see smsMoney) ---------- */
@@ -608,7 +777,7 @@ function coins(n) {
 const app = document.getElementById('app'), layer = document.getElementById('layer');
 const cur = () => V.stack[V.stack.length - 1] || null;
 let skipPop = 0, lastKey = '';
-function push(f) { closeSheet(); hideToast(); V.stack.push(f); try { history.pushState({d: V.stack.length}, ''); } catch (e) {} render(); }
+function push(f) { closeSheet(); hideToast(); V.qe = null; V.stack.push(f); try { history.pushState({d: V.stack.length}, ''); } catch (e) {} render(); }
 function pop() { if (!V.stack.length) return; V.stack.pop(); closeSheet(); skipPop++; try { history.back(); } catch (e) { skipPop--; } render(); }
 function toRoot(tab) { const n = V.stack.length; V.stack = []; closeSheet(); if (tab) V.tab = tab; if (n) { skipPop++; try { history.go(-n); } catch (e) { skipPop--; } } render(); }
 window.addEventListener('popstate', () => {
@@ -657,8 +826,27 @@ const backSq = act => `<button class="sq" data-act="${act || 'back'}" aria-label
 function statusTag(st) { return st.k === 'clear' ? '' : `<span class="tag ${st.cls}">${esc(st.label)}</span>`; }
 function tabBar() {
   const n = debtors().filter(x => x.st.sev >= 3).length;
-  const t = (id, ic, label, badge) => `<button class="tab ${V.tab === id ? 'on' : ''}" data-act="tab" data-t="${id}" ${V.tab === id ? 'aria-current="page"' : ''}>${svg(ic, 24)}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}</button>`;
-  return `<nav class="tabs">${t('give', 'bag', 'Give')}${t('collect', 'cash', 'Collect', n)}${t('book', 'book', 'Book')}</nav>`;
+  const t = (id, ic, label, badge, dot) => `<button class="tab ${V.tab === id ? 'on' : ''}" data-act="tab" data-t="${id}" ${V.tab === id ? 'aria-current="page"' : ''}>${svg(ic, 24)}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}${dot ? '<span class="tabdot" aria-label="Backup needed"></span>' : ''}</button>`;
+  return `<nav class="tabs">${t('give', 'bag', 'Give')}${t('collect', 'cash', 'Collect', n)}${t('book', 'book', 'Book', 0, needsBackup())}</nav>`;
+}
+/* town chips, then spots of the chosen town */
+function filterChips(count) {
+  const tw = towns(); if (!tw.length) return '';
+  let h = `<div class="chips">${[''].concat(tw).map(t => `<button class="chip ${V.fTown === t ? 'on' : ''}" data-act="ftown" data-t="${esc(t)}">${t ? esc(t) : 'All'}</button>`).join('')}</div>`;
+  if (V.fTown) { const sp = spotsOf(V.fTown); if (sp.length) h += `<div class="chips">${[{id: '', spot: 'All ' + V.fTown}].concat(sp).map(l => `<button class="chip ${V.fLoc === l.id ? 'on' : ''}" data-act="floc" data-id="${l.id}">${esc(l.spot)}${count && l.id ? `<em>${count(l.id)}</em>` : ''}</button>`).join('')}</div>`; }
+  return h;
+}
+function matchPeople(q, exclude) {
+  q = q.trim().toLowerCase(); const qd = q.replace(/\D/g, '');
+  if (!q) { const car = givingCar(); return recentFaces(car ? car.id : null).filter(p => p.id !== exclude).slice(0, 6); }
+  const sc = p => { const n = p.name.toLowerCase(); if (n.startsWith(q)) return 0; if (n.split(/\s+/).some(w => w.startsWith(q))) return 1; if (n.includes(q)) return 2; if (qd.length >= 3 && digits(p.phone).includes(qd)) return 3; if (similar(p.name, q)) return 4; return 9; };
+  return S.people.filter(p => p.id !== exclude).map(p => [p, sc(p)]).filter(x => x[1] < 9).sort((a, b) => a[1] - b[1] || cmp(a[0].name, b[0].name)).slice(0, 6).map(x => x[0]);
+}
+function recentFaces(carId) {
+  const onCar = new Set(S.entries.filter(e => e.type === 'give' && e.carId === carId && live(e)).map(e => e.pid));
+  const last = new Map();
+  S.entries.forEach(e => { if (e.type === 'give' && e.pid && live(e) && (!last.has(e.pid) || e.date > last.get(e.pid))) last.set(e.pid, e.date); });
+  return S.people.filter(p => !onCar.has(p.id)).sort((a, b) => cmp(last.get(b.id) || b.created || '', last.get(a.id) || a.created || '')).slice(0, 12);
 }
 
 /* ---------- render ---------- */
@@ -666,7 +854,7 @@ const VIEWS = {};
 function render() {
   const f = cur();
   let key, o;
-  if (!f) { key = 'tab:' + V.tab; o = V.tab === 'collect' ? viewCollect() : V.tab === 'book' ? viewBook() : viewGive(); }
+  if (!f) { key = 'tab:' + V.tab + (V.tab === 'book' ? V.bseg : ''); o = V.tab === 'collect' ? viewCollect() : V.tab === 'book' ? viewBook() : viewGive(); }
   else { key = f.v + ':' + (f.pid || f.cid || ''); o = VIEWS[f.v](f); if (!o) return; }
   const old = document.getElementById('mid');
   const same = key === lastKey && old;
@@ -684,77 +872,68 @@ function render() {
   placeToast();
 }
 
-/* ===== Give tab ===== */
+/* ===== Give ===== */
+function stockCard(car, st) {
+  const pct = v => st.loaded > 0 ? Math.max(0, Math.min(100, v / st.loaded * 100)).toFixed(1) + '%' : '0%';
+  const pend = pendingReceipts(car.id).size;
+  return `<div class="stock">
+    <div class="big"><b class="${st.free <= 0 ? 'z' : ''} ${V.pulse ? 'pulse' : ''}">${bagsNum(Math.max(0, st.free))}</b><span>left</span></div>
+    <div class="dl"><span>${esc(carName(car))}</span>${pend ? `<button data-act="receipts" aria-label="${pend} receipts to send">${svg('msg', 16)}${pend}</button>` : ''}<button data-act="carmenu" data-id="${car.id}" aria-label="Delivery options">${svg('down', 18)}</button></div>
+    <div class="info"><div class="sbar"><i class="g" style="width:${pct(st.given)}"></i><i class="h" style="width:${pct(st.wait)}"></i></div>
+      <div class="leg"><span>${bagsNum(st.given)} given</span>${st.wait ? `<span class="h">${bagsNum(st.wait)} held</span>` : ''}<span>${bagsNum(st.loaded)} loaded</span></div>
+      ${st.items.length > 1 ? `<div class="leg">${st.items.map(i => `<span>${esc(i.name)} <b>${bagsNum(Math.max(0, i.free))}</b></span>`).join('')}</div>` : ''}</div></div>`;
+}
 function viewGive() {
   const car = givingCar();
   if (!car) return giveEmpty();
   const st = carStats(car.id);
-  const c = C();
   const gives = S.entries.filter(e => e.type === 'give' && e.carId === car.id && live(e));
-  const byP = new Map();
-  gives.forEach(e => { if (!byP.has(e.pid)) byP.set(e.pid, {taken: 0, wait: 0, last: '', lastWait: '', rc: false}); const g = byP.get(e.pid); if (e.off) { g.taken += e.bags; if (e.off > g.last) g.last = e.off; if (!e.rcpt) g.rc = true; } else { g.wait += e.bags; if (e.date > g.lastWait) g.lastWait = e.date; } });
-  const takenRows = [...byP.entries()].filter(([, g]) => g.taken > 0).sort((a, b) => cmp(a[1].last, b[1].last));
-  const waitRows = [...byP.entries()].filter(([, g]) => g.wait > 0).sort((a, b) => cmp(a[1].lastWait, b[1].lastWait));
-  const nm = id => { const p = person(id); return p ? p : {name: '?', place: ''}; };
+  const given = gives.filter(e => givenAt(e)).sort((a, b) => cmp(givenAt(a), givenAt(b)));
+  const held = gives.filter(e => !givenAt(e)).sort((a, b) => cmp(a.date, b.date));
+  const linked = C().linked;
+  const row = (e, isHeld) => {
+    const p = person(e.pid) || {name: '?'};
+    if (V.qe && V.qe.id === e.id) return `<div class="row editing"><button class="who" data-act="qcancel"><div class="name">${esc(p.name)}</div><div class="sub">${esc(locTxt(e.loc)) || '&nbsp;'}</div></button><div class="qstep"><button data-act="qminus" aria-label="One less">−</button><b>${bagsNum(V.qe.n)}</b><button data-act="qplus" aria-label="One more">+</button></div><button class="qok" data-act="qsave" aria-label="Save">${svg('check')}</button></div>`;
+    const sub = [locTxt(e.loc), isHeld ? 'since ' + hm(e.date) : '', linked.has(e.id) ? 'paid cash' : ''].filter(Boolean).join(' · ');
+    return `<div class="row ${isHeld ? 'held' : ''} ${V.flash === e.id ? 'flash' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="entry" data-id="${e.id}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button>${isHeld ? '<span class="hpill">Held</span>' : ''}<button class="qbox" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${bagsNum(e.bags)}</button></div>`;
+  };
   let mid = '<div class="lines">';
-  if (!takenRows.length && !waitRows.length) mid += `<div class="empty"><h2>Nobody yet</h2><p>Type a name below, or tap a face.</p></div>`;
-  mid += takenRows.map(([pid, g]) => { const p = nm(pid); return `<button class="row ${V.flash === pid ? 'flash' : ''}" data-act="person" data-id="${pid}"><div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.place || '')}${g.rc ? (p.place ? ' · ' : '') + 'receipt not sent' : ''}</div></div><span class="amt ink">${bagsTxt(g.taken)}</span></button>`; }).join('');
-  if (st.cash) mid += `<div class="row" style="min-height:48px"><div class="who"><div class="sub" style="color:var(--paid)">${svg('cash', 16)} ${bagsTxt(st.cash)} sold for cash · ${money(st.cashAmt)}</div></div></div>`;
-  if (waitRows.length) {
-    mid += `<div class="sect w"><span>Still in the car · ${bagsTxt(st.wait)}</span><button class="mini" data-act="alltaken">All taken</button></div>`;
-    mid += waitRows.map(([pid, g]) => { const p = nm(pid); return `<div class="row wait ${V.flash === pid ? 'flash' : ''}"><span class="mk w">${svg('clock', 16)}</span><button class="who" data-act="person" data-id="${pid}"><div class="name">${esc(p.name)}</div><div class="sub">${bagsTxt(g.wait)} waiting · not owing yet</div></button><button class="takebtn" data-act="taken" data-id="${pid}">${svg('check', 18)} Taken</button></div>`; }).join('');
-  }
-  if (takenRows.length || waitRows.length || st.cash) mid += `<button class="endrow" data-act="finish">${svg('ok', 20)} Finish giving this car</button>`;
+  if (!gives.length && !st.cash) mid += `<div class="empty"><h2>Nobody yet</h2><p>Type a name below, or tap a face.</p></div>`;
+  mid += given.map(e => row(e, false)).join('');
+  if (st.cash) mid += `<div class="row" style="min-height:44px"><div class="who"><div class="sub" style="color:var(--paid)">${svg('cash', 16)} ${bagsTxt(st.cash)} sold for cash</div></div></div>`;
+  if (held.length) mid += `<div class="sect w"><span>Held · ${bagsTxt(sum(held, e => e.bags))}</span><button class="mini" data-act="handall" data-id="${car.id}">Hand over all</button></div>` + held.map(e => row(e, true)).join('');
   mid += '</div>';
-  const pend = pendingReceipts(car.id).size;
+  const top = stockCard(car, st) + (st.free <= 0 && st.wait <= 0 ? `<button class="emptybar" data-act="closecar" data-id="${car.id}">${svg('ok', 20)}<span>Car empty</span><b>Close delivery ›</b></button>` : '');
   const recent = recentFaces(car.id);
-  const top = `<div class="hrow"><button class="pill" data-act="cars">${svg('truck', 18)} Car · ${dmy(car.date)} ${svg('down', 16)}</button><span class="sp"></span>${backupBtn()}${gearBtn()}</div>
-    <div class="hero"><div class="n ${st.free <= 0 ? 'owe' : ''} ${V.pulse ? 'pulse' : ''}">${bagsNum(Math.max(0, st.free))}</div><div class="l">${esc(unit())}s free to give</div></div>
-    <div class="split">${st.wait ? `<span class="w"><b>${bagsNum(st.wait)}</b> waiting</span>` : ''}<span><b>${bagsNum(st.off)}</b> taken</span>${st.cash ? `<span class="g"><b>${bagsNum(st.cash)}</b> cash</span>` : ''}<span><b>${bagsNum(Math.max(0, st.inCar))}</b> in the car</span></div>
-    ${st.items.length > 1 ? `<div class="split">${st.items.map(i => `<span>${esc(i.name)} <b>${bagsNum(Math.max(0, i.free))}</b> free</span>`).join('')}</div>` : ''}`;
-  const dock = `${pend ? `<button class="strip" data-act="receipts">${svg('msg', 20)}<span>${pend} receipt${pend > 1 ? 's' : ''} to send</span>${svg('fwd', 18)}</button>` : ''}
-    ${recent.length ? `<div class="faces">${recent.map(p => `<button class="face" data-act="give" data-id="${p.id}"><span class="av">${esc(initials(p.name))}</span>${esc(shortName(p.name))}</button>`).join('')}</div>` : ''}
+  const dock = `${recent.length ? `<div class="faces">${recent.map(p => `<button class="face" data-act="give" data-id="${p.id}"><span class="av">${esc(initials(p.name))}</span>${esc(shortName(p.name))}</button>`).join('')}</div>` : ''}
     <div class="bar"><button class="sq cash" data-act="cash" aria-label="Sold one for cash">${svg('cash')}<small>+1 cash</small></button>
-    <label class="find" id="findbox">${svg('bag')}<input id="gq" type="text" placeholder="Give ${esc(unit())}s to…" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Who is taking ${esc(unit())}s? Type her name" value="${esc(V.gq)}"></label>
-    <button class="sq" data-act="calc" aria-label="Calculator">${svg('calc')}</button></div>`;
+    <label class="find ink">${svg('search')}<input id="gq" type="text" placeholder="Who's taking?" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Who is taking ${esc(unit())}s? Type her name" value="${esc(V.gq)}"></label></div>`;
   return {top, mid, cls: 'book', dock, tabs: true, anchor: 'bottom', after: () => { attachFind(); V.flash = null; }};
 }
 function giveEmpty() {
-  const cars = carsNewest().slice(0, 6);
   const fresh = !S.people.length && !S.cars.length;
-  const top = `<div class="hrow"><div class="brand">StallBook</div>${backupBtn()}${gearBtn()}</div>`;
+  const top = `<div class="hrow"><div class="brand">Give</div></div>
+    <div class="csum"><div class="cl"><small>No delivery open</small><b style="font-size:20px;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting for the next one' : 'Start one when the vehicle arrives'}</b></div></div>`;
   let mid;
-  if (fresh) mid = `<div class="empty" style="padding-top:40px"><h2>Your book is empty</h2><p>When a car arrives, tap <b>New car</b>. Then give ${esc(unit())}s one woman at a time.</p><button class="btn ghost" style="margin-top:16px" data-act="demo">See an example first</button></div>`;
-  else mid = `<div class="empty"><h2>No car being given out</h2><p>Start a new car when it arrives.</p></div>` + (cars.length ? `<div class="sect"><span>Your cars</span></div>` + cars.map(carRow).join('') : '');
-  return {top, mid, cls: 'book', dock: `<div class="bar"><button class="btn give tall" data-act="newcar">${svg('truck')} New car</button></div>`, tabs: true, anchor: 'top'};
+  if (fresh) mid = `<div class="empty" style="padding-top:28px"><h2>Your book is empty</h2><p>When a vehicle arrives, tap <b>New delivery</b>. Then give ${esc(unit())}s one customer at a time.</p><button class="btn ghost" style="margin-top:16px" data-act="demo">See an example first</button></div>`;
+  else { const cars = carsNewest().slice(0, 6); mid = cars.length ? `<div class="sect"><span>Deliveries</span></div>` + cars.map(carRow).join('') : ''; }
+  return {top, mid, cls: 'book', dock: `<div class="bar"><button class="btn ink tall" data-act="newcar">${svg('truck')} New delivery</button></div>`, tabs: true, anchor: 'top'};
 }
 function carRow(car) {
   const st = carStats(car.id);
-  const right = car.phase === 'giving' ? `<span class="amt ink">${bagsNum(Math.max(0, st.free))}<small>free</small></span>` : st.out > 0.001 ? `<span class="amt">${money(st.out)}<small>to collect</small></span>` : `<span class="amt ok">All paid ✓</span>`;
-  const tag = car.phase === 'giving' ? '<span class="tag w">Giving</span>' : st.out > 0.001 ? '<span class="tag r">Collecting</span>' : '<span class="tag ok">Done</span>';
-  return `<button class="row" data-act="report" data-id="${car.id}"><div class="who"><div class="name">${dmy(car.date)} ${tag}</div><div class="sub">${bagsTxt(st.total)} · ${st.people.length} ${st.people.length === 1 ? 'woman' : 'women'}</div></div>${right}</button>`;
-}
-function recentFaces(carId) {
-  const onCar = new Set(S.entries.filter(e => e.type === 'give' && e.carId === carId && live(e)).map(e => e.pid));
-  const last = new Map();
-  S.entries.forEach(e => { if (e.type === 'give' && e.pid && live(e) && (!last.has(e.pid) || e.date > last.get(e.pid))) last.set(e.pid, e.date); });
-  return S.people.filter(p => !onCar.has(p.id)).sort((a, b) => cmp(last.get(b.id) || b.created || '', last.get(a.id) || a.created || '')).slice(0, 12);
+  const right = car.phase === 'giving' ? `<span class="amt ink">${bagsNum(Math.max(0, st.free))}<small>left</small></span>` : st.out > 0.001 ? `<span class="amt">${money(st.out)}<small>to collect</small></span>` : `<span class="amt ok">All paid ✓</span>`;
+  const tag = car.phase === 'giving' ? '<span class="tag w">Open</span>' : st.out > 0.001 ? '<span class="tag r">Collecting</span>' : '<span class="tag ok">Done</span>';
+  return `<button class="row" data-act="report" data-id="${car.id}"><div class="who"><div class="name">${esc(carName(car))} ${tag}</div><div class="sub">${bagsTxt(st.loaded)} · ${st.people.length} ${st.people.length === 1 ? 'customer' : 'customers'}</div></div>${right}</button>`;
 }
 function pendingReceipts(carId) {
   const m = new Map();
-  S.entries.forEach(e => { if (e.type !== 'give' || !e.off || e.rcpt || !live(e) || (carId && e.carId !== carId)) return; const p = person(e.pid); if (!p || !p.phone) return; if (!m.has(p.id)) m.set(p.id, []); m.get(p.id).push(e); });
+  S.entries.forEach(e => { if (e.type !== 'give' || e.rcpt || !live(e) || !givenAt(e) || (carId && e.carId !== carId)) return; const p = person(e.pid); if (!p || !p.phone) return; if (!m.has(p.id)) m.set(p.id, []); m.get(p.id).push(e); });
   return m;
 }
-function markReceipts(pid) { S.entries.forEach(e => { if (e.type === 'give' && e.pid === pid && e.off && !e.rcpt) e.rcpt = true; }); commit(); }
+function markReceipts(pid) { S.entries.forEach(e => { if (e.type === 'give' && e.pid === pid && !e.rcpt && givenAt(e)) e.rcpt = true; }); commit(); }
 function receiptMsg(p, es) { return msgGive(p, sum(es, e => e.bags), sum(es, e => e.amount), ledger(p.id).bal); }
 
 /* name box: one box finds her or adds her */
-function matchPeople(q) {
-  q = q.trim().toLowerCase(); const qd = q.replace(/\D/g, '');
-  if (!q) return recentFaces(givingCar() ? givingCar().id : null).slice(0, 6);
-  const sc = p => { const n = p.name.toLowerCase(); if (n.startsWith(q)) return 0; if (n.split(/\s+/).some(w => w.startsWith(q))) return 1; if (n.includes(q)) return 2; if (qd.length >= 3 && digits(p.phone).includes(qd)) return 3; if (similar(p.name, q)) return 4; return 9; };
-  return S.people.map(p => [p, sc(p)]).filter(x => x[1] < 9).sort((a, b) => a[1] - b[1] || cmp(a[0].name, b[0].name)).slice(0, 6).map(x => x[0]);
-}
 function attachFind() {
   const inp = document.getElementById('gq'); if (!inp) return;
   const show = () => showSuggest(inp.value);
@@ -763,6 +942,7 @@ function attachFind() {
   inp.addEventListener('blur', () => setTimeout(hideSuggest, 120));
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const q = inp.value.trim(); if (!q) return; const m = matchPeople(q); const exact = m.find(p => p.name.toLowerCase() === q.toLowerCase()); pickName(exact ? exact.id : null, exact ? '' : q); } });
 }
+function sgRow(p, act) { return `<button class="sg" data-act="${act}" data-id="${p.id}"><span class="av">${esc(initials(p.name))}</span><div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${esc([locTxt(p.loc), p.note].filter(Boolean).join(' · ')) || esc(p.phone) || '&nbsp;'}</div></div></button>`; }
 function showSuggest(q) {
   const dock = app.querySelector('.dock'); if (!dock) return;
   let box = dock.querySelector('.suggest');
@@ -770,59 +950,62 @@ function showSuggest(q) {
   const exact = list.some(p => p.name.toLowerCase() === t.toLowerCase());
   if (!list.length && !t) { if (box) box.remove(); return; }
   if (!box) { box = document.createElement('div'); box.className = 'suggest'; box.addEventListener('pointerdown', e => e.preventDefault()); dock.appendChild(box); }
-  box.innerHTML = list.map(p => { const L = ledger(p.id); return `<button class="sg" data-act="pick" data-id="${p.id}"><span class="av">${esc(initials(p.name))}</span><div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${esc([p.place, p.phone].filter(Boolean).join(' · ')) || '&nbsp;'}</div></div>${L.bal > 0.001 ? `<span class="amt" style="font-size:15px">${money(L.bal)}</span>` : ''}</button>`; }).join('')
-    + (t && !exact ? `<button class="sg new" data-act="pick" data-name="${esc(t)}"><span class="av">${svg('plus', 18)}</span><div class="who"><div class="name">New: ${esc(t)}</div><div class="sub">Add her to the book</div></div></button>` : '');
+  box.innerHTML = list.map(p => sgRow(p, 'pick')).join('')
+    + (t && !exact ? `<button class="sg new" data-act="pick" data-name="${esc(t)}"><span class="av">${svg('plus', 18)}</span><div class="who"><div class="name">New: ${esc(t)}</div><div class="sub">Add to the book</div></div></button>` : '');
 }
 function hideSuggest() { const b = app.querySelector('.suggest'); if (b) b.remove(); }
-function pickName(pid, name) { const inp = document.getElementById('gq'); if (inp) inp.blur(); V.gq = ''; hideSuggest(); if (inp) inp.value = ''; openGive(pid, name); }
+function pickName(pid, name) { const inp = document.getElementById('gq'); if (inp) { inp.blur(); inp.value = ''; } V.gq = ''; hideSuggest(); openGive(pid, name); }
 
-/* give sheet */
+/* give sheet: customer, spot, how many, held or cash */
 function openGive(pid, name) {
   const car = givingCar();
   if (!car) return noCarSheet();
   const p = pid ? person(pid) : null;
-  V.g = {pid: p ? p.id : null, name: name || '', phone: '', place: S.lastPlace && S.places.includes(S.lastPlace) ? S.lastPlace : '', bags: 1, itemId: car.items[0].id, carId: car.id, dupOk: false};
+  const loc = p ? (p.loc || (locById(S.lastLoc) ? S.lastLoc : '')) : (locById(S.lastLoc) ? S.lastLoc : '');
+  V.g = {pid: p ? p.id : null, name: name || '', phone: '', loc, bags: p ? usualQty(p.id) : 1, itemId: car.items[0].id, carId: car.id, dupOk: false, hold: false, cash: false};
   giveSheet();
 }
 function noCarSheet() {
   const last = carsNewest()[0];
-  sheet(`<i class="grab"></i><h3>No car being given out</h3><p>Start a new car, or give more from the last one.</p>
-    <button class="btn give" data-act="newcar">${svg('truck')} New car</button>
-    ${last ? `<button class="btn ghost" data-act="reopen" data-id="${last.id}">Give more from ${dmy(last.date)} car</button>` : ''}
+  sheet(`<i class="grab"></i><h3>No delivery open</h3><p>Start a new delivery, or give more from the last one.</p>
+    <button class="btn ink" data-act="newcar">${svg('truck')} New delivery</button>
+    ${last ? `<button class="btn ghost" data-act="reopen" data-id="${last.id}">Give more from ${esc(carName(last))}</button>` : ''}
     <button class="btn ghost" data-act="sheetclose">Close</button>`);
 }
 function giveSheet() {
   const g = V.g; const car = carById(g.carId); const st = carStats(car.id);
   const p = g.pid ? person(g.pid) : null;
   const item = car.items.find(i => i.id === g.itemId) || car.items[0];
-  const amt = r2(g.bags * item.price); const half = Math.abs(g.bags % 1 - 0.5) < 0.01;
+  const half = Math.abs(g.bags % 1 - 0.5) < 0.01; const whole = Math.floor(g.bags + 1e-9); const big = whole > 6;
   const tags = [];
   if (p) {
-    const L = ledger(p.id), s = status(p.id);
-    const rt = recordTag(p.id); if (rt) tags.push(rt);
-    if (L.bal > 0.001) tags.push(`<span class="tag r">Owes ${money(L.bal)}</span>`);
-    if (['late', 'broke', 'refused'].includes(s.k)) tags.push(statusTag(s));
-    const w = sum(L.waiting, e => e.bags); if (w) tags.push(`<span class="tag w">${bagsTxt(w)} waiting</span>`);
+    const s = status(p.id); if (['late', 'broke', 'refused'].includes(s.k)) tags.push(`<span class="tag r">⚠ ${esc(s.label)}</span>`);
+    const dup = recentDup(p.id, car.id); if (dup) tags.push(`<span class="tag w">Got ${bagsNum(dup.bags)} · ${dup.mins < 1 ? 'just now' : dup.mins + ' min ago'}</span>`);
   }
-  const placeChips = `<div class="chips wrap">${S.places.map(pl => `<button class="chip ${g.place === pl ? 'on' : ''}" data-act="gplace" data-p="${esc(pl)}">${esc(pl)}</button>`).join('')}<button class="chip dash" data-act="addplace" data-for="give">+ Place</button></div>`;
   sheet(`<i class="grab"></i>
-    <div class="hrow"><span class="av lg">${esc(initials(p ? p.name : g.name))}</span><div class="title"><b>${esc(p ? p.name : g.name)}</b><small>${p ? esc([p.place, p.note].filter(Boolean).join(' · ')) || '&nbsp;' : 'New in your book'}</small></div><button class="ib" data-act="sheetclose" aria-label="Close">${svg('x')}</button></div>
+    <div class="hrow"><span class="av lg">${esc(initials(p ? p.name : g.name))}</span><div class="title"><b>${esc(p ? p.name : g.name)}</b><small>${p ? esc(p.phone || 'No number yet') : 'New customer'}</small></div>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}<button class="ib" data-act="sheetclose" aria-label="Close">${svg('x')}</button></div>
     ${tags.length ? `<div class="tags l">${tags.join('')}</div>` : ''}
-    ${p ? '' : `<div class="field"><label for="gph">Phone, if she gives it</label><input id="gph" type="tel" inputmode="tel" autocomplete="off" placeholder="024 000 0000" value="${esc(g.phone)}"></div>${placeChips}`}
-    ${car.items.length > 1 ? `<div class="seg">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); return `<button class="${i.id === item.id ? 'on' : ''}" data-act="gitem" data-i="${i.id}">${esc(i.name)} ${money(i.price)}<br><small>${bagsNum(Math.max(0, I.free))} free</small></button>`; }).join('')}</div>` : ''}
-    <div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><div class="num">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></div><button class="key" data-act="gplus" aria-label="One more">+</button></div>
-    <div class="hrow"><button class="halfbtn ${half ? 'on' : ''}" data-act="ghalf">${half ? '− ½' : '+ ½'} ${esc(unit())}</button><span class="sp"></span><span class="total"><button data-act="gprice">${money(item.price)}</button> each <b>${money(amt)}</b></span></div>
-    <div class="seg" role="group" aria-label="Where are the ${esc(unit())}s?"><button class="${V.giveState === 'off' ? 'on' : ''}" data-act="gstate" data-s="off">Taken now</button><button class="${V.giveState === 'wait' ? 'on w' : ''}" data-act="gstate" data-s="wait">Still in the car</button></div>
-    <button class="btn give tall" data-act="gsave">${V.giveState === 'wait' ? 'Write down' : 'Give'} ${bagsTxt(g.bags)}</button>`);
+    ${p ? '' : `<div class="field"><label for="gph">Phone (optional)</label><input id="gph" type="tel" inputmode="tel" autocomplete="off" placeholder="024 000 0000" value="${esc(g.phone)}"></div>`}
+    <button class="locchip" data-act="gloc">${svg('pin', 18)} ${g.loc ? esc(locTxt(g.loc)) : 'Where does she sell?'} ${svg('down', 16)}</button>
+    ${car.items.length > 1 ? `<div class="seg">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); return `<button class="${i.id === item.id ? 'on' : ''}" data-act="gitem" data-i="${i.id}">${esc(i.name)}<br><small>${bagsNum(Math.max(0, I.free))} left</small></button>`; }).join('')}</div>` : ''}
+    <div class="qty">${[1, 2, 3, 4, 5, 6].map(n => `<button class="${whole === n ? 'on' : ''}" data-act="gq" data-n="${n}">${n}</button>`).join('')}<button class="${big ? 'on' : ''}" data-act="gqmore" aria-label="More than 6">${big ? whole : '…'}</button></div>
+    <div class="togs"><button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Hold for her</button><button class="tog ${g.cash ? 'on g' : ''}" data-act="gcash" aria-pressed="${g.cash}">${g.cash ? svg('check', 18) : ''}Paid cash</button>${S.settings.half ? `<button class="tog sm ${half ? 'on' : ''}" data-act="ghalf" aria-pressed="${half}" aria-label="Add half">½</button>` : ''}</div>
+    <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave">${g.hold ? 'Hold' : 'Give'} ${bagsTxt(g.bags)}</button>`);
   V.sheetKind = 'give';
   const ph = document.getElementById('gph'); if (ph) ph.addEventListener('input', e => { V.g.phone = e.target.value; });
 }
+function qtySheet() {
+  const Q = V.qk;
+  sheet(`<i class="grab"></i><h3>How many ${esc(unit())}s?</h3><div class="disp"><div class="v">${esc(Q.v) || '0'}</div></div>${keypad('count')}<div class="bar"><button class="btn ghost" data-act="qtyback">Back</button><button class="btn ink" data-act="qtyuse">Use ${esc(Q.v) || '0'}</button></div>`);
+  V.sheetKind = 'qty';
+}
 function saveGive(force) {
+  if (Date.now() - (V.lastSave || 0) < 800) return;
   const g = V.g; const car = carById(g.carId); const st = carStats(car.id);
   const item = car.items.find(i => i.id === g.itemId) || car.items[0];
   if (!force && g.bags > st.free + 1e-9) {
     V.sheetKind = 'over';
-    sheet(`<h3>Only ${bagsTxt(Math.max(0, st.free))} free</h3><p>${st.wait ? `${bagsTxt(st.wait)} in the car are waiting for other women.` : 'Count the car before you give more.'}</p><div class="bar"><button class="btn ghost" data-act="gback">Back</button><button class="btn give" data-act="gforce">Give anyway</button></div>`);
+    sheet(`<h3>Only ${bagsTxt(Math.max(0, st.free))} left</h3><p>${st.wait ? `${bagsTxt(st.wait)} are held for other customers.` : 'Count the vehicle before you give more.'}</p><div class="bar"><button class="btn ghost" data-act="gback">Back</button><button class="btn danger" data-act="gforce">Give anyway</button></div>`);
     return;
   }
   let p = g.pid ? person(g.pid) : null;
@@ -833,109 +1016,184 @@ function saveGive(force) {
     const m = !g.dupOk && S.people.find(x => (ph.length >= 9 && digits(x.phone).slice(-9) === ph.slice(-9)) || similar(x.name, name));
     if (m) {
       V.dupForce = force;
-      sheet(`<h3>Same ${esc(m.name)}?</h3><p>Already in your book${m.place ? ', ' + esc(m.place) : ''}${m.phone ? ', ' + esc(m.phone) : ''}.</p><div class="bar"><button class="btn ghost" data-act="dupno">No, new</button><button class="btn ink" data-act="dupyes" data-id="${m.id}">Yes, same</button></div>`);
+      sheet(`<h3>Same ${esc(m.name)}?</h3><p>Already in your book${m.loc ? ', ' + esc(locTxt(m.loc)) : ''}${m.phone ? ', ' + esc(m.phone) : ''}.</p><div class="bar"><button class="btn ghost" data-act="dupno">No, someone else</button><button class="btn ink" data-act="dupyes" data-id="${m.id}">Yes, same</button></div>`);
       return;
     }
-    p = {id: uid(), name, phone: g.phone.trim(), place: g.place || '', note: '', created: nowIso()};
-    S.people.push(p); if (g.place) S.lastPlace = g.place;
+    p = {id: uid(), name, phone: g.phone.trim(), loc: g.loc || '', note: '', created: nowIso()};
+    S.people.push(p);
   }
-  const off = V.giveState === 'off';
-  const e = add({type: 'give', pid: p.id, carId: car.id, itemId: item.id, bags: g.bags, price: item.price, amount: r2(g.bags * item.price), off: off ? nowIso() : null, rcpt: off ? !p.phone : true});
-  closeSheet(); sfx('bag'); buzz(15); V.pulse = true; V.flash = p.id; render();
-  if (off) toast(`${p.name}: ${bagsTxt(e.bags)}, ${money(e.amount)}`, [{label: 'Undo', act: 'undo', id: e.id}, p.phone ? {label: 'Receipt', href: sendHref(p, receiptMsg(p, pendingReceipts(car.id).get(p.id) || [e])), act: 'rcpt', id: p.id} : null]);
-  else toast(`${p.name}: ${bagsTxt(e.bags)} waiting in the car`, [{label: 'Undo', act: 'undo', id: e.id}]);
-  askIfEmpty(car);
+  const moved = !!(p.loc && g.loc && p.loc !== g.loc);
+  if (!p.loc && g.loc) p.loc = g.loc;
+  if (g.loc) S.lastLoc = g.loc;
+  const e = add({type: 'give', pid: p.id, carId: car.id, itemId: item.id, bags: g.bags, price: item.price, amount: r2(g.bags * item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: g.hold || g.cash ? true : !p.phone});
+  if (g.cash) add({type: 'pay', pid: p.id, amount: e.amount, method: 'cash', with: e.id, loadId: e.id});
+  V.lastSave = Date.now();
+  closeSheet(); sfx(g.cash ? 'coin' : 'bag'); buzz(15); V.pulse = true; V.flash = e.id; render();
+  const what = g.hold ? 'held' : g.cash ? 'paid cash' : 'given';
+  toast(`${p.name} · ${bagsTxt(e.bags)} ${what}`, [{label: 'Undo', act: 'undo', id: e.id}, !g.hold && !g.cash && p.phone ? {label: 'Receipt', href: sendHref(p, receiptMsg(p, pendingReceipts(car.id).get(p.id) || [e])), act: 'rcpt', id: p.id} : null]);
+  if (moved) askMoved(p.id, g.loc);
 }
-function askIfEmpty(car) {
-  const st = carStats(car.id);
-  if (st.free <= 0 && st.wait <= 0 && car.askedEmpty !== st.off) {
-    car.askedEmpty = st.off; save();
-    setTimeout(() => sheet(`<h3>The car is empty</h3><p>Finish giving and start collecting?</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Not yet</button><button class="btn ink" data-act="finishnow">Finish</button></div>`), 400);
-  }
+function askMoved(pid, loc) {
+  const p = person(pid); V.mv = {pid, loc};
+  sheet(`<h3>Has ${esc(p.name)} moved?</h3><p>Her record says ${esc(locTxt(p.loc))}. These ${esc(unit())}s went to ${esc(locTxt(loc))}.</p><div class="bar"><button class="btn ghost" data-act="mvno">Just this time</button><button class="btn ink" data-act="mvyes">Yes, she moved</button></div>`);
 }
-function markTaken(pid, carId) {
-  const p = person(pid); const es = S.entries.filter(e => e.type === 'give' && e.pid === pid && e.carId === carId && !e.off && live(e));
-  const t = nowIso(); es.forEach(e => { e.off = t; e.rcpt = !(p && p.phone); }); commit();
-  return es;
-}
-function finishCar(car) { car.phase = 'out'; car.finishedAt = nowIso(); commit(); toast(`Car finished. Collect from ${dmy(addDaysK(dayKey(car.date), Number(S.settings.cycle) || 14))}.`); }
 
-/* ===== Collect tab ===== */
-function viewCollect() {
-  const all = debtors();
-  const places = [...new Set(all.map(x => x.p.place).filter(Boolean))].sort();
-  if (V.place !== 'all' && !places.includes(V.place)) V.place = 'all';
-  const list = all.filter(x => V.place === 'all' || x.p.place === V.place);
+/* one line: hand over, release, correct, change customer or spot */
+function entrySheet(id) {
+  const c = C(); const e = c.byId.get(id); if (!e || c.undone.has(id)) return;
+  const p = person(e.pid);
+  if (e.type === 'give') {
+    const at = givenAt(e); const lp = c.linked.get(e.id);
+    if (!V.es || V.es.id !== id) V.es = {id, n: e.bags};
+    const head = `<i class="grab"></i><div class="hrow"><span class="av lg">${esc(initials(p ? p.name : '?'))}</span><button class="title" data-act="eswho" style="text-align:left"><b>${esc(p ? p.name : '?')} ${svg('down', 16)}</b><small>${at ? 'Given ' + dmy(at) + ', ' + hm(at) : 'Held since ' + hm(e.date)}${lp ? ' · paid cash' : ''}</small></button>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}</div>
+      <button class="locchip" data-act="esloc">${svg('pin', 18)} ${e.loc ? esc(locTxt(e.loc)) : 'No place'} ${svg('down', 16)}</button>`;
+    const n = V.es.n; const half = S.settings.half;
+    const stepper = `<div class="step"><button class="key" data-act="esminus" aria-label="One less">−</button><div class="num">${bagsNum(n)}<small>${esc(unit())}${n > 1 ? 's' : ''}</small></div><button class="key" data-act="esplus" aria-label="One more">+</button></div>
+      ${half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="eshalf">± ½</button></div>` : ''}
+      ${n !== e.bags ? `<button class="btn ink tall" data-act="essave">Change ${bagsNum(e.bags)} → ${bagsNum(n)}</button>` : ''}`;
+    if (!at) return sheet(head + `
+      <button class="btn ink tall" data-act="hand" data-id="${id}">${svg('check')} Hand over ${bagsTxt(e.bags)}</button>
+      <div class="field"><label for="es_by">Someone else collecting? (optional)</label><input id="es_by" autocomplete="off" placeholder="Her son, her sister…"></div>
+      ${stepper}
+      <button class="btn ghost redtext" data-act="release" data-id="${id}">Release ${bagsTxt(e.bags)}</button>`);
+    const ld = p ? ledger(p.id).loads.find(x => x.id === id) : null; const canBack = ld && e.bags - ld.backBags > 0.001;
+    return sheet(head + stepper + `
+      ${canBack ? `<button class="btn ghost" data-act="backsheet" data-id="${id}">${svg('ret')} She brought some back</button>` : ''}
+      <button class="btn ghost redtext" data-act="undoask" data-id="${id}">Remove this line</button>`);
+  }
+  if (e.type === 'move') return sheet(`<i class="grab"></i><h3>Moved to ${esc(locTxt(e.to) || 'no place')}</h3><p>${dmy(e.date)}, from ${esc(locTxt(e.from) || 'no place')}.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${id}">Undo the move</button></div>`);
+  const what = e.type === 'pay' ? `Paid ${money(e.amount)}` : e.type === 'back' ? `Brought back ${bagsTxt(e.bags)}` : e.type === 'promise' ? `Promise for ${dayWord(e.on)}` : 'Refused to pay';
+  sheet(`<i class="grab"></i><h3>${dmy(e.date)}: ${what}</h3><p>${esc(p ? p.name : '')}</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${id}">Undo it</button></div>`);
+}
+function nameSheet(id) {
+  const e = byId(id); V.ns = {id};
+  sheet(`<i class="grab"></i><h3>Who took these ${esc(unit())}s?</h3><div class="field"><input id="ns_q" placeholder="Type a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Customer name"></div><div id="ns_list" style="margin:0 -14px"></div><button class="btn ghost" data-act="sheetclose">Cancel</button>`);
+  V.sheetKind = 'name';
+  const i = document.getElementById('ns_q');
+  const draw = () => { const q = i.value.trim(); const ms = matchPeople(q, e.pid); document.getElementById('ns_list').innerHTML = ms.map(p => sgRow(p, 'nspick')).join('') + (q && !ms.some(p => p.name.toLowerCase() === q.toLowerCase()) ? `<button class="sg new" data-act="nspick" data-name="${esc(q)}"><span class="av">${svg('plus', 18)}</span><div class="who"><div class="name">New: ${esc(q)}</div></div></button>` : ''); };
+  i.addEventListener('input', draw); draw(); setTimeout(() => i.focus(), 60);
+}
+
+/* place picker: town, then spot */
+function locSheet(o) {
+  if (o) { const l = locById(o.sel); V.ls = Object.assign({town: l ? l.town : (towns()[0] || ''), spot: l ? l.spot : '', mark: '', adding: ''}, o); }
+  const L = V.ls; const tw = towns();
+  const title = L.mode === 'person' ? `Where does ${esc((person(L.pid) || {}).name)} sell now?` : L.mode === 'setup' ? 'Add a town or spot' : 'Where?';
+  sheet(`<i class="grab"></i><h3>${title}</h3>
+    <div class="lab">Town</div>
+    <div class="chips wrap">${tw.map(t => `<button class="chip ${L.town === t ? 'on' : ''}" data-act="lstown" data-t="${esc(t)}">${esc(t)}</button>`).join('')}<button class="chip dash" data-act="lsaddtown">+ Town</button></div>
+    ${L.adding === 'town' ? `<div class="addrow"><input id="ls_new" placeholder="Town name" autocomplete="off" aria-label="Town name"><button class="btn ink" style="flex:none" data-act="lsadd">Add</button></div>` : ''}
+    ${L.town ? `<div class="lab">Spot in ${esc(L.town)}</div><div class="chips wrap">${L.mode === 'setup' ? '' : `<button class="chip ${!L.spot ? 'on' : ''}" data-act="lsspot" data-s="">Whole town</button>`}${spotsOf(L.town).map(l => `<button class="chip ${L.spot === l.spot ? 'on' : ''}" data-act="lsspot" data-s="${esc(l.spot)}">${esc(l.spot)}</button>`).join('')}<button class="chip dash" data-act="lsaddspot">+ Spot</button></div>` : ''}
+    ${L.adding === 'spot' ? `<div class="addrow"><input id="ls_new" placeholder="Spot, e.g. Market" autocomplete="off" aria-label="Spot name"><button class="btn ink" style="flex:none" data-act="lsadd">Add</button></div>` : ''}
+    ${L.mode === 'person' ? `<div class="field"><label for="ls_mark">Landmark (optional)</label><input id="ls_mark" value="${esc(L.mark)}" autocomplete="off" placeholder="Blue umbrella by the gate"></div>` : ''}
+    <button class="btn ink tall" data-act="lssave">${L.mode === 'setup' ? 'Done' : 'Save'}</button>`);
+  V.sheetKind = 'loc';
+  const mk = document.getElementById('ls_mark'); if (mk) mk.addEventListener('input', () => { V.ls.mark = mk.value; });
+  const nw = document.getElementById('ls_new'); if (nw) { setTimeout(() => nw.focus(), 50); nw.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); act('lsadd'); } }); }
+}
+
+/* ===== Collect ===== */
+function collectLists() {
+  const q = V.cq.trim().toLowerCase();
+  const all = debtors().filter(x => inFilter(x.p) && (!q || x.p.name.toLowerCase().includes(q)));
   const bySev = (a, b) => b.st.sev - a.st.sev || b.L.bal - a.L.bal;
-  const now = list.filter(x => x.st.sev >= 3).sort(bySev);
-  const prom = list.filter(x => x.st.k === 'promised').sort((a, b) => cmp(a.st.on, b.st.on));
-  const later = list.filter(x => x.st.sev < 3 && x.st.k !== 'promised').sort((a, b) => cmp(a.st.due || '', b.st.due || ''));
-  const nowAmt = sum(now, x => x.L.bal);
-  const t = todayK();
-  const inToday = sum(S.entries.filter(e => e.type === 'pay' && live(e) && dayKey(e.date) === t), e => e.amount);
-  const row = x => `<button class="row" data-act="person" data-id="${x.p.id}"><div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${x.p.place ? esc(x.p.place) + ' · ' : ''}${statusTag(x.st)}</div></div><span class="amt">${money(x.L.bal)}</span></button>`;
-  const sect = (label, arr) => arr.length ? `<div class="sect"><span>${label} · ${arr.length}</span><span style="flex:none">${money(sum(arr, x => x.L.bal))}</span></div>` + arr.map(row).join('') : '';
-  let mid = '<div class="lines down">';
-  if (!list.length) mid += `<div class="empty"><h2>Nobody owes you</h2><p>${all.length ? 'Nobody here owes. Try All.' : 'Money given on credit shows up here.'}</p></div>`;
-  mid += sect('Collect now', now) + sect('Promised', prom) + sect('Not due yet', later) + '</div>';
-  const remindN = remindList().length;
-  const top = `<div class="hrow"><div class="brand">Collect</div>${backupBtn()}${gearBtn()}</div>
-    <div class="hero"><div class="n ${nowAmt > 0.001 ? 'owe' : 'ok'}">${money(nowAmt)}</div><div class="l">to collect now${now.length ? ' from ' + now.length + (now.length === 1 ? ' woman' : ' women') : ''}</div></div>
-    <div class="split"><span class="g">Came in today <b>${money(inToday)}</b></span><span>All out <b>${money(sum(all, x => x.L.bal))}</b></span></div>`;
-  const dock = `${places.length ? `<div class="chips">${['all', ...places].map(pl => `<button class="chip ${V.place === pl ? 'on' : ''}" data-act="place" data-p="${esc(pl)}">${pl === 'all' ? 'All places' : esc(pl)}</button>`).join('')}</div>` : ''}
-    <div class="bar"><button class="btn ghost" data-act="remindall" ${remindN ? '' : 'disabled'}>${svg('bell')} Remind${remindN ? ' ' + remindN : ''}</button><button class="btn take" style="flex:1.7" data-act="startrun" ${now.length ? '' : 'disabled'}>${svg('run')}<span>Collection run${now.length ? `<small>${now.length} ${now.length === 1 ? 'woman' : 'women'}</small>` : ''}</span></button></div>`;
-  return {top, mid, cls: 'book', dock, tabs: true, anchor: 'top'};
+  const now = all.filter(x => x.st.sev >= 3).sort(bySev);
+  const prom = all.filter(x => x.st.k === 'promised').sort((a, b) => cmp(a.st.on, b.st.on));
+  const later = all.filter(x => x.st.sev < 3 && x.st.k !== 'promised').sort((a, b) => cmp(a.st.due || '', b.st.due || ''));
+  return {all, now, prom, later, order: [...now, ...prom, ...later]};
 }
-function remindList() {
+function collectListHtml() {
+  const {all, now, prom, later} = collectLists();
   const t = todayK();
-  return debtors().filter(x => x.p.phone && (x.st.sev >= 3 || x.st.k === 'soon') && x.p.remindedOn !== t && (V.place === 'all' || x.p.place === V.place)).map(x => x.p.id);
+  const paysToday = S.entries.filter(e => e.type === 'pay' && live(e) && !e.with && dayKey(e.date) === t);
+  const inToday = sum(paysToday, e => e.amount);
+  const paidIds = [...new Set(paysToday.map(e => e.pid))].filter(id => { const p = person(id); return p && ledger(id).bal <= 0.001 && inFilter(p); });
+  const fp = V.flashPay && Date.now() - V.flashPay.t < 4500 ? V.flashPay : null;
+  const row = x => `<button class="row ${fp && fp.pid === x.p.id ? 'flash' : ''}" data-act="pay" data-id="${x.p.id}"><div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${x.p.loc ? esc(locTxt(x.p.loc)) + ' · ' : ''}${statusTag(x.st)}</div></div><span class="amt">${money(x.L.bal)}${fp && fp.pid === x.p.id ? `<small class="ok">−${money(fp.amt)} ✓</small>` : ''}</span></button>`;
+  const sect = (label, arr) => arr.length ? `<div class="sect"><span>${label} · ${arr.length}</span><span style="flex:none">${money(sum(arr, x => x.L.bal))}</span></div>` + arr.map(row).join('') : '';
+  let mid = '';
+  if (!all.length && !paidIds.length) mid += `<div class="empty"><h2>${V.cq || V.fTown ? 'Nobody here owes' : 'Nobody owes you'}</h2><p>${V.cq || V.fTown ? 'Try All, or check the spelling.' : 'Money given on credit shows up here.'}</p></div>`;
+  mid += sect('Collect now', now) + sect('Promised', prom) + sect('Not due yet', later);
+  if (paidIds.length) mid += `<div class="sect"><span>Paid today · ${paidIds.length}</span></div>` + paidIds.map(id => { const p = person(id); return `<button class="row paidtoday" data-act="person" data-id="${id}"><span class="mk ok">✓</span><div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${esc(locTxt(p.loc))}</div></div><span class="amt ok">Paid ✓</span></button>`; }).join('');
+  return {html: mid, all};
+}
+function viewCollect() {
+  const t = todayK();
+  const inToday = sum(S.entries.filter(e => e.type === 'pay' && live(e) && !e.with && dayKey(e.date) === t), e => e.amount);
+  const {html, all} = collectListHtml();
+  const mid = `<div class="lines down" id="collist">${html}</div>`;
+  const total = sum(all, x => x.L.bal);
+  const remindN = remindList().length;
+  const top = `<div class="csum"><div class="cl"><small>To collect${V.fTown ? ' · ' + esc(V.fLoc ? locTxt(V.fLoc) : V.fTown) : ''}</small><b class="${total > 0.001 ? '' : 'ok'}">${money(total)}</b></div>
+    <div class="cr"><small>In today</small><b>${money(inToday)}</b>${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}</div></div>`;
+  const dock = `${filterChips(id => debtors().filter(x => x.p.loc === id).length)}
+    <div class="bar"><label class="find ink">${svg('search')}<input id="cq" type="search" placeholder="Find a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name" value="${esc(V.cq)}"></label></div>`;
+  return {top, mid, cls: 'book', dock, tabs: true, anchor: 'top',
+    after: () => { const i = document.getElementById('cq'); if (i) i.addEventListener('input', () => { V.cq = i.value; document.getElementById('collist').innerHTML = collectListHtml().html; }); }};
+}
+function remindList(ids) {
+  const t = todayK();
+  const pool = ids ? ids.map(id => ({p: person(id), st: status(id), L: ledger(id)})).filter(x => x.p && x.L.bal > 0.001) : debtors().filter(x => inFilter(x.p) && (x.st.sev >= 3 || x.st.k === 'soon'));
+  return pool.filter(x => x.p.phone && x.p.remindedOn !== t).map(x => x.p.id);
 }
 
-/* collection run: one woman at a time */
-function startRun(o) {
-  o = o || {};
-  let list;
-  if (o.carId) { const st = carStats(o.carId); list = debtors().filter(x => st.people.includes(x.p.id)); }
-  else list = debtors().filter(x => x.st.sev >= 3 && (V.place === 'all' || x.p.place === V.place));
-  list.sort((a, b) => cmp(a.p.place || '~', b.p.place || '~') || b.st.sev - a.st.sev || b.L.bal - a.L.bal);
-  if (!list.length) return toast('Nobody to collect from right now');
-  V.run = {ids: list.map(x => x.p.id), i: 0, got: 0, promised: 0, refused: 0, paid: 0, label: o.carId ? 'Car · ' + dmy(carById(o.carId).date) : (V.place === 'all' ? 'Collection run' : V.place)};
-  push({v: 'run'});
+/* money pad over the list: the calculator lives where money is typed */
+const paySum = () => r2(sum([...V.pay.terms, V.pay.cur], x => Number(x) || 0));
+function payPreview(pid, amt, loadId) {
+  const open = ledger(pid).loads.filter(L => L.left > 0.001); const first = open.find(L => L.id === loadId);
+  const order = (first ? [first] : []).concat(open.filter(L => L !== first)); let r = amt; const outp = [];
+  for (const L of order) { if (r <= 0.001) break; const k = Math.min(L.left, r); r -= k; outp.push({L, k, cleared: k >= L.left - 0.001}); }
+  return outp;
 }
-VIEWS.run = () => {
-  const R = V.run;
-  if (R.i >= R.ids.length) {
-    const left = sum(R.ids, id => Math.max(0, ledger(id).bal));
-    return {top: `<div class="hrow"><div class="title"><b>Run finished</b><small>${esc(R.label)}</small></div></div>`,
-      mid: `<div class="big-tiles"><div class="tile g"><small>Collected</small><b class="g">${money(R.got)}</b><span>from ${R.paid} ${R.paid === 1 ? 'woman' : 'women'}</span></div>
-        <div class="tile"><small>Promised</small><b>${R.promised}</b><span>${R.refused ? R.refused + ' refused' : 'nobody refused'}</span></div>
-        <div class="tile r"><small>Still out on this run</small><b class="r">${money(left)}</b></div></div>`,
-      cls: 'plain', dock: `<div class="bar">${needsBackup() ? `<button class="btn ghost" data-act="backup">${svg('cloud')} Back up</button>` : ''}<button class="btn ink" data-act="runend">Done</button></div>`};
-  }
-  const id = R.ids[R.i]; const p = person(id); const L = ledger(id); const st = status(id);
-  const toGo = sum(R.ids.slice(R.i), x => Math.max(0, ledger(x).bal));
-  const open = L.loads.filter(x => x.left > 0.001);
-  const prev = R.i > 0 ? person(R.ids[R.i - 1]) : null, next = R.i < R.ids.length - 1 ? person(R.ids[R.i + 1]) : null;
-  const paid = L.bal <= 0.001;
-  const top = `<div class="hrow"><div class="title"><b>${esc(R.label)}</b></div><span class="pill">${R.i + 1} of ${R.ids.length}</span></div>
-    <div class="prog"><i style="width:${Math.round(R.i / R.ids.length * 100)}%"></i></div>
-    <div class="sumline"><span><b class="g">${money(R.got)}</b> in</span><span><b class="r">${money(toGo)}</b> to go</span></div>`;
-  const mid = `<div class="card" id="runcard"><span class="av xl">${esc(initials(p.name))}</span><div class="cn">${esc(p.name)}</div>
-      <div class="cnote">${esc([p.place, p.note].filter(Boolean).join(' · ')) || '<button data-act="edit" data-id="' + id + '" style="color:var(--ink);font-weight:700">+ Where is her stall?</button>'}</div>
-      <div class="cv ${paid ? 'ok' : ''}">${paid ? 'Paid ✓' : money(L.bal)}</div>
-      <div class="cs">${open.map(x => bagsTxt(x.bags) + ' · ' + dmy(x.date)).join(', ')}</div>
-      <div class="tags">${statusTag(st)}${recordTag(id)}</div></div>
-    <div class="peek"><button data-act="runprev" ${prev ? '' : 'style="visibility:hidden"'}>‹ ${prev ? esc(shortName(prev.name)) : ''}</button><button data-act="runnext">${next ? esc(shortName(next.name)) + ' ›' : 'Finish ›'}</button></div>`;
-  const dock = paid ? `<div class="bar"><button class="btn take tall" data-act="runnext">Next ›</button></div>` : `<div class="bar">
-      ${p.phone ? `<a class="sq call" href="tel:${esc(digits(p.phone))}" target="_top" data-act="noop" aria-label="Call ${esc(p.name)}">${svg('phone')}</a><button class="sq msg" data-act="msg" data-id="${id}" aria-label="Message ${esc(p.name)}">${svg('msg')}</button>` : `<button class="sq" data-act="edit" data-id="${id}" aria-label="Add her number">${svg('phone')}<small>Add</small></button>`}
-      <button class="btn ghost" data-act="runsome">Some</button><button class="btn ghost" data-act="runnot">Not today</button></div>
-      <button class="btn take tall" data-act="runall">${svg('ok')} Paid all ${money(L.bal)}</button>`;
-  return {top, mid, cls: 'run', dock, after: attachRunSwipe};
-};
-function attachRunSwipe() {
-  const c = document.getElementById('runcard'); if (!c) return; let sx = 0, sy = 0;
-  c.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive: true});
-  c.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy)) act(dx < 0 ? 'runnext' : 'runprev', {}); }, {passive: true});
+function openPay(pid, o) { V.pay = Object.assign({pid, terms: [], cur: '', method: 'cash', err: '', loadId: null, ctx: 'collect', over: ''}, o || {}); paySheet(); }
+function nextPayId(pid) { const ord = collectLists().order.map(x => x.p.id); const i = ord.indexOf(pid); return ord.slice(i + 1).find(id => id !== pid) || null; }
+function paySheet() {
+  const P = V.pay; const p = person(P.pid); const L = ledger(p.id); const a = paySum(); const left = r2(L.bal - a);
+  const tape = [...P.terms, P.cur].filter(Boolean);
+  const over = a > Math.max(0, L.bal) + 0.001;
+  const pv = payPreview(p.id, a, P.loadId);
+  const next = P.ctx === 'collect' ? nextPayId(p.id) : null;
+  sheet(`<div class="hrow"><span class="av">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${L.bal > 0.001 ? 'Owes ' + money(L.bal) : 'Owes nothing'}${p.loc ? ' · ' + esc(locTxt(p.loc)) : ''}</small></div>${L.bal > 0.001 ? `<button class="lnk" data-act="promise" data-id="${p.id}">Not today</button>` : ''}<button class="lnk" data-act="person" data-id="${p.id}">History ›</button></div>
+    <div class="disp"><div class="tape">${tape.length > 1 ? tape.map(x => fmt(Number(x))).join(' + ') : '&nbsp;'}</div><div class="v ${a ? 'g' : ''}">${money(a)}</div><div class="s">${!a ? 'Tap the notes as she counts' : over ? money(a - Math.max(0, L.bal)) + ' more than she owes' : left > 0.001 ? money(left) + ' left after this' : 'All paid'}</div></div>
+    ${over ? `<div class="over">What about the extra ${money(a - Math.max(0, L.bal))}?<div class="bar"><button class="chip ${P.over === 'credit' ? 'on' : ''}" data-act="pover" data-v="credit">Keep as credit</button><button class="chip ${P.over === 'change' ? 'on' : ''}" data-act="pover" data-v="change">Gave change</button></div></div>`
+      : `<p class="clears">${a ? pv.map(x => x.cleared ? `Clears <b>${dmy(x.L.date)}</b>` : `${money(x.k)} off ${dmy(x.L.date)}`).join(', ') : '&nbsp;'}</p>`}
+    <div class="seg mini2"><button class="${P.method === 'cash' ? 'on' : ''}" data-act="method" data-m="cash">Cash</button><button class="${P.method === 'momo' ? 'on' : ''}" data-act="method" data-m="momo">MoMo</button></div>
+    <div class="notes">${NOTES.map(n => `<button class="note" data-act="note" data-n="${n}">${n}</button>`).join('')}</div>${keypad('pay')}
+    ${P.err ? `<div class="err">${esc(P.err)}</div>` : ''}
+    <div class="bar">${L.bal > 0.001 ? `<button class="btn ghost" data-act="payall">All ${money(L.bal)}</button>` : `<button class="btn ghost" data-act="sheetclose">Close</button>`}<button class="btn take" data-act="paydone">Done</button>${next ? `<button class="btn ghost" style="flex:.7" data-act="paynext" aria-label="Save and open the next customer">Next ›</button>` : ''}</div>`, 'pay');
+  V.sheetKind = 'pay';
+}
+function payKey(k) {
+  const P = V.pay;
+  if (k === 'del') { if (P.cur) P.cur = P.cur.slice(0, -1); else P.terms.pop(); }
+  else if (k === '+') { if (P.cur) { P.terms.push(P.cur); P.cur = ''; } }
+  else { const n = (P.cur + k).replace(/^0+(?=\d)/, ''); if (n.length <= 7) P.cur = n; }
+  P.err = ''; P.over = ''; paySheet();
+}
+/* saves the payment; returns false when something is missing */
+function savePay() {
+  const P = V.pay; const a = paySum(); const p = person(P.pid); const L = ledger(p.id);
+  if (!a) { P.err = 'Type the money she gave first.'; paySheet(); return false; }
+  const over = a > Math.max(0, L.bal) + 0.001;
+  if (over && !P.over) { P.err = 'Choose what happens to the extra.'; paySheet(); return false; }
+  const amount = over && P.over === 'change' ? Math.max(0, L.bal) : a;
+  if (!amount) { P.err = 'She owes nothing. Keep it as credit, or give it back.'; paySheet(); return false; }
+  const outBefore = new Map(S.cars.filter(c => c.phase === 'out').map(c => [c.id, carStats(c.id).out]));
+  const e = add(Object.assign({type: 'pay', pid: p.id, amount, method: P.method, loadId: P.loadId || null, carId: null}, over && P.over === 'change' ? {change: r2(a - amount)} : {}));
+  const bal = ledger(p.id).bal;
+  sfx('cash'); buzz(25); if (bal <= 0.001) setTimeout(() => { sfx('thud'); coins(14); }, 250);
+  const done = S.cars.find(c => c.phase === 'out' && outBefore.get(c.id) > 0.001 && carStats(c.id).out <= 0.001);
+  if (done) setTimeout(() => celebrate(done), 900);
+  V.flashPay = {pid: p.id, amt: amount, t: Date.now()};
+  V.lastPay = {e, p, amount, bal};
+  return true;
+}
+function payToast() { const {e, p, amount, bal} = V.lastPay; toast(`${p.name} paid ${money(amount)}`, [{label: 'Undo', act: 'undo', id: e.id}, p.phone ? {label: 'Receipt', href: sendHref(p, msgPay(p, amount, bal))} : null]); }
+function celebrate(car) {
+  sfx('win'); buzz([30, 60, 30, 60, 90]); coins(26);
+  const o = document.createElement('div'); o.className = 'celebrate';
+  o.innerHTML = `<div class="cel-card"><div class="cel-ic">✓</div><b>All collected</b><span>${esc(carName(car))} is fully paid.</span><button class="btn ink" data-act="celclose">Nice</button></div>`;
+  layer.appendChild(o);
 }
 function promiseSheet(pid) {
   const p = person(pid); const t = todayK();
@@ -949,108 +1207,87 @@ function promiseSheet(pid) {
   V.sheetKind = 'promise';
 }
 
-/* ===== Book tab ===== */
+/* ===== Book ===== */
 function viewBook() {
   const all = debtors(); const out = sum(all, x => x.L.bal);
-  const late = all.filter(x => x.st.sev >= 3).length;
   const wk = new Date(Date.now() - 7 * 864e5).toISOString();
   const week = sum(S.entries.filter(e => e.type === 'pay' && live(e) && e.date >= wk), e => e.amount);
   const top = `<div class="hrow"><div class="brand">Book</div><button class="pill" data-act="mom">${svg('eye', 18)} Show Mom</button>${backupBtn()}${gearBtn()}</div>
-    <div class="hero"><div class="n ${out > 0.001 ? 'owe' : 'ok'}">${money(out)}</div><div class="l">owed to you by ${all.length} ${all.length === 1 ? 'woman' : 'women'}</div></div>
-    <div class="split">${late ? `<span><b style="color:var(--owe)">${late}</b> to collect now</span>` : ''}<span class="g">This week <b>${money(week)}</b> came in</span></div>
-    <div class="chips">${[['owes', 'Owes most'], ['az', 'A to Z'], ['recent', 'Recent']].map(([k, l]) => `<button class="chip ${V.sort === k ? 'on' : ''}" data-act="sort" data-k="${k}">${l}</button>`).join('')}</div>`;
-  const dock = `<div class="bar"><label class="find ink">${svg('search')}<input id="bq" type="search" placeholder="Find a name or number" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name or number" value="${esc(V.bq)}"></label><button class="sq" data-act="calc" aria-label="Calculator">${svg('calc')}</button></div>`;
+    <div class="csum"><div class="cl"><small>Owed to you · ${all.length} ${all.length === 1 ? 'customer' : 'customers'}</small><b class="${out > 0.001 ? '' : 'ok'}">${money(out)}</b></div><div class="cr"><small>This week</small><b>${money(week)}</b></div></div>
+    <div class="seg mini2"><button class="${V.bseg === 'people' ? 'on' : ''}" data-act="bseg" data-s="people">People</button><button class="${V.bseg === 'cars' ? 'on' : ''}" data-act="bseg" data-s="cars">Deliveries</button></div>
+    ${V.bseg === 'people' ? filterChips(id => S.people.filter(p => p.loc === id).length) : ''}`;
+  if (V.bseg === 'cars') {
+    const cars = carsNewest();
+    return {top, mid: `<div class="lines down">${cars.length ? cars.map(carRow).join('') : '<div class="empty"><h2>No deliveries yet</h2><p>Start one from Give.</p></div>'}</div>`, cls: 'book', dock: `<div class="bar"><button class="btn ink" data-act="newcar">${svg('truck')} New delivery</button></div>`, tabs: true, anchor: 'top'};
+  }
+  const dock = `<div class="bar"><label class="find ink">${svg('search')}<input id="bq" type="search" placeholder="Find a name or number" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name or number" value="${esc(V.bq)}"></label><button class="sq" data-act="bsort" aria-label="Sort">${V.sort === 'az' ? 'A–Z' : '₵'}<small>sort</small></button><button class="sq" data-act="calc" aria-label="Calculator">${svg('calc')}</button></div>`;
   return {top, mid: `<div class="lines down" id="booklist">${bookList()}</div>`, cls: 'book', dock, tabs: true, anchor: 'top',
     after: () => { const i = document.getElementById('bq'); if (i) i.addEventListener('input', () => { V.bq = i.value; document.getElementById('booklist').innerHTML = bookList(); }); }};
 }
 function bookList() {
   const q = V.bq.trim().toLowerCase(), qd = q.replace(/\D/g, '');
-  let ps = S.people.filter(p => !q || p.name.toLowerCase().includes(q) || (qd.length >= 3 && digits(p.phone).includes(qd)) || (p.place || '').toLowerCase().includes(q));
-  const last = new Map(); S.entries.forEach(e => { if (e.pid && live(e) && (!last.has(e.pid) || e.date > last.get(e.pid))) last.set(e.pid, e.date); });
+  let ps = S.people.filter(p => inFilter(p) && (!q || p.name.toLowerCase().includes(q) || (qd.length >= 3 && digits(p.phone).includes(qd)) || locTxt(p.loc).toLowerCase().includes(q) || (p.note || '').toLowerCase().includes(q)));
   if (V.sort === 'az') ps.sort((a, b) => cmp(a.name.toLowerCase(), b.name.toLowerCase()));
-  else if (V.sort === 'recent') ps.sort((a, b) => cmp(last.get(b.id) || '', last.get(a.id) || ''));
   else ps.sort((a, b) => ledger(b.id).bal - ledger(a.id).bal || cmp(a.name, b.name));
-  if (!ps.length) return `<div class="empty"><h2>${q ? 'Not found' : 'No names yet'}</h2><p>${q ? 'Check the spelling, or try her number.' : 'Names are added when you give ' + esc(unit()) + 's.'}</p></div>`;
+  if (!ps.length) return `<div class="empty"><h2>${q || V.fTown ? 'Not found' : 'No names yet'}</h2><p>${q ? 'Check the spelling, or try her number.' : V.fTown ? 'Nobody here yet.' : 'Names are added when you give ' + esc(unit()) + 's.'}</p></div>`;
   return ps.map(p => { const L = ledger(p.id), st = status(p.id); const w = sum(L.waiting, e => e.bags);
-    return `<button class="row" data-act="person" data-id="${p.id}">${L.bal <= 0.001 && L.loads.length ? '<span class="mk ok">✓</span>' : ''}<div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${p.place ? esc(p.place) + ' · ' : ''}${L.bal > 0.001 ? statusTag(st) : w ? `<span class="tag w">${bagsTxt(w)} waiting</span>` : 'Owes nothing'}</div></div>${L.bal > 0.001 ? `<span class="amt">${money(L.bal)}</span>` : ''}</button>`; }).join('');
+    const where = [V.fLoc ? '' : locTxt(p.loc), p.note].filter(Boolean).join(' · ');
+    return `<button class="row" data-act="person" data-id="${p.id}">${L.bal <= 0.001 && L.loads.length ? '<span class="mk ok">✓</span>' : ''}<div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${where ? esc(where) + ' · ' : ''}${L.bal > 0.001 ? statusTag(st) : w ? `<span class="tag w">${bagsTxt(w)} held</span>` : 'Owes nothing'}</div></div>${L.bal > 0.001 ? `<span class="amt">${money(L.bal)}</span>` : ''}</button>`; }).join('');
 }
 
-/* ===== Her page ===== */
+/* ===== Her page: the full record ===== */
 VIEWS.person = f => {
   const p = person(f.pid); if (!p) { pop(); return null; }
   const L = ledger(p.id), st = status(p.id), c = C();
-  const openBags = sum(L.loads.filter(x => x.left > 0.001), x => x.bags);
-  const openCars = new Set(L.loads.filter(x => x.left > 0.001).map(x => x.carId)).size;
-  const waitBags = sum(L.waiting, e => e.bags);
-  const tags = [L.bal > 0.001 ? statusTag(st) : '', recordTag(p.id), waitBags ? `<span class="tag w">${bagsTxt(waitBags)} waiting in car</span>` : ''].filter(Boolean);
-  const top = `<div class="hrow"><span class="av lg">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${esc([p.place, p.note, p.phone].filter(Boolean).join(' · ')) || 'No place or number yet'}</small></div><button class="ib" data-act="edit" data-id="${p.id}" aria-label="Edit ${esc(p.name)}">${svg('edit')}</button></div>
-    <div class="owes">${L.bal > 0.001 ? `<small>Owes</small><b>${money(L.bal)}</b><span>${bagsTxt(openBags)} from ${openCars} car${openCars === 1 ? '' : 's'}</span><div class="hrow" style="justify-content:center"><button class="showher" data-act="show" data-id="${p.id}">${svg('eye', 18)} Show her</button><button class="showher" data-act="promise" data-id="${p.id}">${svg('clock', 18)} Promise</button></div>` : `<small>${L.bal < -0.001 ? 'She has extra' : 'Owes'}</small><b class="ok">${L.bal < -0.001 ? money(-L.bal) : 'Nothing'}</b>`}</div>
+  const heldBags = sum(L.waiting, e => e.bags);
+  const tags = [L.bal > 0.001 ? statusTag(st) : '', recordTag(p.id), heldBags ? `<span class="tag w">${bagsTxt(heldBags)} held</span>` : ''].filter(Boolean);
+  const top = `<div class="hrow"><span class="av lg">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${esc(p.phone) || 'No number yet'}</small></div><button class="ib" data-act="edit" data-id="${p.id}" aria-label="Edit name or number">${svg('edit')}</button></div>
+    <button class="locchip" data-act="ploc" data-id="${p.id}">${svg('pin', 18)} ${p.loc ? esc(locTxt(p.loc)) : 'Where does she sell?'} ${svg('down', 16)}</button>${p.note ? `<div class="landmark">${esc(p.note)}</div>` : ''}
+    <div class="owes">${L.bal > 0.001 ? `<small>Owes</small><b>${money(L.bal)}</b><div class="hrow" style="justify-content:center"><button class="showher" data-act="show" data-id="${p.id}">${svg('eye', 18)} Show her</button><button class="showher" data-act="promise" data-id="${p.id}">${svg('clock', 18)} Promise</button></div>` : `<small>${L.bal < -0.001 ? 'Credit' : 'Owes'}</small><b class="ok">${L.bal < -0.001 ? money(-L.bal) : 'Nothing'}</b>`}</div>
     ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}`;
-  const loadOf = id => L.loads.find(x => x.id === id);
-  const lines = S.entries.filter(e => e.pid === p.id && e.type !== 'undo').sort((a, b) => cmp(a.type === 'give' && a.off ? a.off : a.date, b.type === 'give' && b.off ? b.off : b.date));
+  const lineDate = e => e.type === 'give' ? (givenAt(e) || e.date) : e.date;
+  const lines = S.entries.filter(e => e.pid === p.id && ['give', 'pay', 'back', 'promise', 'note', 'move'].includes(e.type) && !(e.type === 'pay' && e.with)).sort((a, b) => cmp(lineDate(a), lineDate(b)));
   const line = e => {
-    const gone = c.undone.has(e.id);
-    const d = dmy(e.type === 'give' && e.off ? e.off : e.date);
-    let mk = '', w = '', right = '';
+    const gone = c.undone.has(e.id); const kind = gone ? undoKind(e.id) : '';
+    let mk = '', t = '', sub = [], right = '';
     if (e.type === 'give') {
-      const car = carById(e.carId); const ld = loadOf(e.id);
-      w = `${bagsTxt(e.bags)} at ${money(e.price)}<div class="sub">${car ? 'Car ' + dmy(car.date) : ''}</div>`;
-      if (gone) right = `<span class="amt faint">${money(e.amount)}</span>`;
-      else if (!e.off) { mk = `<span class="mk w">${svg('clock', 16)}</span>`; right = `<span class="tag w">In the car</span>`; }
-      else if (ld && ld.left <= 0.001) { mk = '<span class="mk ok">✓</span>'; right = `<span class="amt ok">Paid</span>`; }
+      const car = carById(e.carId); const ld = L.loads.find(x => x.id === e.id); const at = givenAt(e); const hand = c.hand.get(e.id); const old = e.fixes ? c.byId.get(e.fixes) : null;
+      t = bagsTxt(e.bags) + (car ? ' · ' + (car.label || 'delivery ' + dmy(car.date)) : '');
+      sub = [locTxt(e.loc), !at && !gone ? 'held since ' + hm(e.date) : '', hand ? 'handed over ' + hm(hand.date) + (hand.by ? ' to ' + hand.by : '') : '', e.by ? 'to ' + e.by : '', old ? 'corrected from ' + bagsNum(old.bags) : '', c.linked.has(e.id) ? 'paid cash' : '', gone ? (kind === 'fix' ? 'corrected' : kind === 'release' ? 'released' : 'removed') : ''];
+      if (gone) right = '';
+      else if (!at) { mk = `<span class="mk w">${svg('clock', 16)}</span>`; right = '<span class="tag w">Held</span>'; }
+      else if (ld && ld.left <= 0.001) { mk = '<span class="mk ok">✓</span>'; right = '<span class="amt ok">Paid</span>'; }
       else right = `<span class="amt">${money(ld ? ld.left : e.amount)}<small>${ld && ld.left < e.amount - 0.001 ? 'of ' + money(e.amount) : 'left'}</small></span>`;
-    } else if (e.type === 'pay') { w = 'Paid' + (e.method === 'momo' ? ' <span class="tag">MoMo</span>' : ''); right = `<span class="amt ok">${money(e.amount)}</span>`; }
-    else if (e.type === 'back') { w = `Brought back ${bagsTxt(e.bags)}`; right = `<span class="amt ok">−${money(e.amount)}</span>`; }
-    else if (e.type === 'promise') { const pr = L.proms.find(x => x.e.id === e.id); w = `Said she'll pay ${dayWord(e.on)}${e.how === 'momo' ? ' by MoMo' : ''}`; right = gone ? '' : pr && pr.kept ? '<span class="tag ok">Kept</span>' : pr && pr.broken ? '<span class="tag r">Broken</span>' : pr && pr.active ? '<span class="tag w">Waiting</span>' : '<span class="tag">Moved</span>'; }
-    else if (e.type === 'note') { w = 'Refused to pay'; right = '<span class="tag r">Refused</span>'; }
-    else return '';
-    return `<button class="row ${gone ? 'gone' : ''}" data-act="line" data-id="${e.id}">${mk}<span class="d">${d}</span><div class="who line">${w}</div>${right}</button>`;
+    } else if (e.type === 'pay') { t = 'Paid ' + money(e.amount); sub = [e.method === 'momo' ? 'MoMo' : 'cash', e.change ? 'gave ' + money(e.change) + ' change' : '']; right = gone ? '' : '<span class="amt ok">✓</span>'; }
+    else if (e.type === 'back') { t = 'Brought back ' + bagsTxt(e.bags); right = `<span class="amt ok">−${money(e.amount)}</span>`; }
+    else if (e.type === 'move') { t = 'Moved to ' + (locTxt(e.to) || 'no place'); sub = ['from ' + (locTxt(e.from) || 'no place'), e.mark || '']; }
+    else if (e.type === 'promise') { const pr = L.proms.find(x => x.e.id === e.id); t = "Said she'll pay " + dayWord(e.on); sub = [e.how === 'momo' ? 'by MoMo' : '']; right = gone ? '' : pr && pr.kept ? '<span class="tag ok">Kept</span>' : pr && pr.broken ? '<span class="tag r">Broken</span>' : pr && pr.active ? '<span class="tag w">Waiting</span>' : '<span class="tag">Moved</span>'; }
+    else if (e.type === 'note') { t = 'Refused to pay'; right = '<span class="tag r">Refused</span>'; }
+    const s = sub.filter(Boolean).join(' · ');
+    return `<button class="row ${gone ? 'gone' : ''}" data-act="${gone ? 'noop' : 'entry'}" data-id="${e.id}">${mk}<span class="d">${dmy(lineDate(e))}</span><div class="who"><div class="line">${esc(t)}</div>${s ? `<div class="sub wrap">${esc(s)}</div>` : ''}</div>${right}</button>`;
   };
   const mid = `<div class="lines">${lines.length ? lines.map(line).join('') : `<div class="empty"><p>Nothing in her book yet.</p></div>`}</div>`;
   const dock = `<div class="bar">${backSq()}${p.phone ? `<a class="btn call" href="tel:${esc(digits(p.phone))}" target="_top" data-act="noop">${svg('phone')} Call</a><button class="btn msg" data-act="msg" data-id="${p.id}">${svg('msg')} Message</button>` : `<button class="btn ghost" data-act="edit" data-id="${p.id}">${svg('phone')} Add her number</button>`}</div>
-    <div class="bar"><button class="btn give tall" data-act="give" data-id="${p.id}">${svg('bag')} Give ${esc(unit())}s</button><button class="btn take tall" data-act="pay" data-id="${p.id}" ${L.bal > 0.001 ? '' : 'disabled'}>${svg('cash')} Collect</button></div>`;
+    <div class="bar"><button class="btn ink tall" data-act="give" data-id="${p.id}">${svg('bag')} Give</button><button class="btn take tall" data-act="paybook" data-id="${p.id}">${svg('cash')} Collect</button></div>`;
   return {top, mid, cls: 'book', dock, anchor: 'bottom'};
 };
-function lineSheet(id) {
-  const e = C().byId.get(id); if (!e || C().undone.has(id)) return;
-  const p = person(e.pid);
-  if (e.type === 'give') {
-    const L = ledger(e.pid); const ld = L.loads.find(x => x.id === id);
-    if (!e.off) return sheet(`<i class="grab"></i><h3>${bagsTxt(e.bags)} waiting in the car</h3><p>She does not owe for these until they leave the car.</p>
-      <button class="btn give" data-act="taken1" data-id="${id}">${svg('check')} Taken now</button>
-      <div class="bar"><button class="btn ghost" data-act="sheetclose">Close</button><button class="btn ghost redtext" data-act="undoask" data-id="${id}">She didn't take them</button></div>`);
-    const canBack = ld && e.bags - ld.backBags > 0.001;
-    return sheet(`<i class="grab"></i><h3>${dmy(e.off)}: ${bagsTxt(e.bags)} at ${money(e.price)}</h3><p>${ld && ld.left <= 0.001 ? 'All paid.' : money(ld ? ld.left : e.amount) + ' still owed on these.'}</p>
-      ${ld && ld.left > 0.001 ? `<button class="btn take" data-act="payload" data-id="${id}">${svg('cash')} Collect for these</button>` : ''}
-      ${canBack ? `<button class="btn ghost" data-act="backsheet" data-id="${id}">${svg('ret')} She brought some back</button>` : ''}
-      <div class="bar"><button class="btn ghost" data-act="sheetclose">Close</button><button class="btn ghost redtext" data-act="undoask" data-id="${id}">Undo this line</button></div>`);
-  }
-  const what = e.type === 'pay' ? `Paid ${money(e.amount)}` : e.type === 'back' ? `Brought back ${bagsTxt(e.bags)}` : e.type === 'promise' ? `Promise for ${dayWord(e.on)}` : 'Refused to pay';
-  sheet(`<i class="grab"></i><h3>${dmy(e.date)}: ${what}</h3><p>${esc(p ? p.name : '')}</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn give" data-act="undoit" data-id="${id}">Undo it</button></div>`);
-}
 function backSheet(id) {
-  const e = C().byId.get(id); const ld = ledger(e.pid).loads.find(x => x.id === id); const max = e.bags - ld.backBags;
+  const e = byId(id); const ld = ledger(e.pid).loads.find(x => x.id === id); const max = e.bags - ld.backBags;
   if (!V.bk || V.bk.id !== id) V.bk = {id, n: Math.min(1, max), max};
   const n = V.bk.n;
-  sheet(`<i class="grab"></i><h3>How many did she bring back?</h3><p>From ${dmy(e.off)}, at ${money(e.price)}. Comes off: <b style="color:var(--paid)">${money(n * e.price)}</b></p>
+  sheet(`<i class="grab"></i><h3>How many did she bring back?</h3><p>From ${dmy(givenAt(e))}. Comes off what she owes: <b style="color:var(--paid)">${money(n * e.price)}</b></p>
     <div class="step"><button class="key" data-act="bkminus" aria-label="One less">−</button><div class="num">${bagsNum(n)}<small>${esc(unit())}${n > 1 ? 's' : ''}</small></div><button class="key" data-act="bkplus" aria-label="One more">+</button></div>
-    <div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="bkhalf">± ½</button></div>
+    ${S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="bkhalf">± ½</button></div>` : ''}
     <button class="btn ink tall" data-act="bksave">Save</button>`);
 }
-function editSheet(pid, keep) {
-  const p = person(pid);
-  if (!keep || !V.ed || V.ed.pid !== pid) V.ed = {pid, name: p.name, phone: p.phone || '', note: p.note || '', place: p.place || ''};
-  const E = V.ed;
+function editSheet(pid) {
+  const p = person(pid); V.ed = {pid};
   sheet(`<i class="grab"></i><h3>${esc(p.name)}</h3>
-    <div class="field"><label for="e_name">Name</label><input id="e_name" value="${esc(E.name)}" autocomplete="off" autocapitalize="words"></div>
-    <div class="field"><label for="e_phone">Phone</label><input id="e_phone" type="tel" inputmode="tel" value="${esc(E.phone)}" autocomplete="off" placeholder="024 000 0000"></div>
-    <div class="field"><label>Market</label><div class="chips wrap" id="e_places">${placeChipsEd()}</div></div>
-    <div class="field"><label for="e_note">Where is her stall?</label><input id="e_note" value="${esc(E.note)}" autocomplete="off" placeholder="Blue umbrella by the gate"></div>
+    <div class="field"><label for="e_name">Name</label><input id="e_name" value="${esc(p.name)}" autocomplete="off" autocapitalize="words"></div>
+    <div class="field"><label for="e_phone">Phone</label><input id="e_phone" type="tel" inputmode="tel" value="${esc(p.phone)}" autocomplete="off" placeholder="024 000 0000"></div>
     <div class="err" id="e_err"></div>
     <button class="btn ink tall" data-act="edsave">Save</button>`);
-  ['name', 'phone', 'note'].forEach(k => { const el = document.getElementById('e_' + k); el.addEventListener('input', () => { E[k] = el.value; }); });
 }
-function placeChipsEd() { return S.places.map(pl => `<button class="chip ${V.ed.place === pl ? 'on' : ''}" data-act="edplace" data-p="${esc(pl)}">${esc(pl)}</button>`).join('') + `<button class="chip dash" data-act="addplace" data-for="edit">+ Place</button>`; }
 function msgSheet(pid, kind) {
   const p = person(pid); const L = ledger(pid);
   const kinds = (L.bal > 0.001 ? [['remind', 'Reminder'], ['statement', 'What she owes']] : []).concat([['hello', 'Hello']]);
@@ -1063,8 +1300,6 @@ function msgSheet(pid, kind) {
     <div class="bar"><a class="btn msg" href="${esc(sms)}" target="_top" data-act="msgsent" data-id="${pid}" data-via="sms" data-k="${kind}">${svg('msg')} SMS</a><a class="btn call" href="${esc(wa)}" target="_blank" rel="noopener" data-act="msgsent" data-id="${pid}" data-via="wa" data-k="${kind}">${svg('msg')} WhatsApp</a></div>
     <p class="small center">${esc(p.phone)}</p>`);
 }
-
-/* statement she can read */
 VIEWS.show = f => {
   const p = person(f.pid); const L = ledger(p.id); const open = L.loads.filter(x => x.left > 0.001);
   return {top: `<div class="hrow"><span class="sp"></span></div>`,
@@ -1073,75 +1308,21 @@ VIEWS.show = f => {
     cls: 'plain', dock: `<div class="bar"><button class="btn ink tall" data-act="back">Close</button></div>`};
 };
 
-/* ===== Collect money: the calculator lives here ===== */
-const paySum = () => r2(sum([...V.pay.terms, V.pay.cur], x => Number(x) || 0));
-function payPreview(pid, amt, loadId) {
-  const open = ledger(pid).loads.filter(L => L.left > 0.001); const first = open.find(L => L.id === loadId);
-  const order = (first ? [first] : []).concat(open.filter(L => L !== first)); let r = amt; const outp = [];
-  for (const L of order) { if (r <= 0.001) break; const k = Math.min(L.left, r); r -= k; outp.push({L, k, cleared: k >= L.left - 0.001}); }
-  return outp;
-}
-VIEWS.pay = f => {
-  const p = person(f.pid); const L = ledger(p.id); const a = paySum(); const left = r2(L.bal - a);
-  const tape = [...V.pay.terms, V.pay.cur].filter(Boolean);
-  const pv = payPreview(p.id, a, f.loadId);
-  const forLoad = f.loadId ? L.loads.find(x => x.id === f.loadId) : null;
-  const top = `<div class="hrow"><span class="av">${esc(initials(p.name))}</span><div class="title"><b>Collect from ${esc(shortName(p.name))}</b><small>Owes ${money(L.bal)}${forLoad ? ' · for ' + dmy(forLoad.date) + ' ' + esc(unit()) + 's first' : ''}</small></div></div>`;
-  const mid = `<div class="disp"><div class="tape">${tape.length > 1 ? tape.map(x => fmt(Number(x))).join(' + ') : '&nbsp;'}</div><div class="v ${a ? 'g' : ''}">${money(a)}</div><div class="s">${a ? (left > 0.001 ? money(left) + ' left after this' : left < -0.001 ? money(-left) + ' extra' : 'All paid') : 'Tap the notes as she counts'}</div></div>
-    <p class="clears">${a ? pv.map(x => x.cleared ? `Clears <b>${dmy(x.L.date)}</b>` : `${money(x.k)} off ${dmy(x.L.date)}`).join(', ') : '&nbsp;'}</p>
-    <div class="seg"><button class="${V.method === 'cash' ? 'on' : ''}" data-act="method" data-m="cash">Cash</button><button class="${V.method === 'momo' ? 'on' : ''}" data-act="method" data-m="momo">MoMo</button></div>
-    <div class="err">${esc(V.payErr || '')}</div>`;
-  const dock = `<div class="notes">${NOTES.map(n => `<button class="note" data-act="note" data-n="${n}">${n}</button>`).join('')}</div>${keypad('pay')}
-    <div class="bar">${backSq()}<button class="btn ghost" data-act="payall">All ${money(L.bal)}</button><button class="btn take" data-act="paydone">Done</button></div>`;
-  return {top, mid, cls: 'center plain', dock, anchor: 'bottom'};
-};
-function payKey(k) {
-  const P = V.pay;
-  if (k === 'del') { if (P.cur) P.cur = P.cur.slice(0, -1); else P.terms.pop(); }
-  else if (k === '+') { if (P.cur) { P.terms.push(P.cur); P.cur = ''; } }
-  else { const n = (P.cur + k).replace(/^0+(?=\d)/, ''); if (n.length <= 7) P.cur = n; }
-  V.payErr = ''; render();
-}
-function openPay(pid, extra) { V.pay = {terms: [], cur: ''}; V.method = 'cash'; V.payErr = ''; push(Object.assign({v: 'pay', pid}, extra || {})); }
-function payDone() {
-  const f = cur(); const a = paySum();
-  if (!a) { V.payErr = 'Type the money she gave first.'; return render(); }
-  const p = person(f.pid);
-  const outBefore = new Map(S.cars.filter(c => c.phase === 'out').map(c => [c.id, carStats(c.id).out]));
-  const e = add({type: 'pay', pid: p.id, amount: a, method: V.method, loadId: f.loadId || null, carId: null});
-  const bal = ledger(p.id).bal;
-  sfx('cash'); buzz(25); if (bal <= 0.001) { setTimeout(() => { sfx('thud'); coins(14); }, 250); }
-  const done = S.cars.find(c => c.phase === 'out' && outBefore.get(c.id) > 0.001 && carStats(c.id).out <= 0.001);
-  if (done) setTimeout(() => celebrate(done), 900);
-  if (f.run) {
-    V.run.got += a; V.run.paid++; V.run.i++; pop();
-    toast(`${p.name} paid ${money(a)}`, [{label: 'Undo', act: 'undopayrun', id: e.id}, p.phone ? {label: 'Receipt', href: sendHref(p, msgPay(p, a, bal))} : null]);
-    return;
-  }
-  pop(); paidSheet(p, a, e);
-}
-function paidSheet(p, a, e) {
-  const bal = ledger(p.id).bal;
-  sheet(`<div class="cs-amt">${money(a)}</div><p class="center">from ${esc(p.name)}${e.method === 'momo' ? ' by MoMo' : ''}</p>${bal <= 0.001 ? '<div class="stamp">PAID</div>' : `<div class="cs-left">Left: <b>${money(bal)}</b></div>`}
-    ${p.phone ? `<a class="btn ink" href="${esc(sendHref(p, msgPay(p, a, bal)))}" ${linkAttrs(sendHref(p, 'x'))} data-act="noop">${svg('msg')} Send receipt</a>` : '<p class="small center">No number. Show her the book.</p>'}
-    <div class="bar"><button class="btn ghost" data-act="undoit" data-id="${e.id}">Undo</button><button class="btn ghost" data-act="sheetclose">Done</button></div>`);
-}
-function celebrate(car) {
-  sfx('win'); buzz([30, 60, 30, 60, 90]); coins(26);
-  const o = document.createElement('div'); o.className = 'celebrate';
-  o.innerHTML = `<div class="cel-card"><div class="cel-ic">✓</div><b>All collected</b><span>The ${dmy(car.date)} car is fully paid.</span><button class="btn ink" data-act="celclose">Nice</button></div>`;
-  layer.appendChild(o);
-}
-
-/* ===== New car ===== */
+/* ===== New delivery ===== */
+function startWizard() { V.w = {s: 0, same: true, sub: 0, items: [], si: 0, tmp: '', err: '', label: ''}; push({v: 'newcar'}); }
 VIEWS.newcar = () => {
-  const W = V.w; const u = unit(); const U1 = u[0].toUpperCase() + u.slice(1);
+  const W = V.w; const u = unit();
   const pad = (v, lab) => `<div class="disp"><div class="v">${v}${lab ? ` <span style="font-size:20px">${lab}</span>` : ''}</div></div>`;
-  const step = (n) => `<div class="hrow"><div class="title"><b>New car</b><small>Step ${n} of 3</small></div></div>`;
-  const shell = (n, q, sub, body, dock) => ({top: step(n), mid: `<div class="q">${q}</div>${sub ? `<div class="qs">${sub}</div>` : ''}${body || ''}<div class="err">${esc(W.err || '')}</div>`, cls: 'center plain', dock: dock});
-  if (W.s === 0) return shell(1, `All ${esc(u)}s the same size?`, '', '', `<button class="btn ink tall" data-act="wsame">Yes, one size</button><button class="btn ghost tall" data-act="wdiff">No, different sizes</button><div class="bar">${backSq('wback')}</div>`);
+  const step = n => `<div class="hrow"><div class="title"><b>New delivery</b><small>Step ${n} of 3</small></div></div>`;
+  const shell = (n, q, sub, body, dock) => ({top: step(n), mid: `<div class="q">${q}</div>${sub ? `<div class="qs">${sub}</div>` : ''}${body || ''}<div class="err">${esc(W.err || '')}</div>`, cls: 'center plain', dock});
+  if (W.s === 0) {
+    const labels = [...new Set(carsNewest().map(c => c.label).filter(Boolean))].slice(0, 4);
+    return Object.assign(shell(1, `All ${esc(u)}s the same?`, '', `<div class="field" style="text-align:left"><label for="w_label">Name this delivery (optional)</label><input id="w_label" value="${esc(W.label)}" autocomplete="off" placeholder="Where it came from, or the vehicle"></div>${labels.length ? `<div class="chips wrap" style="justify-content:center">${labels.map(l => `<button class="chip ${W.label === l ? 'on' : ''}" data-act="wlabel" data-l="${esc(l)}">${esc(l)}</button>`).join('')}</div>` : ''}`,
+      `<button class="btn ink tall" data-act="wsame">Yes, one kind</button><button class="btn ghost tall" data-act="wdiff">No, different sizes</button><div class="bar">${backSq('wback')}</div>`),
+      {after: () => { const i = document.getElementById('w_label'); if (i) i.addEventListener('input', () => { V.w.label = i.value; }); }});
+  }
   if (W.s === 1 && W.same) {
-    if (W.sub === 0) return shell(2, `How many ${esc(u)}s in the car?`, S.carry ? `${bagsNum(S.carry)} left over from the last car` : '', pad(esc(W.tmp) || '0', esc(u) + 's'), `${keypad('count')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
+    if (W.sub === 0) return shell(2, `How many ${esc(u)}s?`, S.carry ? `${bagsNum(S.carry)} kept from the last delivery are included` : '', pad(esc(W.tmp) || '0', esc(u) + 's'), `${keypad('count')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
     return shell(2, `Price for one ${esc(u)}?`, '', pad(money(+W.tmp || 0)), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wlast">Same as last<br><small>${money(S.settings.price)}</small></button><button class="btn ink" data-act="wnext">Next</button></div>`);
   }
   if (W.s === 1) {
@@ -1152,7 +1333,7 @@ VIEWS.newcar = () => {
     return shell(2, 'Another size?', W.items.map(i => `${esc(i.name)}: ${bagsNum(i.count)} at ${money(i.price)}`).join('<br>'), '', `<button class="btn ghost tall" data-act="wmore">Yes, add a size</button><button class="btn ink tall" data-act="wdone">No, that's all</button><div class="bar">${backSq('wback')}</div>`);
   }
   const total = sum(W.items, i => i.count);
-  return shell(3, 'What did the car cost you?', `${bagsTxt(total)}. Put the ${esc(S.settings.item || 'goods')}, transport and loading together. You can skip this.`, pad(money(+W.tmp || 0)), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wfinish" data-skip="1">Skip</button><button class="btn give" data-act="wfinish">${svg('truck')} Start giving</button></div>`);
+  return shell(3, 'What did the load cost you?', `${bagsTxt(total)}. Put the ${esc(S.settings.item || 'goods')}, transport and loading together. You can skip this.`, pad(money(+W.tmp || 0)), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wfinish" data-skip="1">Skip</button><button class="btn ink" data-act="wfinish">${svg('truck')} Start</button></div>`);
 };
 function wizBack() {
   const W = V.w; W.err = ''; W.tmp = '';
@@ -1169,48 +1350,84 @@ VIEWS.num = () => {
   const N = V.num;
   return {top: `<div class="hrow"><div class="title"><b>${esc(N.title)}</b>${N.sub ? `<small>${esc(N.sub)}</small>` : ''}</div></div>`,
     mid: `${N.chips ? `<div class="chips wrap" style="justify-content:center">${N.chips.map(c => `<button class="chip ${N.chip === c ? 'on' : ''}" data-act="numchip" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
-      ${N.q ? `<div class="q">${esc(N.q)}</div>` : ''}<div class="disp"><div class="v">${N.mode === 'count' ? (esc(N.value) || '0') + ` <span style="font-size:20px">${esc(unit())}s</span>` : money(+N.value || 0)}</div></div><div class="err">${esc(N.err || '')}</div>`,
+      <div class="disp"><div class="v">${N.mode === 'count' ? (esc(N.value) || '0') + ` <span style="font-size:20px">${esc(unit())}s</span>` : money(+N.value || 0)}</div></div><div class="err">${esc(N.err || '')}</div>`,
     cls: 'center plain', dock: `${keypad(N.mode)}<div class="bar">${backSq()}<button class="btn ink" data-act="numsave">Save</button></div>`};
 };
 function openNum(o) { V.num = Object.assign({value: '', mode: 'money', err: ''}, o); push({v: 'num'}); }
 function editNum(s, k, mode) { if (k === 'del') return s.slice(0, -1); if (k === '00' && !s) return s; const n = (s + k).replace(/^0+(?=\d)/, ''); return n.length > (mode === 'count' ? 4 : 7) ? s : n; }
 
-/* ===== Car report ===== */
+/* ===== Delivery report and closing ===== */
+const STOCK_WORD = {count: 'Count fixed', next: 'Kept for the next delivery', back: 'Sent back', bad: 'Spoiled or lost'};
 VIEWS.report = f => {
   const car = carById(f.cid); if (!car) { pop(); return null; }
   const st = carStats(car.id);
   const hasCost = (car.costs || []).length > 0;
   const pct = st.credit > 0 ? Math.round(st.collected / st.credit * 100) : 0;
-  const top = `<div class="hrow"><div class="title"><b>Car · ${dmy(car.date)}</b><small>${bagsTxt(st.total)} · ${car.phase === 'giving' ? 'giving' : st.out > 0.001 ? 'collecting' : 'done'}</small></div><button class="ib" data-act="carmenu" data-id="${car.id}" aria-label="Car options">${svg('more')}</button></div>
+  const top = `<div class="hrow"><div class="title"><b>${esc(carName(car))}</b><small>${bagsTxt(st.loaded)} · ${car.phase === 'giving' ? 'open' : st.out > 0.001 ? 'collecting' : 'done'}</small></div><button class="ib" data-act="carmenu" data-id="${car.id}" aria-label="Delivery options">${svg('more')}</button></div>
     ${hasCost ? `<div class="hero"><div class="n ${st.profitNow >= 0 ? 'ok' : 'owe'}">${money(st.profitNow)}</div><div class="l">profit so far</div><div class="s">${money(st.profitAll)} when everyone pays</div></div>`
-      : `<div class="hero"><div class="n ${st.out > 0.001 ? 'owe' : 'ok'}">${money(st.out)}</div><div class="l">still to collect</div><button class="showher" data-act="addcost" data-id="${car.id}">${svg('plus', 18)} Add what the car cost</button></div>`}`;
-  const ln = (label, sub, amt, cls, act) => `<${act ? `button data-act="${act}"` : 'div'} class="row" style="min-height:52px"><div class="who"><div class="line">${label}</div>${sub ? `<div class="sub">${sub}</div>` : ''}</div><span class="amt ${cls || ''}">${amt}</span></${act ? 'button' : 'div'}>`;
-  const people = st.people.map(id => { const p = person(id); const ls = ledger(id).loads.filter(x => x.carId === car.id); const left = sum(ls, x => x.left); const bags = sum(ls, x => x.bags - x.backBags); const w = sum(ledger(id).waiting.filter(x => x.carId === car.id), x => x.bags); return {p, left, bags, w}; }).sort((a, b) => b.left - a.left);
+      : `<div class="hero"><div class="n ${st.out > 0.001 ? 'owe' : 'ok'}">${money(st.out)}</div><div class="l">still to collect</div><button class="showher" data-act="addcost" data-id="${car.id}">${svg('plus', 18)} Add what the load cost</button></div>`}`;
+  const ln = (label, sub, amt, cls) => `<div class="row" style="min-height:52px"><div class="who"><div class="line">${label}</div>${sub ? `<div class="sub">${sub}</div>` : ''}</div><span class="amt ${cls || ''}">${amt}</span></div>`;
+  const people = st.people.map(id => { const p = person(id); const ls = ledger(id).loads.filter(x => x.carId === car.id); return {p, left: sum(ls, x => x.left), bags: sum(ls, x => x.bags - x.backBags), w: sum(ledger(id).waiting.filter(x => x.carId === car.id), x => x.bags)}; }).sort((a, b) => b.left - a.left);
   let mid = '<div class="lines down">';
-  mid += (car.costs || []).map(x => ln(esc(x.name), '', '−' + money(x.amount), '', '')).join('');
+  mid += (car.costs || []).map(x => ln(esc(x.name), '', '−' + money(x.amount), '')).join('');
   if (hasCost) mid += `<button class="endrow" data-act="addcost" data-id="${car.id}">${svg('plus', 18)} Add a cost</button>`;
+  mid += ln(`${bagsTxt(st.loaded)} loaded`, `${bagsNum(st.given)} given · ${bagsNum(st.wait)} held · ${bagsNum(Math.max(0, st.free))} left`, '', '');
+  mid += st.stock.map(e => ln(STOCK_WORD[e.reason] || 'Stock', dmy(e.date), (e.bags > 0 ? '+' : '−') + bagsNum(Math.abs(e.bags)), 'ink')).join('');
   if (st.cash) mid += ln(`${bagsTxt(st.cash)} sold for cash`, '', '+' + money(st.cashAmt), 'ok');
-  mid += ln(`Given on credit`, bagsTxt(st.off), money(st.credit), 'ink');
+  mid += ln('Given on credit', bagsTxt(st.off), money(st.credit), 'ink');
   mid += ln('Collected so far', `${pct}% of credit`, '+' + money(st.collected), 'ok');
-  mid += ln('Still out', `${people.filter(x => x.left > 0.001).length} women`, money(st.out), '');
-  if (people.length) mid += `<div class="sect"><span>Who took from this car</span></div>` + people.map(x => `<button class="row" data-act="person" data-id="${x.p.id}">${x.left <= 0.001 && !x.w ? '<span class="mk ok">✓</span>' : ''}<div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${bagsTxt(x.bags)}${x.w ? ' · ' + bagsTxt(x.w) + ' waiting' : ''}</div></div>${x.left > 0.001 ? `<span class="amt">${money(x.left)}</span>` : x.w ? '' : '<span class="amt ok">Paid</span>'}</button>`).join('');
+  mid += ln('Still out', `${people.filter(x => x.left > 0.001).length} customers`, money(st.out), '');
+  if (people.length) mid += `<div class="sect"><span>Who took from this delivery</span></div>` + people.map(x => `<button class="row" data-act="person" data-id="${x.p.id}">${x.left <= 0.001 && !x.w ? '<span class="mk ok">✓</span>' : ''}<div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${bagsTxt(x.bags)}${x.w ? ' · ' + bagsTxt(x.w) + ' held' : ''}</div></div>${x.left > 0.001 ? `<span class="amt">${money(x.left)}</span>` : x.w ? '' : '<span class="amt ok">Paid</span>'}</button>`).join('');
   mid += '</div>';
-  const owing = people.filter(x => x.left > 0.001).length;
+  const remN = remindList(people.filter(x => x.left > 0.001).map(x => x.p.id)).length;
   const dock = `${st.credit > 0 ? `<div class="sumline"><span>Credit collected</span><span>${pct}%</span></div><div class="prog"><i style="width:${pct}%"></i></div>` : ''}
-    <div class="bar">${backSq()}${car.phase === 'giving' ? `<button class="btn give" data-act="gotogive">${svg('bag')} Give ${esc(unit())}s</button>` : `<button class="btn take" data-act="carrun" data-id="${car.id}" ${owing ? '' : 'disabled'}>${svg('run')} Collect · ${owing}</button>`}</div>`;
+    <div class="bar">${backSq()}${car.phase === 'giving' ? `<button class="btn ink" data-act="gotogive">${svg('bag')} Give ${esc(unit())}s</button>` : `<button class="btn ghost" data-act="remindcar" data-id="${car.id}" ${remN ? '' : 'disabled'}>${svg('bell')} Remind${remN ? ' ' + remN : ''}</button>`}</div>`;
   return {top, mid, cls: 'book', dock, anchor: 'top'};
 };
 function carMenu(cid) {
-  const car = carById(cid); const giving = car.phase === 'giving';
-  sheet(`<i class="grab"></i><h3>Car · ${dmy(car.date)}</h3>
-    ${giving ? `<button class="btn ink" data-act="finish">${svg('ok')} Finish giving</button>` : `<button class="btn ghost" data-act="reopen" data-id="${cid}">${svg('bag')} Give more from this car</button>`}
-    <button class="btn ghost" data-act="fixcount" data-id="${cid}">Fix the ${esc(unit())} count</button>
+  const car = carById(cid); const open = car.phase === 'giving';
+  sheet(`<i class="grab"></i><h3>${esc(carName(car))}</h3>
+    ${open ? `<button class="btn ghost" data-act="price" data-id="${cid}">Price · ${car.items.map(i => (i.name ? i.name + ' ' : '') + money(i.price)).join(', ')}</button>` : ''}
+    <button class="btn ghost" data-act="label" data-id="${cid}">${car.label ? 'Rename: ' + esc(car.label) : 'Name this delivery'}</button>
+    ${open ? `<button class="btn ghost" data-act="fixcount" data-id="${cid}">Fix the count</button>` : ''}
     <button class="btn ghost" data-act="addcost" data-id="${cid}">Add a cost</button>
-    <button class="btn ghost" data-act="sheetclose">Close</button>`);
+    ${cur() && cur().v === 'report' ? '' : `<button class="btn ghost" data-act="report" data-id="${cid}">Delivery report</button>`}
+    ${open ? `<button class="btn ink tall" data-act="closecar" data-id="${cid}">Close delivery</button>` : `<button class="btn ghost" data-act="reopen" data-id="${cid}">Reopen to give more</button>`}`);
 }
-function carsSheet() {
-  sheet(`<i class="grab"></i><h3>Your cars</h3><div style="margin:0 -14px">${carsNewest().map(carRow).join('')}</div><button class="btn give" data-act="newcar">${svg('truck')} New car</button>`);
+function labelSheet(cid) {
+  const car = carById(cid); const labels = [...new Set(carsNewest().map(c => c.label).filter(Boolean))].slice(0, 5);
+  sheet(`<i class="grab"></i><h3>Name this delivery</h3><div class="field"><input id="lb_in" value="${esc(car.label)}" autocomplete="off" placeholder="Where it came from, or the vehicle" aria-label="Delivery name"></div>
+    ${labels.length ? `<div class="chips wrap">${labels.map(l => `<button class="chip" data-act="lbchip" data-l="${esc(l)}">${esc(l)}</button>`).join('')}</div>` : ''}
+    <button class="btn ink tall" data-act="lbsave" data-id="${cid}">Save</button>`);
+  setTimeout(() => { const i = document.getElementById('lb_in'); if (i) i.focus(); }, 60);
 }
+function openClose(cid, o) { V.cl = Object.assign({cid, choice: null, thenNew: false}, o || {}); closeCarSheet(); }
+function closeCarSheet() {
+  const car = carById(V.cl.cid); const st = carStats(car.id); const held = heldOn(car.id); const left = Math.max(0, st.free);
+  const opts = [['next', 'Kept for the next delivery'], ['back', 'Sent back'], ['bad', 'Spoiled or lost'], ['cash', 'Sold for cash'], ['count', 'The count was wrong']];
+  const can = !held.length && (left <= 0 || V.cl.choice);
+  sheet(`<i class="grab"></i><h3>${V.cl.thenNew ? 'First close ' : 'Close '}${esc(carName(car))}</h3>
+    <div class="sum4"><div><b>${bagsNum(st.loaded)}</b><small>loaded</small></div><div><b>${bagsNum(st.given)}</b><small>given</small></div><div class="${held.length ? 'w' : 'ok'}"><b>${bagsNum(st.wait)}</b><small>held${held.length ? '' : ' ✓'}</small></div><div><b>${bagsNum(left)}</b><small>left</small></div></div>
+    ${held.length ? `<p><b>Still held:</b> ${held.map(e => esc((person(e.pid) || {}).name || '?') + ' ' + bagsNum(e.bags)).join(', ')}. Hand them over or release them first.</p><div class="bar"><button class="btn ghost redtext" data-act="releaseall" data-id="${car.id}">Release all</button><button class="btn ink" data-act="handall" data-id="${car.id}">Hand over all</button></div>` : ''}
+    ${!held.length && left > 0 ? `<p><b>What happened to the ${bagsTxt(left)} left?</b></p><div class="radio">${opts.map(([k, l]) => `<button class="${V.cl.choice === k ? 'on' : ''}" data-act="clopt" data-k="${k}">${l}</button>`).join('')}</div>` : ''}
+    <button class="btn ink tall" data-act="cldo" ${can ? '' : 'disabled'}>Close delivery</button>
+    <button class="btn ghost" data-act="sheetclose">Not now</button>`);
+  V.sheetKind = 'close';
+}
+function closeCar() {
+  const car = carById(V.cl.cid); const st = carStats(car.id); const left = Math.max(0, st.free); const ids = []; const ch = V.cl.choice;
+  if (left > 0) {
+    const parts = st.items.map(I => ({itemId: I.id, price: I.price, bags: Math.max(0, I.free)}));
+    const s = sum(parts, x => x.bags); if (s !== left) parts[0].bags = Math.max(0, parts[0].bags + (left - s));
+    parts.forEach(pt => { if (!pt.bags) return; const e = ch === 'cash' ? add({type: 'cash', pid: null, carId: car.id, itemId: pt.itemId, bags: pt.bags, price: pt.price, amount: r2(pt.bags * pt.price)}) : add({type: 'stock', carId: car.id, itemId: pt.itemId, bags: -pt.bags, reason: ch}); ids.push(e.id); });
+    if (ch === 'next') S.carry = (Number(S.carry) || 0) + left;
+  }
+  car.phase = 'out'; car.closedAt = nowIso(); car.closeIds = ids; car.closeCarry = ch === 'next' ? left : 0; commit();
+  const then = V.cl.thenNew; V.cl = null; closeSheet();
+  if (then) return startWizard();
+  toRoot('give'); toast(`${car.label || 'Delivery'} closed`);
+}
+function handOver(gives, by) { const hs = gives.map(e => add({type: 'hand', ref: e.id, pid: e.pid, carId: e.carId, by: by || ''})); gives.forEach(e => { const p = person(e.pid); if (p && p.phone && !C().linked.has(e.id)) e.rcpt = false; }); commit(); return hs; }
 
 /* ===== Show Mom: results in big numbers ===== */
 VIEWS.mom = () => {
@@ -1221,35 +1438,43 @@ VIEWS.mom = () => {
   const car = givingCar(); const cs = car ? carStats(car.id) : null;
   return {top: `<div class="hrow"><div class="title"><b>For Mom</b><small>${dmy(new Date())}</small></div></div>`,
     mid: `<div class="big-tiles">
-      <div class="tile r"><small>Money out</small><b class="r">${money(out)}</b><span>${all.length} ${all.length === 1 ? 'woman owes' : 'women owe'}</span></div>
+      <div class="tile r"><small>Money out</small><b class="r">${money(out)}</b><span>${all.length} ${all.length === 1 ? 'customer owes' : 'customers owe'}</span></div>
       <div class="tile g"><small>Came in this week</small><b class="g">${money(week)}</b></div>
-      ${cs ? `<div class="tile"><small>${esc(unit()[0].toUpperCase() + unit().slice(1))}s free in the car</small><b>${bagsNum(Math.max(0, cs.free))}</b><span>${bagsNum(cs.wait)} waiting · ${bagsNum(cs.off)} taken</span></div>` : ''}
+      ${cs ? `<div class="tile"><small>${esc(Unit())}s left in the vehicle</small><b>${bagsNum(Math.max(0, cs.free))}</b><span>${bagsNum(cs.given)} given · ${bagsNum(cs.wait)} held</span></div>` : ''}
       ${now.length ? `<div class="tile"><small>Collect now</small><b class="r">${money(sum(now, x => x.L.bal))}</b><span>${now.slice(0, 8).map(x => esc(x.p.name)).join(', ')}${now.length > 8 ? '…' : ''}</span></div>` : ''}
     </div>`, cls: 'plain', dock: `<div class="bar"><button class="btn ink tall" data-act="back">Close</button></div>`};
 };
 
-/* ===== Settings ===== */
+/* ===== Settings and first-run setup ===== */
+function townsBlock() {
+  const tw = towns();
+  return (tw.length ? tw.map(t => `<div class="townrow"><b>${esc(t)}</b><span>${esc(spotsOf(t).map(l => l.spot).join(', ')) || 'Whole town'}</span></div>`).join('') : '<div class="setbox"><p class="small">No towns yet. Add the towns and spots you deliver to, for example Bakwai, then Market and Koko Shell. Skip this if you only go to one place.</p></div>')
+    + `<div class="setbox"><button class="btn ghost" data-act="addloc">${svg('plus')} Add a town or spot</button></div>`;
+}
+function settingsInputs() {
+  app.querySelectorAll('[data-set]').forEach(el => el.addEventListener('input', e => { const k = e.target.dataset.set; let v = e.target.value; if (k === 'cycle') v = Math.max(1, parseInt(v, 10) || 14); S.settings[k] = v; VER++; save(); }));
+}
+const setInp = (k, lab, ph, type) => `<div class="field"><label for="s_${k}">${lab}</label><input id="s_${k}" data-set="${k}" type="${type || 'text'}" ${type === 'tel' ? 'inputmode="numeric"' : ''} value="${esc(S.settings[k])}" placeholder="${ph}" autocomplete="off"></div>`;
+VIEWS.setup = () => ({
+  top: `<div class="hrow"><div class="title"><b>Set up your book</b><small>You can change all of this later in Settings</small></div></div>`,
+  mid: `<div class="setbox">${setInp('item', 'What do you hand out?', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Collect after how many days', '14', 'tel')}${setInp('seller', 'Your name (goes on receipts)', '')}${setInp('momo', 'MoMo number (goes on reminders)', '', 'tel')}</div>
+    <div class="setlabel">Where do the ${esc(unit())}s go?</div>${townsBlock()}`,
+  cls: 'plain', dock: `<div class="bar"><button class="btn ghost" data-act="demo">See an example</button><button class="btn ink" data-act="setupdone">Start</button></div>`, after: settingsInputs});
 VIEWS.settings = () => {
   const s = S.settings;
-  const inp = (k, lab, ph, type) => `<div class="field"><label for="s_${k}">${lab}</label><input id="s_${k}" data-set="${k}" type="${type || 'text'}" ${type === 'tel' ? 'inputmode="numeric"' : ''} value="${esc(s[k])}" placeholder="${ph}" autocomplete="off"></div>`;
-  const seg = (k, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${s[k] === v ? 'on' : ''}" data-act="setseg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
-  const usedPlaces = new Set(S.people.map(p => p.place));
+  const seg = (k, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(s[k]) === String(v) ? 'on' : ''}" data-act="setseg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
   return {top: `<div class="hrow"><div class="title"><b>Settings</b><small>Saved on this phone only</small></div></div>`,
-    mid: `<div class="setbox">${inp('seller', 'Your name (goes on receipts)', 'Siddick')}${inp('momo', 'MoMo number (goes on reminders)', '055 000 0000', 'tel')}${inp('item', 'What you sell', 'Onions')}${inp('unit', 'Counted in', 'bag')}${inp('cycle', 'Collect after how many days', '14', 'tel')}</div>
+    mid: `<div class="setbox">${setInp('seller', 'Your name (goes on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (goes on reminders)', '055 000 0000', 'tel')}${setInp('item', 'What you hand out', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Collect after how many days', '14', 'tel')}</div>
+      <div class="setlabel">Towns and spots</div>${townsBlock()}
       <div class="setlabel">Messages go by</div><div class="setbox">${seg('via', [['sms', 'SMS'], ['wa', 'WhatsApp']])}</div>
       <div class="setlabel">Hand that holds the phone</div><div class="setbox">${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div>
+      <div class="set"><span>Half ${esc(unit())}s</span><button class="chip ${s.half !== false ? 'on' : ''}" data-act="togglehalf" aria-pressed="${s.half !== false}">${s.half !== false ? 'On' : 'Off'}</button></div>
       <div class="set"><span>Sounds and buzz</span><button class="chip ${s.sound !== false ? 'on' : ''}" data-act="togglesound" aria-pressed="${s.sound !== false}">${s.sound !== false ? 'On' : 'Off'}</button></div>
-      <div class="setlabel">Markets</div>
-      ${S.places.map(pl => `<div class="set"><span>${esc(pl)}</span>${usedPlaces.has(pl) ? '<span class="small">in use</span>' : `<button class="chip" data-act="delplace" data-p="${esc(pl)}">Remove</button>`}</div>`).join('')}
-      <div class="setbox"><button class="btn ghost" data-act="addplace">${svg('plus')} Add a market</button></div>
       ${V.demo ? '' : `<div class="setlabel">Backup</div><div class="setbox"><p class="small">${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) : 'No backup yet.'} If this phone is lost, the backup file brings the book back.</p>
       <button class="btn ink" data-act="backup">${svg('cloud')} Back up to WhatsApp</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" accept=".json,application/json,text/plain" hidden></div>`}
       <div class="setbox" style="padding-bottom:24px">${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}<button class="btn ghost redtext" data-act="wipe">Delete everything</button></div>`,
     cls: 'plain', dock: `<div class="bar">${backSq()}<span class="sp"></span></div>`,
-    after: () => {
-      app.querySelectorAll('[data-set]').forEach(el => el.addEventListener('input', e => { const k = e.target.dataset.set; let v = e.target.value; if (k === 'cycle') v = Math.max(1, parseInt(v, 10) || 14); S.settings[k] = v; VER++; save(); }));
-      const rf = document.getElementById('restorefile'); if (rf) rf.addEventListener('change', onRestoreFile);
-    }};
+    after: () => { settingsInputs(); const rf = document.getElementById('restorefile'); if (rf) rf.addEventListener('change', onRestoreFile); }};
 };
 function onRestoreFile(e) {
   const file = e.target.files && e.target.files[0]; if (!file) return;
@@ -1258,7 +1483,7 @@ function onRestoreFile(e) {
     try {
       const d = JSON.parse(r.result); const data = d.stallbook || d;
       if (!data || !Array.isArray(data.people) || !Array.isArray(data.entries)) throw new Error('bad');
-      V.restoreData = data.v === 2 ? normalize(data) : normalize(fromV1(data));
+      V.restoreData = data.v >= 2 ? normalize(data) : normalize(fromV1(data));
       const n = V.restoreData.people.length;
       sheet(`<h3>Restore this backup?</h3><p>${n} ${n === 1 ? 'name' : 'names'}${d.savedAt ? ', saved ' + dmy(d.savedAt) : ''}. It replaces the book on this phone.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Cancel</button><button class="btn ink" data-act="restoreyes">Restore</button></div>`);
     } catch (x) { sheet(`<h3>That is not a StallBook backup</h3><p>Pick the file named StallBook-backup.</p><button class="btn ghost" data-act="sheetclose">Close</button>`); }
@@ -1267,7 +1492,7 @@ function onRestoreFile(e) {
 }
 function doBackup() {
   const d = new Date(); const name = `StallBook-backup-${dayKey(d)}.json`;
-  const json = JSON.stringify({stallbook: S, savedAt: d.toISOString(), version: 2});
+  const json = JSON.stringify({stallbook: S, savedAt: d.toISOString(), version: 3});
   const done = () => { S.lastBackup = nowIso(); save(); render(); toast('Backup ready. Keep it in WhatsApp.'); };
   try { const file = new File([json], name, {type: 'application/json'}); if (navigator.canShare && navigator.canShare({files: [file]})) { navigator.share({files: [file], title: 'StallBook backup', text: 'StallBook backup, ' + dmy(d)}).then(done).catch(() => {}); return; } } catch (x) {}
   try { const url = URL.createObjectURL(new Blob([json], {type: 'application/json'})); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); done(); } catch (x) { toast('Backup did not work on this phone'); }
@@ -1278,7 +1503,7 @@ function backupSheet() {
     <button class="btn ink tall" data-act="backup">${svg('cloud')} Back up to WhatsApp</button><button class="btn ghost" data-act="sheetclose">Close</button>`);
 }
 
-/* ===== Calculator (also on Give and Book) ===== */
+/* ===== Calculator (on Book; Collect has its own money pad) ===== */
 function calcEval(t) { t = t.slice(); while (t.length && !/^\d/.test(t[t.length - 1])) t.pop(); if (!t.length) return 0; const terms = []; let c = +t[0]; for (let i = 1; i < t.length; i += 2) { const op = t[i], n = +t[i + 1]; if (op === '*') c *= n; else { terms.push(c, op); c = n; } } terms.push(c); let r = terms[0]; for (let i = 1; i < terms.length; i += 2) r = terms[i] === '+' ? r + terms[i + 1] : r - terms[i + 1]; return r2(r); }
 function calcSheet() {
   const c = V.calc || (V.calc = {t: [], done: false}); const sym = {'+': '+', '-': '−', '*': '×'};
@@ -1303,7 +1528,7 @@ function queueStep() {
   const Q = V.queue; if (!Q) return;
   if (Q.i >= Q.ids.length) { V.queue = null; sheet(`<h3>${Q.kind === 'rcpt' ? 'Receipts done ✓' : 'Reminders done ✓'}</h3>${Q.none && Q.none.length ? `<p>No number: ${Q.none.map(esc).join(', ')}</p>` : ''}<button class="btn ink" data-act="queuedone">Done</button>`); return; }
   const p = person(Q.ids[Q.i]); let body, info;
-  if (Q.kind === 'rcpt') { const es = pendingReceipts(Q.carId).get(p.id) || []; body = receiptMsg(p, es); info = `${bagsTxt(sum(es, e => e.bags))} · ${money(sum(es, e => e.amount))}`; }
+  if (Q.kind === 'rcpt') { const es = pendingReceipts(Q.carId).get(p.id) || []; body = receiptMsg(p, es); info = bagsTxt(sum(es, e => e.bags)); }
   else { body = msgRemind(p); info = `Owes ${money(ledger(p.id).bal)}`; }
   const href = sendHref(p, body);
   sheet(`<p class="small center">${Q.i + 1} of ${Q.ids.length}</p><h3 class="center">${esc(p.name)}</h3><p class="center">${info}</p>
@@ -1313,31 +1538,38 @@ function queueStep() {
 
 /* ===== Example book ===== */
 function demoData() {
-  const s = blank(); const real = V.realS ? V.realS.settings : {};
-  s.settings.seller = real.seller || ''; s.settings.momo = real.momo || ''; s.places = ['Kejetia', 'Asafo'];
+  const s = blank(); s.setup = true; const real = V.realS ? V.realS.settings : {};
+  s.settings.seller = real.seller || ''; s.settings.momo = real.momo || '';
   const T = Date.now(), D = (days, mins) => new Date(T - days * 864e5 - (mins || 0) * 6e4).toISOString(), K = n => dayKey(new Date(T + n * 864e5));
-  const mk = (name, place, phone, note) => { const p = {id: uid(), name, place, phone, note, created: D(30)}; s.people.push(p); return p; };
-  const ama = mk('Ama Serwaa', 'Kejetia', '0241234567', 'Blue umbrella by the gate');
-  const ako = mk('Akosua Mensah', 'Kejetia', '0209876543', 'Onion line, row 3');
-  const esi = mk('Mama Esi', 'Asafo', '0554443322', '');
-  const afi = mk('Afia', 'Kejetia', '', 'Near the kenkey seller');
-  const adw = mk('Adwoa', 'Asafo', '0267778899', '');
-  const abe = mk('Abena', 'Kejetia', '0501112233', '');
-  const yaa = mk('Yaa', 'Asafo', '0245556677', '');
-  const c1 = {id: uid(), date: D(16, 300), items: [{id: 'i1', name: '', count: 20, price: 600}], adjust: 0, moved: 0, costs: [{id: uid(), name: 'Car', amount: 9600}, {id: uid(), name: 'Transport', amount: 800}], phase: 'out'};
-  const c2 = {id: uid(), date: D(0, 120), items: [{id: 'j1', name: 'Big', count: 30, price: 650}, {id: 'j2', name: 'Small', count: 20, price: 450}], adjust: 0, moved: 0, costs: [{id: uid(), name: 'Car', amount: 24000}], phase: 'giving'};
+  const L = (town, spot) => { const l = {id: uid(), town, spot}; s.locs.push(l); return l.id; };
+  const bm = L('Bakwai', 'Market'), bk = L('Bakwai', 'Koko Shell'), cm = L('Bechem', 'Market');
+  const mk = (name, loc, phone, note) => { const p = {id: uid(), name, loc, phone, note, created: D(30)}; s.people.push(p); return p; };
+  const amma = mk('Amma', bk, '0245550101', 'Near the cold store');
+  const ako = mk('Akosua Mensah', bk, '0209876543', 'Row 3, by the kenkey seller');
+  const esi = mk('Mama Esi', bm, '0554443322', '');
+  const afi = mk('Afia', bk, '', 'Behind the lorry station');
+  const adw = mk('Adwoa', bk, '0267778899', 'Blue umbrella');
+  const abe = mk('Abena', bk, '0501112233', 'Corner shop');
+  const yaa = mk('Yaa', cm, '0245556677', '');
+  const efu = mk('Efua', bm, '0247770000', '');
+  const c1 = {id: uid(), label: 'Techiman', date: D(16, 300), items: [{id: 'i1', name: '', count: 20, price: 600}], costs: [{id: uid(), name: 'Load', amount: 9600}, {id: uid(), name: 'Transport', amount: 800}], phase: 'out', closedAt: D(15)};
+  const c2 = {id: uid(), label: 'Wankai', date: D(0, 180), items: [{id: 'j1', name: '', count: 60, price: 650}], costs: [{id: uid(), name: 'Load', amount: 24000}], phase: 'giving'};
   s.cars = [c1, c2];
   const E = o => { o.id = uid(); s.entries.push(o); return o; };
-  const give = (p, c, item, bags, price, days, mins, off) => E({type: 'give', pid: p.id, carId: c.id, itemId: item, bags, price, amount: bags * price, date: D(days, mins), off: off === false ? null : D(days, mins), rcpt: true});
-  give(ama, c1, 'i1', 3, 600, 16, 290); give(ako, c1, 'i1', 2, 600, 16, 280); give(esi, c1, 'i1', 4, 600, 16, 270); give(afi, c1, 'i1', 2, 600, 16, 260); give(adw, c1, 'i1', 3, 600, 16, 250); give(abe, c1, 'i1', 2, 600, 16, 240);
+  const give = (p, c, item, bags, price, loc, days, mins, held) => E({type: 'give', pid: p.id, carId: c.id, itemId: item, bags, price, amount: bags * price, loc, date: D(days, mins), off: held ? null : D(days, mins), rcpt: true});
+  give(amma, c1, 'i1', 3, 600, bm, 16, 290); give(ako, c1, 'i1', 2, 600, bk, 16, 280); give(esi, c1, 'i1', 4, 600, bm, 16, 270); give(afi, c1, 'i1', 2, 600, bk, 16, 260); give(adw, c1, 'i1', 3, 600, bk, 16, 250); give(abe, c1, 'i1', 2, 600, bk, 16, 240);
   E({type: 'cash', pid: null, carId: c1.id, itemId: 'i1', bags: 4, price: 580, amount: 2320, date: D(16, 200)});
   E({type: 'pay', pid: esi.id, amount: 2400, method: 'cash', date: D(2, 60)});
   E({type: 'pay', pid: ako.id, amount: 600, method: 'momo', date: D(1, 30)});
-  E({type: 'promise', pid: ama.id, on: K(-1), how: 'momo', date: D(2, 50)});
+  E({type: 'move', pid: amma.id, from: bm, to: bk, markFrom: '', mark: 'Near the cold store', date: D(3, 10)});
+  E({type: 'promise', pid: amma.id, on: K(-1), how: 'momo', date: D(2, 50)});
   E({type: 'promise', pid: adw.id, on: K(2), how: 'come', date: D(1, 40)});
   E({type: 'note', kind: 'refused', pid: abe.id, date: D(1, 20)});
-  give(yaa, c2, 'j1', 2, 650, 0, 100); give(esi, c2, 'j1', 3, 650, 0, 90); give(afi, c2, 'j2', 2, 450, 0, 80);
-  give(adw, c2, 'j1', 2, 650, 0, 30, false); give(ako, c2, 'j2', 1, 450, 0, 20, false);
+  give(yaa, c2, 'j1', 4, 650, cm, 0, 150);
+  const eh = give(esi, c2, 'j1', 6, 650, bm, 0, 140, true); E({type: 'hand', ref: eh.id, pid: esi.id, carId: c2.id, by: 'her son', date: D(0, 110)});
+  give(efu, c2, 'j1', 3, 650, bm, 0, 100);
+  const ey = give(yaa, c2, 'j1', 2, 650, cm, 0, 90); E({type: 'pay', pid: yaa.id, amount: 1300, method: 'cash', with: ey.id, loadId: ey.id, date: D(0, 90)});
+  give(amma, c2, 'j1', 3, 650, bk, 0, 60, true); give(adw, c2, 'j1', 2, 650, bk, 0, 30, true);
   s.entries.sort((a, b) => cmp(a.date, b.date));
   return s;
 }
@@ -1347,7 +1579,7 @@ function act(a, d, el) {
   d = d || {};
   switch (a) {
   case 'noop': return;
-  case 'tab': V.tab = d.t; V.stack = []; closeSheet(); hideToast(); return render();
+  case 'tab': V.tab = d.t; V.stack = []; V.qe = null; closeSheet(); hideToast(); return render();
   case 'back': return pop();
   case 'sheetclose': return closeSheet();
   case 'settings': return push({v: 'settings'});
@@ -1355,48 +1587,149 @@ function act(a, d, el) {
   case 'show': return push({v: 'show', pid: d.id});
   case 'mom': return push({v: 'mom'});
   case 'report': closeSheet(); return push({v: 'report', cid: d.id});
-  case 'cars': return carsSheet();
   case 'carmenu': return carMenu(d.id);
   case 'gotogive': return toRoot('give');
+  case 'bseg': V.bseg = d.s; return render();
+  case 'bsort': V.sort = V.sort === 'az' ? 'owes' : 'az'; return render();
+  case 'ftown': V.fTown = d.t; V.fLoc = ''; return render();
+  case 'floc': V.fLoc = d.id; return render();
 
   /* give */
   case 'pick': return pickName(d.id || null, d.name || '');
   case 'give': closeSheet(); return openGive(d.id);
-  case 'gplus': V.g.bags = Math.min(999, V.g.bags + 1); return giveSheet();
-  case 'gminus': if (V.g.bags >= 1.5) V.g.bags -= 1; return giveSheet();
+  case 'gq': { const half = Math.abs(V.g.bags % 1 - 0.5) < 0.01; V.g.bags = +d.n + (half ? 0.5 : 0); return giveSheet(); }
+  case 'gqmore': V.qk = {v: V.g.bags > 6 ? String(Math.floor(V.g.bags)) : ''}; return qtySheet();
+  case 'qtyback': return giveSheet();
+  case 'qtyuse': { const n = parseInt(V.qk.v, 10); if (n > 0) V.g.bags = n; return giveSheet(); }
+  case 'ghold': V.g.hold = !V.g.hold; return giveSheet();
+  case 'gcash': V.g.cash = !V.g.cash; return giveSheet();
   case 'ghalf': V.g.bags = Math.abs(V.g.bags % 1 - 0.5) < 0.01 ? V.g.bags - 0.5 : V.g.bags + 0.5; if (V.g.bags < 0.5) V.g.bags = 0.5; return giveSheet();
   case 'gitem': V.g.itemId = d.i; return giveSheet();
-  case 'gstate': V.giveState = d.s; return giveSheet();
-  case 'gplace': V.g.place = V.g.place === d.p ? '' : d.p; return giveSheet();
+  case 'gloc': return locSheet({mode: 'give', sel: V.g.loc});
   case 'gsave': return saveGive(false);
   case 'gforce': return saveGive(true);
   case 'gback': return giveSheet();
   case 'dupyes': V.g.pid = d.id; return saveGive(!!V.dupForce);
   case 'dupno': V.g.dupOk = true; return saveGive(!!V.dupForce);
-  case 'gprice': { const g = V.g; const car = carById(g.carId); const it = car.items.find(i => i.id === g.itemId) || car.items[0]; closeSheet();
-    return openNum({title: `Price for one ${it.name ? it.name.toLowerCase() + ' ' : ''}${unit()}`, sub: 'For the rest of this car', value: '', mode: 'money', reopenGive: true,
-      onSave: n => { if (!(n > 0)) return 'Type the price.'; it.price = n; S.settings.price = n; commit(); setTimeout(giveSheet, 50); }}); }
-  case 'taken': { const car = givingCar(); const p = person(d.id); const es = markTaken(d.id, car.id); sfx('bag'); buzz(15); V.pulse = true; V.flash = d.id; render();
-    toast(`${p.name}: ${bagsTxt(sum(es, e => e.bags))} taken, ${money(sum(es, e => e.amount))}`, [{label: 'Undo', act: 'untake', id: es.map(e => e.id).join(',')}, p.phone ? {label: 'Receipt', href: sendHref(p, receiptMsg(p, es)), act: 'rcpt', id: p.id} : null]);
-    return askIfEmpty(car); }
-  case 'taken1': { const e = C().byId.get(d.id); const p = person(e.pid); e.off = nowIso(); e.rcpt = !(p && p.phone); commit(); closeSheet(); sfx('bag'); render(); return toast(`${bagsTxt(e.bags)} taken, ${money(e.amount)}`); }
-  case 'untake': d.id.split(',').forEach(id => { const e = C().byId.get(id); if (e) { e.off = null; e.rcpt = true; } }); commit(); hideToast(); return render();
-  case 'alltaken': { const car = givingCar(); const pids = [...new Set(S.entries.filter(e => e.type === 'give' && e.carId === car.id && !e.off && live(e)).map(e => e.pid))]; pids.forEach(pid => markTaken(pid, car.id)); closeSheet(); sfx('bag'); render(); toast(`${pids.length} marked taken`); if (V.finishing) { V.finishing = false; return act('finish'); } return askIfEmpty(car); }
+  case 'mvyes': { const M = V.mv; movePerson(M.pid, M.loc); closeSheet(); render(); return toast('Her record now says ' + locTxt(M.loc)); }
+  case 'mvno': return closeSheet();
+  case 'cash': { const car = givingCar(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Sold for cash</h3><p>Which one?</p>${car.items.map(i => `<button class="btn ghost" data-act="cashitem" data-i="${i.id}">${esc(i.name)}</button>`).join('')}<button class="btn ghost" data-act="sheetclose">Cancel</button>`); return act('cashitem', {i: car.items[0].id}); }
+  case 'cashitem': { const car = givingCar(); const it = car.items.find(i => i.id === d.i); closeSheet(); if (carStats(car.id).free < 1) return toast('No ' + unit() + 's left in the vehicle');
+    const e = add({type: 'cash', pid: null, carId: car.id, itemId: it.id, bags: 1, price: it.price, amount: it.price}); sfx('coin'); buzz(15); V.pulse = true; render();
+    return toast(`1 ${unit()} sold for cash`, [{label: 'Undo', act: 'undo', id: e.id}]); }
   case 'rcpt': markReceipts(d.id); hideToast(); return render();
   case 'receipts': { const car = givingCar(); const m = pendingReceipts(car ? car.id : null); V.queue = {kind: 'rcpt', ids: [...m.keys()], i: 0, carId: car ? car.id : null}; return queueStep(); }
-  case 'cash': { const car = givingCar(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Sold for cash</h3><p>Which size?</p>${car.items.map(i => `<button class="btn ghost" data-act="cashitem" data-i="${i.id}">${esc(i.name)}, ${money(i.price)}</button>`).join('')}<button class="btn ghost" data-act="sheetclose">Cancel</button>`); return act('cashitem', {i: car.items[0].id}); }
-  case 'cashitem': { const car = givingCar(); const it = car.items.find(i => i.id === d.i); closeSheet(); if (carStats(car.id).free < 1) return toast('No free ' + unit() + 's left in the car');
-    const e = add({type: 'cash', pid: null, carId: car.id, itemId: it.id, bags: 1, price: it.price, amount: it.price}); sfx('coin'); buzz(15); V.pulse = true; render();
-    toast(`1 ${unit()} sold for cash, ${money(it.price)}`, [{label: 'Undo', act: 'undo', id: e.id}]); return askIfEmpty(car); }
-  case 'finish': { closeSheet(); const car = givingCar(); if (!car) return; const st = carStats(car.id);
-    if (st.wait > 0) { V.finishing = true; return sheet(`<h3>${bagsTxt(st.wait)} still waiting</h3><p>Have the women taken them?</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Not yet</button><button class="btn give" data-act="alltaken">All taken</button></div>`); }
-    if (st.free > 0) return sheet(`<h3>${bagsTxt(st.free)} not given</h3><p>What happened to them?</p><button class="btn ghost" data-act="leftcash">Sold for cash</button><button class="btn ghost" data-act="leftmove">Keep for the next car</button><button class="btn ghost" data-act="sheetclose">Not done giving</button>`);
-    finishCar(car); return toRoot('give'); }
-  case 'finishnow': closeSheet(); return act('finish');
-  case 'leftcash': { const car = givingCar(); const st = carStats(car.id); st.items.forEach(I => { if (I.free > 0) add({type: 'cash', pid: null, carId: car.id, itemId: I.id, bags: I.free, price: I.price, amount: r2(I.free * I.price)}); }); closeSheet(); finishCar(car); return toRoot('give'); }
-  case 'leftmove': { const car = givingCar(); const st = carStats(car.id); car.moved += st.free; S.carry = (Number(S.carry) || 0) + st.free; closeSheet(); finishCar(car); return toRoot('give'); }
-  case 'reopen': { const car = carById(d.id); const other = givingCar(); if (other && other.id !== car.id) { other.phase = 'out'; } car.phase = 'giving'; if (car.moved) { S.carry = Math.max(0, (Number(S.carry) || 0) - car.moved); car.moved = 0; } commit(); closeSheet(); toast(`Giving from the ${dmy(car.date)} car again`); return toRoot('give'); }
-  case 'newcar': closeSheet(); V.w = {s: 0, same: true, sub: 0, items: [], si: 0, tmp: '', err: ''}; return push({v: 'newcar'});
+
+  /* in-row correction */
+  case 'qedit': { const e = byId(d.id); V.qe = {id: d.id, n: e.bags}; return render(); }
+  case 'qminus': if (V.qe.n >= 1.5) V.qe.n -= 1; else if (V.qe.n > 0.5 && S.settings.half) V.qe.n = 0.5; return render();
+  case 'qplus': V.qe.n = Math.min(999, V.qe.n + 1); return render();
+  case 'qcancel': V.qe = null; return render();
+  case 'qsave': { const Q = V.qe; V.qe = null; const e = byId(Q.id); if (!e || Q.n === e.bags) return render(); const n = fixGive(Q.id, {bags: Q.n}); const p = person(e.pid); V.flash = n.id; render(); return toast(`${p ? p.name : ''} · ${bagsNum(e.bags)} → ${bagsNum(Q.n)}`, [{label: 'Undo', act: 'unfix', id: n.id}]); }
+
+  /* one line */
+  case 'entry': V.es = null; return entrySheet(d.id);
+  case 'esminus': if (V.es.n >= 1.5) V.es.n -= 1; return entrySheet(V.es.id);
+  case 'esplus': V.es.n = Math.min(999, V.es.n + 1); return entrySheet(V.es.id);
+  case 'eshalf': { const n = V.es.n; V.es.n = Math.abs(n % 1 - 0.5) < 0.01 ? n - 0.5 : n + 0.5; if (V.es.n < 0.5) V.es.n = 0.5; return entrySheet(V.es.id); }
+  case 'essave': { const e = byId(V.es.id); const n = fixGive(V.es.id, {bags: V.es.n}); closeSheet(); V.flash = n.id; render(); return toast(`${bagsNum(e.bags)} → ${bagsNum(V.es.n)}`, [{label: 'Undo', act: 'unfix', id: n.id}]); }
+  case 'eswho': return nameSheet(V.es.id);
+  case 'esloc': { const e = byId(V.es.id); return locSheet({mode: 'entry', id: e.id, sel: e.loc}); }
+  case 'nspick': { const e = byId(V.ns.id); let pid = d.id; if (!pid) { const p = {id: uid(), name: d.name.trim(), phone: '', loc: e.loc || '', note: '', created: nowIso()}; S.people.push(p); pid = p.id; }
+    const from = person(e.pid), to = person(pid); const n = fixGive(e.id, {pid}); closeSheet(); V.flash = n.id; render();
+    return toast(`${bagsTxt(e.bags)}: ${from ? from.name : '?'} → ${to.name}`, [{label: 'Undo', act: 'unfix', id: n.id}]); }
+  case 'unfix': unfix(d.id); hideToast(); return render();
+  case 'hand': { const e = byId(d.id); const by = ((document.getElementById('es_by') || {}).value || '').trim(); const [h] = handOver([e], by); const p = person(e.pid); closeSheet(); sfx('bag'); buzz(15); V.flash = e.id; render();
+    return toast(`${p ? p.name : ''} · ${bagsTxt(e.bags)} handed over`, [{label: 'Undo', act: 'undo', id: h.id}, p && p.phone && !C().linked.has(e.id) ? {label: 'Receipt', href: sendHref(p, receiptMsg(p, [e])), act: 'rcpt', id: p.id} : null]); }
+  case 'handall': { const car = carById(d.id) || givingCar(); const gs = heldOn(car.id); if (!gs.length) return; const hs = handOver(gs, ''); sfx('bag');
+    if (V.sheetKind === 'close') { closeCarSheet(); render(); return; } closeSheet(); render(); return toast(`${bagsTxt(sum(gs, e => e.bags))} handed over`, [{label: 'Undo', act: 'undomany', id: hs.map(h => h.id).join(',')}]); }
+  case 'release': { const e = byId(d.id); undoEntry(d.id, 'release'); closeSheet(); render(); return toast(`${bagsTxt(e.bags)} back in the vehicle`, [{label: 'Undo', act: 'revive', id: d.id}]); }
+  case 'releaseall': { const gs = heldOn(d.id); gs.forEach(e => undoEntry(e.id, 'release')); if (V.sheetKind === 'close') { closeCarSheet(); render(); return; } closeSheet(); return render(); }
+  case 'revive': revive(d.id); hideToast(); return render();
+  case 'undomany': d.id.split(',').forEach(id => undoEntry(id)); hideToast(); return render();
+  case 'undoask': { const e = byId(d.id); return sheet(`<h3>Remove this line?</h3><p>${dmy(givenAt(e) || e.date)}: ${bagsTxt(e.bags)}. It stays in her book, crossed out.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${d.id}">Remove</button></div>`); }
+  case 'undoit': undoEntry(d.id); closeSheet(); hideToast(); return render();
+  case 'undo': undoEntry(d.id); hideToast(); return render();
+  case 'backsheet': V.bk = null; return backSheet(d.id);
+  case 'bkplus': V.bk.n = Math.min(V.bk.max, V.bk.n + 1); return backSheet(V.bk.id);
+  case 'bkminus': V.bk.n = Math.max(0.5, V.bk.n - 1); return backSheet(V.bk.id);
+  case 'bkhalf': { const n = V.bk.n; V.bk.n = Math.abs(n % 1 - 0.5) < 0.01 ? n - 0.5 : n + 0.5; V.bk.n = Math.min(V.bk.max, Math.max(0.5, V.bk.n)); return backSheet(V.bk.id); }
+  case 'bksave': { const e = byId(V.bk.id); add({type: 'back', pid: e.pid, carId: e.carId, ref: e.id, bags: V.bk.n, price: e.price, amount: r2(V.bk.n * e.price)}); closeSheet(); render(); return toast(`${bagsTxt(V.bk.n)} brought back, ${money(V.bk.n * e.price)} off`); }
+
+  /* places */
+  case 'lstown': V.ls.town = d.t; V.ls.spot = ''; V.ls.adding = ''; return locSheet();
+  case 'lsspot': V.ls.spot = d.s; return locSheet();
+  case 'lsaddtown': V.ls.adding = 'town'; return locSheet();
+  case 'lsaddspot': V.ls.adding = 'spot'; return locSheet();
+  case 'lsadd': { const i = document.getElementById('ls_new'); const v = (i && i.value || '').trim(); if (!v) return; if (V.ls.adding === 'spot' && !V.ls.town) { V.ls.adding = 'town'; return locSheet(); } if (V.ls.adding === 'town') { const id = getLoc(v, ''); V.ls.town = locById(id).town; V.ls.spot = ''; } else { const id = getLoc(V.ls.town, v); V.ls.spot = locById(id).spot; } V.ls.adding = ''; commit(); return locSheet(); }
+  case 'lssave': { const L = V.ls; if (!L.town) { if (L.mode === 'setup') { closeSheet(); return render(); } L.adding = 'town'; return locSheet(); }
+    const id = getLoc(L.town, L.spot); commit();
+    if (L.mode === 'give') { V.g.loc = id; return giveSheet(); }
+    if (L.mode === 'entry') { const e = byId(L.id); if (e.loc === id) return closeSheet(); const n = fixGive(L.id, {loc: id}); closeSheet(); V.flash = n.id; render(); return toast(`Now ${locTxt(id)}`, [{label: 'Undo', act: 'unfix', id: n.id}]); }
+    if (L.mode === 'person') { const p = person(L.pid); const before = p.loc; movePerson(L.pid, id, L.mark.trim()); closeSheet(); render(); return before !== id ? toast(`${p.name} now at ${locTxt(id)}`) : null; }
+    closeSheet(); return render(); }
+  case 'addloc': return locSheet({mode: 'setup', sel: ''});
+  case 'ploc': { const p = person(d.id); return locSheet({mode: 'person', pid: p.id, sel: p.loc, mark: p.note || ''}); }
+
+  /* collect */
+  case 'pay': return openPay(d.id, {ctx: 'collect'});
+  case 'paybook': return openPay(d.id, {ctx: 'person'});
+  case 'payload': { const e = byId(d.id); closeSheet(); return openPay(e.pid, {loadId: d.id, ctx: 'person'}); }
+  case 'note': { const P = V.pay; if (P.cur) { P.terms.push(P.cur); P.cur = ''; } P.terms.push(d.n); P.err = ''; P.over = ''; buzz(8); return paySheet(); }
+  case 'method': V.pay.method = d.m; return paySheet();
+  case 'pover': V.pay.over = d.v; V.pay.err = ''; return paySheet();
+  case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.terms = [String(b)]; V.pay.cur = ''; V.pay.err = ''; V.pay.over = ''; return paySheet(); }
+  case 'paydone': { if (!savePay()) return; closeSheet(); render(); return payToast(); }
+  case 'paynext': { const P = V.pay; const nx = nextPayId(P.pid); if (paySum() > 0) { if (!savePay()) return; } render(); if (V.lastPay && V.lastPay.p.id === P.pid && paySum() > 0) payToast(); if (!nx) return closeSheet(); return openPay(nx, {ctx: 'collect'}); }
+  case 'promise': V.pr = null; return promiseSheet(d.id);
+  case 'pron': V.pr.on = d.k; return promiseSheet(V.pr.pid);
+  case 'prhow': V.pr.how = d.h; return promiseSheet(V.pr.pid);
+  case 'prsave': { const P = V.pr; const p = person(P.pid); add({type: 'promise', pid: P.pid, on: P.on, how: P.how}); closeSheet(); render();
+    return toast(`Promise saved: ${dayWord(P.on)}`, [p.phone ? {label: 'Send it to her', href: sendHref(p, msgPromise(p, P.on))} : null]); }
+  case 'refused': { add({type: 'note', kind: 'refused', pid: V.pr.pid}); closeSheet(); render(); return toast('Marked as refused. She goes to the top of the list.'); }
+  case 'remindall': { const ids = remindList(); const none = debtors().filter(x => !x.p.phone && x.st.sev >= 3 && inFilter(x.p)).map(x => x.p.name); V.queue = {kind: 'remind', ids, i: 0, none}; return queueStep(); }
+  case 'remindcar': { const st = carStats(d.id); const owing = st.people.filter(id => ledger(id).loads.some(x => x.carId === d.id && x.left > 0.001)); V.queue = {kind: 'remind', ids: remindList(owing), i: 0, none: owing.filter(id => !person(id).phone).map(id => person(id).name)}; return queueStep(); }
+  case 'qsent': { const Q = V.queue; if (Q.kind === 'rcpt') markReceipts(d.id); else { const p = person(d.id); p.remindedOn = todayK(); commit(); } setTimeout(() => { if (V.queue) { V.queue.i++; queueStep(); } }, 600); return; }
+  case 'qskip': { const Q = V.queue; if (Q.kind === 'rcpt') markReceipts(Q.ids[Q.i]); Q.i++; return queueStep(); }
+  case 'qstop': V.queue = null; closeSheet(); return render();
+  case 'queuedone': closeSheet(); return render();
+
+  /* keypads */
+  case 'key': {
+    if (V.sheetKind === 'pay') return payKey(d.k);
+    if (V.sheetKind === 'qty') { V.qk.v = editNum(V.qk.v, d.k, 'count'); return qtySheet(); }
+    const f = cur(); if (!f) return;
+    if (f.v === 'num') { V.num.value = editNum(V.num.value, d.k, V.num.mode); V.num.err = ''; return render(); }
+    if (f.v === 'newcar') { const W = V.w; const isMoney = W.s === 2 || (W.s === 1 && (W.same ? W.sub === 1 : W.sub === 2)); W.tmp = editNum(W.tmp, d.k, isMoney ? 'money' : 'count'); W.err = ''; return render(); }
+    return; }
+  case 'numchip': V.num.chip = d.c; return render();
+  case 'numsave': { const N = V.num; const err = N.onSave(Number(N.value) || 0, N.chip); if (err) { N.err = err; return render(); } return pop(); }
+
+  /* her page */
+  case 'edit': return editSheet(d.id);
+  case 'edsave': { const p = person(V.ed.pid); const name = document.getElementById('e_name').value.trim(); if (!name) { document.getElementById('e_err').textContent = 'Write her name.'; return; }
+    p.name = name; p.phone = document.getElementById('e_phone').value.trim(); commit(); closeSheet(); return render(); }
+  case 'msg': return msgSheet(d.id);
+  case 'msgkind': return msgSheet(d.id, d.k);
+  case 'msgsent': { const p = person(d.id); p.via = d.via; if (d.k === 'remind') p.remindedOn = todayK(); commit(); setTimeout(closeSheet, 400); return; }
+
+  /* deliveries */
+  case 'newcar': { closeSheet(); const open = givingCar(); if (open) return openClose(open.id, {thenNew: true}); return startWizard(); }
+  case 'closecar': return openClose(d.id || givingCar().id);
+  case 'clopt': V.cl.choice = d.k; return closeCarSheet();
+  case 'cldo': return closeCar();
+  case 'reopen': { const car = carById(d.id); const open = givingCar(); if (open && open.id !== car.id) { closeSheet(); return toast('Close the open delivery first'); }
+    (car.closeIds || []).forEach(id => undoEntry(id)); if (car.closeCarry) S.carry = Math.max(0, (Number(S.carry) || 0) - car.closeCarry);
+    car.closeIds = []; car.closeCarry = 0; car.phase = 'giving'; commit(); closeSheet(); toast(`${carName(car)} is open again`); return toRoot('give'); }
+  case 'price': { const car = carById(d.id); closeSheet(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Which price?</h3>${car.items.map(i => `<button class="btn ghost" data-act="priceitem" data-id="${car.id}" data-i="${i.id}">${esc(i.name)} · ${money(i.price)}</button>`).join('')}`); return act('priceitem', {id: car.id, i: car.items[0].id}); }
+  case 'priceitem': { const car = carById(d.id); const it = car.items.find(i => i.id === d.i); closeSheet();
+    return openNum({title: `Price for one ${it.name ? it.name.toLowerCase() + ' ' : ''}${unit()}`, sub: 'From now on, for this delivery', mode: 'money', onSave: n => { if (!(n > 0)) return 'Type the price.'; it.price = n; S.settings.price = n; commit(); }}); }
+  case 'label': closeSheet(); return labelSheet(d.id);
+  case 'lbchip': { const i = document.getElementById('lb_in'); if (i) i.value = d.l; return; }
+  case 'lbsave': { const car = carById(d.id); car.label = (document.getElementById('lb_in').value || '').trim(); commit(); closeSheet(); return render(); }
+  case 'wlabel': V.w.label = d.l; return render();
+  case 'fixcount': { const car = carById(d.id); closeSheet(); return openNum({title: `How many ${unit()}s are in the vehicle?`, sub: 'Count them, held ones included', mode: 'count', onSave: n => { const st = carStats(car.id); const diff = n - st.inCar; if (diff) add({type: 'stock', carId: car.id, bags: diff, reason: 'count'}); toast('Count fixed'); }}); }
+  case 'addcost': { const car = carById(d.id); closeSheet(); return openNum({title: 'Add a cost', sub: carName(car), mode: 'money', chips: ['Load', 'Transport', 'Loading', 'Market toll', 'Other'], chip: (car.costs || []).length ? 'Transport' : 'Load', onSave: (n, chip) => { if (!(n > 0)) return 'Type the amount.'; car.costs = car.costs || []; car.costs.push({id: uid(), name: chip || 'Other', amount: n}); commit(); }}); }
   case 'wback': return wizBack();
   case 'wsame': Object.assign(V.w, {same: true, s: 1, sub: 0, items: [{id: uid(), name: '', count: 0, price: 0}], si: 0, tmp: S.carry ? String(S.carry) : '', err: ''}); return render();
   case 'wdiff': Object.assign(V.w, {same: false, s: 1, sub: 0, items: [{id: uid(), name: '', count: 0, price: 0}], si: 0, tmp: '', err: ''}); return render();
@@ -1405,100 +1738,29 @@ function act(a, d, el) {
   case 'wdone': V.w.s = 2; V.w.tmp = ''; return render();
   case 'wlast': V.w.items[0].price = Number(S.settings.price) || 0; V.w.s = 2; V.w.tmp = ''; return render();
   case 'wnext': { const W = V.w; const n = +W.tmp || 0; const it = W.items[W.si]; W.err = '';
-    if (W.sub === 0 && W.same || W.sub === 1 && !W.same) { if (!(n > 0)) { W.err = 'Type how many.'; return render(); } it.count = n; W.sub = W.same ? 1 : 2; W.tmp = ''; return render(); }
+    if ((W.sub === 0 && W.same) || (W.sub === 1 && !W.same)) { if (!(n > 0)) { W.err = 'Type how many.'; return render(); } it.count = n; W.sub = W.same ? 1 : 2; W.tmp = ''; return render(); }
     if (!(n > 0)) { W.err = 'Type the price.'; return render(); }
     it.price = n; W.tmp = ''; if (W.same) W.s = 2; else W.sub = 3; return render(); }
   case 'wfinish': { const W = V.w; const cost = d.skip ? 0 : +W.tmp || 0;
-    const car = {id: uid(), date: nowIso(), items: W.items.map(i => ({id: i.id, name: W.same ? '' : i.name, count: i.count, price: i.price})), adjust: 0, moved: 0, costs: cost ? [{id: uid(), name: 'Car', amount: cost}] : [], phase: 'giving'};
-    S.cars.forEach(c => { if (c.phase === 'giving') c.phase = 'out'; });
+    const car = {id: uid(), date: nowIso(), label: (W.label || '').trim(), items: W.items.map(i => ({id: i.id, name: W.same ? '' : i.name, count: i.count, price: i.price})), costs: cost ? [{id: uid(), name: 'Load', amount: cost}] : [], phase: 'giving'};
     S.cars.push(car); S.carry = 0; S.settings.price = car.items[0].price; commit(); V.w = null; return toRoot('give'); }
-
-  /* collect */
-  case 'place': V.place = d.p; return render();
-  case 'startrun': return startRun();
-  case 'carrun': return startRun({carId: d.id});
-  case 'runnext': V.run.i++; return render();
-  case 'runprev': V.run.i = Math.max(0, V.run.i - 1); return render();
-  case 'runend': V.run = null; return pop();
-  case 'runall': { const id = V.run.ids[V.run.i]; const p = person(id); const bal = ledger(id).bal; const outBefore = new Map(S.cars.filter(c => c.phase === 'out').map(c => [c.id, carStats(c.id).out]));
-    const e = add({type: 'pay', pid: id, amount: bal, method: 'cash', loadId: null, carId: null}); V.run.got += bal; V.run.paid++; V.run.i++;
-    sfx('cash'); buzz(25); setTimeout(() => { sfx('thud'); coins(12); }, 220); render();
-    const done = S.cars.find(c => c.phase === 'out' && outBefore.get(c.id) > 0.001 && carStats(c.id).out <= 0.001); if (done) setTimeout(() => celebrate(done), 900);
-    return toast(`${p.name} paid ${money(bal)}`, [{label: 'Undo', act: 'undopayrun', id: e.id}, p.phone ? {label: 'Receipt', href: sendHref(p, msgPay(p, bal, 0))} : null]); }
-  case 'undopayrun': { const e = C().byId.get(d.id); undoEntry(d.id); if (V.run && e) { V.run.got = r2(V.run.got - e.amount); V.run.paid = Math.max(0, V.run.paid - 1); const i = V.run.ids.indexOf(e.pid); if (i >= 0) V.run.i = i; } hideToast(); return render(); }
-  case 'runsome': return openPay(V.run.ids[V.run.i], {run: true});
-  case 'runnot': V.pr = null; return promiseSheet(V.run.ids[V.run.i]);
-  case 'promise': V.pr = null; return promiseSheet(d.id);
-  case 'pron': V.pr.on = d.k; return promiseSheet(V.pr.pid);
-  case 'prhow': V.pr.how = d.h; return promiseSheet(V.pr.pid);
-  case 'prsave': { const P = V.pr; const p = person(P.pid); add({type: 'promise', pid: P.pid, on: P.on, how: P.how}); closeSheet(); const inRun = cur() && cur().v === 'run'; if (inRun) { V.run.promised++; V.run.i++; } render();
-    return toast(`Promise saved: ${dayWord(P.on)}`, [p.phone ? {label: 'Send it to her', href: sendHref(p, msgPromise(p, P.on))} : null]); }
-  case 'refused': { const P = V.pr; add({type: 'note', kind: 'refused', pid: P.pid}); closeSheet(); const inRun = cur() && cur().v === 'run'; if (inRun) { V.run.refused++; V.run.i++; } render(); return toast('Marked as refused. She goes to the top of the list.'); }
-  case 'remindall': { const ids = remindList(); const none = debtors().filter(x => !x.p.phone && x.st.sev >= 3).map(x => x.p.name); V.queue = {kind: 'remind', ids, i: 0, none}; return queueStep(); }
-  case 'qsent': { const Q = V.queue; if (Q.kind === 'rcpt') markReceipts(d.id); else { const p = person(d.id); p.remindedOn = todayK(); commit(); } setTimeout(() => { if (V.queue) { V.queue.i++; queueStep(); } }, 600); return; }
-  case 'qskip': { const Q = V.queue; if (Q.kind === 'rcpt') markReceipts(Q.ids[Q.i]); Q.i++; return queueStep(); }
-  case 'qstop': V.queue = null; closeSheet(); return render();
-  case 'queuedone': closeSheet(); return render();
-
-  /* pay */
-  case 'pay': closeSheet(); return openPay(d.id);
-  case 'payload': { const e = C().byId.get(d.id); closeSheet(); return openPay(e.pid, {loadId: d.id}); }
-  case 'note': { const P = V.pay; if (P.cur) { P.terms.push(P.cur); P.cur = ''; } P.terms.push(d.n); V.payErr = ''; buzz(8); return render(); }
-  case 'method': V.method = d.m; return render();
-  case 'payall': V.pay = {terms: [String(ledger(cur().pid).bal)], cur: ''}; return render();
-  case 'paydone': return payDone();
-  case 'key': { const f = cur(); if (!f) return;
-    if (f.v === 'pay') return payKey(d.k);
-    if (f.v === 'num') { V.num.value = editNum(V.num.value, d.k, V.num.mode); V.num.err = ''; return render(); }
-    if (f.v === 'newcar') { const W = V.w; const isMoney = W.s === 2 || (W.s === 1 && (W.same ? W.sub === 1 : W.sub === 2)); W.tmp = editNum(W.tmp, d.k, isMoney ? 'money' : 'count'); W.err = ''; return render(); }
-    return; }
-  case 'numchip': V.num.chip = d.c; return render();
-  case 'numsave': { const N = V.num; const err = N.onSave(Number(N.value) || 0, N.chip); if (err) { N.err = err; return render(); } return pop(); }
-
-  /* her page */
-  case 'line': return lineSheet(d.id);
-  case 'undoask': { const e = C().byId.get(d.id); return sheet(`<h3>Undo this line?</h3><p>${dmy(e.off || e.date)}: ${bagsTxt(e.bags)}. It stays in the book with a line through it.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn give" data-act="undoit" data-id="${d.id}">Undo it</button></div>`); }
-  case 'undoit': undoEntry(d.id); closeSheet(); hideToast(); return render();
-  case 'undo': undoEntry(d.id); hideToast(); return render();
-  case 'backsheet': V.bk = null; return backSheet(d.id);
-  case 'bkplus': V.bk.n = Math.min(V.bk.max, V.bk.n + 1); return backSheet(V.bk.id);
-  case 'bkminus': V.bk.n = Math.max(0.5, V.bk.n - 1); return backSheet(V.bk.id);
-  case 'bkhalf': { const n = V.bk.n; V.bk.n = Math.abs(n % 1 - 0.5) < 0.01 ? n - 0.5 : n + 0.5; V.bk.n = Math.min(V.bk.max, Math.max(0.5, V.bk.n)); return backSheet(V.bk.id); }
-  case 'bksave': { const e = C().byId.get(V.bk.id); add({type: 'back', pid: e.pid, carId: e.carId, ref: e.id, bags: V.bk.n, price: e.price, amount: r2(V.bk.n * e.price)}); closeSheet(); render(); return toast(`${bagsTxt(V.bk.n)} brought back, ${money(V.bk.n * e.price)} off`); }
-  case 'edit': return editSheet(d.id);
-  case 'edplace': V.ed.place = V.ed.place === d.p ? '' : d.p; document.getElementById('e_places').innerHTML = placeChipsEd(); return;
-  case 'edsave': { const E = V.ed; const p = person(E.pid); const name = E.name.trim(); if (!name) { document.getElementById('e_err').textContent = 'Write her name.'; return; }
-    p.name = name; p.phone = E.phone.trim(); p.note = E.note.trim(); p.place = E.place; commit(); closeSheet(); return render(); }
-  case 'msg': return msgSheet(d.id);
-  case 'msgkind': return msgSheet(d.id, d.k);
-  case 'msgsent': { const p = person(d.id); p.via = d.via; if (d.k === 'remind') p.remindedOn = todayK(); commit(); setTimeout(closeSheet, 400); return; }
-
-  /* car */
-  case 'fixcount': { const car = carById(d.id); closeSheet(); return openNum({title: `How many ${unit()}s are in the car?`, sub: 'Count them, then type the number', mode: 'count', onSave: n => { const st = carStats(car.id); car.adjust += n - st.inCar; commit(); toast('Count fixed'); }}); }
-  case 'addcost': { const car = carById(d.id); closeSheet(); return openNum({title: 'Add a cost', sub: 'Car ' + dmy(car.date), mode: 'money', chips: ['Car', 'Transport', 'Loading', 'Market toll', 'Other'], chip: (car.costs || []).length ? 'Transport' : 'Car', onSave: (n, chip) => { if (!(n > 0)) return 'Type the amount.'; car.costs = car.costs || []; car.costs.push({id: uid(), name: chip || 'Other', amount: n}); commit(); }}); }
-
-  /* places */
-  case 'addplace': V.placeFor = d.for || ''; sheet(`<h3>New market</h3><div class="field"><input id="plname" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Kejetia" aria-label="Market name"></div><div class="err" id="plerr"></div><div class="bar"><button class="btn ghost" data-act="placecancel">Cancel</button><button class="btn ink" data-act="saveplace">Add</button></div>`); setTimeout(() => { const i = document.getElementById('plname'); if (i) i.focus(); }, 60); return;
-  case 'placecancel': closeSheet(); if (V.placeFor === 'give') return giveSheet(); if (V.placeFor === 'edit') return editSheet(V.ed.pid, true); return;
-  case 'saveplace': { const i = document.getElementById('plname'); const n = (i && i.value || '').trim(); if (!n) { document.getElementById('plerr').textContent = 'Write the market name first.'; return; }
-    const ex = S.places.find(x => x.toLowerCase() === n.toLowerCase()); const name = ex || n; if (!ex) S.places.push(n); commit(); closeSheet();
-    if (V.placeFor === 'give') { V.g.place = name; return giveSheet(); } if (V.placeFor === 'edit') { V.ed.place = name; return editSheet(V.ed.pid, true); } return render(); }
-  case 'delplace': S.places = S.places.filter(x => x !== d.p); commit(); return render();
 
   /* settings, backup */
   case 'setseg': S.settings[d.k] = d.v; commit(); return render();
   case 'togglesound': S.settings.sound = S.settings.sound === false; commit(); if (S.settings.sound) sfx('cash'); return render();
+  case 'togglehalf': S.settings.half = S.settings.half === false; commit(); return render();
+  case 'setupdone': S.setup = true; commit(); return toRoot('give');
   case 'backupsheet': return backupSheet();
   case 'backup': closeSheet(); return doBackup();
   case 'restore': { const rf = document.getElementById('restorefile'); if (rf) rf.click(); return; }
   case 'restoreyes': { if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; } closeSheet(); toast('Your book is back'); return toRoot('give'); }
-  case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be undone. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn give" data-act="wipeyes">Delete</button></div>`);
-  case 'wipeyes': S = blank(); commit(); closeSheet(); return toRoot('give');
+  case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be undone. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
+  case 'wipeyes': S = blank(); commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
   case 'calc': return calcSheet();
   case 'ck': return calcKey(d.k);
   case 'celclose': { const c = layer.querySelector('.celebrate'); if (c) c.remove(); return; }
-  case 'demo': closeSheet(); V.realS = S; V.demo = true; S = demoData(); VER++; return toRoot('give');
-  case 'leavedemo': S = V.realS; V.realS = null; V.demo = false; VER++; closeSheet(); hideToast(); return toRoot('give');
+  case 'demo': closeSheet(); V.realS = S; V.demo = true; S = demoData(); VER++; V.fTown = ''; V.fLoc = ''; return toRoot('give');
+  case 'leavedemo': S = V.realS; V.realS = null; V.demo = false; VER++; V.fTown = ''; V.fLoc = ''; closeSheet(); hideToast(); toRoot('give'); if (!S.setup && !S.people.length && !S.cars.length) push({v: 'setup'}); return;
   }
 }
 
@@ -1512,10 +1774,13 @@ document.addEventListener('click', e => {
 
 /* ---------- start ---------- */
 if (S.migrated) { delete S.migrated; commit(); setTimeout(() => toast('Your book from version 1 is here. Nothing was lost.'), 500); }
+else if (S.v === 3 && S.entries.length) save();
 if (!givingCar() && debtors().some(x => x.st.sev >= 3)) V.tab = 'collect';
 try { history.replaceState({root: 1}, ''); history.pushState({g: 1}, ''); } catch (e) {}
+if (!S.setup && !S.people.length && !S.cars.length) { V.stack = [{v: 'setup'}]; try { history.pushState({d: 1}, ''); } catch (e) {} }
 render();
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
+
 </script>
 </body>
 </html>
