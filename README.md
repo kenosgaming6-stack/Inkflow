@@ -18,7 +18,7 @@ Three tabs at the bottom. Give and Collect never send you to another page; every
 - **Book**: everyone, by place, and every delivery.
   - **Her page:** where she sells now (tap to change it) and what she owes, then one list of everything she took and paid. Each line keeps the delivery and the place it happened at.
 
-Nothing is ever overwritten. Corrections, handovers, releases and moves are new lines. Undo crosses a line out.
+Nothing is ever overwritten. Corrections, handovers, releases and moves are new lines. There is no Undo button: to fix a mistake, tap the line and change it, or remove it (it stays in her book, crossed out). A cash sale entered by mistake is taken off by tapping the cash line.
 
 **Closing a delivery:** you can only close once no bags are held. Then choose what happened to what's left: kept for the next delivery, sent back, spoiled or lost, sold for cash, or the count was wrong.
 

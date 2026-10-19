@@ -222,8 +222,8 @@ rep("""function backupSheet() {
     <button class="btn ghost" data-act="backup">${svg('cloud')} Also save a backup file</button><button class="btn ghost" data-act="sheetclose">Close</button>`);""")
 
 # ---- wording that changes when the book is also online
-rep("<p>This cannot be undone. Back up first if you are not sure.</p>",
-    "<p>This cannot be undone.${CL.on ? ' It also deletes the copy saved online.' : ''} Back up first if you are not sure.</p>")
+rep("<p>This cannot be reversed. Back up first if you are not sure.</p>",
+    "<p>This cannot be reversed.${CL.on ? ' It also deletes the copy saved online.' : ''} Back up first if you are not sure.</p>")
 rep("It replaces the book on this phone.</p>", "It replaces the book on this phone${CL.on ? ' and online' : ''}.</p>")
 
 # ---- messages: SMS links may do nothing inside the viewer, so the text can be copied too

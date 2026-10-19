@@ -89,8 +89,6 @@ a{color:inherit;text-decoration:none}
 .mid.center::before{content:"";flex:1 1 auto}
 .mid.run{background:var(--page);padding:12px}
 .mid.run::before,.mid.run::after{content:"";flex:1 1 auto}
-*{scrollbar-width:none}
-*::-webkit-scrollbar{display:none;width:0;height:0}
 .enter{animation:enter .16s ease-out}
 .ptabs{margin-top:10px;display:flex;align-items:center;gap:6px}
 .ptabs .chips{flex:1;min-width:0;margin-right:0;padding-right:0}
@@ -230,7 +228,8 @@ a{color:inherit;text-decoration:none}
 @keyframes pop{from{transform:scale(.6);opacity:0}}
 .toast{position:absolute;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:6px;padding:8px 8px 8px 14px;border-radius:14px;background:var(--text);color:var(--paper);font-size:15px;box-shadow:0 8px 22px rgba(0,0,0,.25);animation:pop .17s ease-out;z-index:40}
 .toast span{flex:1;padding:4px 0}
-.toast.in-dock{position:static;box-shadow:none}
+.toast{pointer-events:none}
+.toast button,.toast a{pointer-events:auto}
 .toast.still{animation:none}
 .toast button,.toast a{flex:none;font-weight:700;padding:9px 12px;border-radius:10px;background:var(--paper);color:var(--text);font-size:14px}
 .field{display:flex;flex-direction:column;gap:5px}
@@ -376,6 +375,13 @@ a{color:inherit;text-decoration:none}
 <div id="shell"><div id="app"></div><div id="layer"></div></div>
 <script>
 'use strict';
+/* if something breaks while opening, say so on screen instead of showing a blank page */
+window.addEventListener('error', ev => {
+  const a = document.getElementById('app'); if (!a || a.querySelector('.top')) return;
+  a.innerHTML = '<div style="padding:24px 18px;display:flex;flex-direction:column;gap:12px"><h2 style="margin:0">StallBook could not open</h2><p style="margin:0">Your book is still saved on this phone. Take a screenshot of this and send it.</p><p style="margin:0;color:#BE2329;word-break:break-word"></p><button style="padding:14px;border-radius:12px;background:#24307A;color:#fff;font-weight:700">Try again</button></div>';
+  a.querySelectorAll('p')[1].textContent = String(ev.message || ev.error || 'Unknown error') + (ev.lineno ? ' (line ' + ev.lineno + ')' : '');
+  a.querySelector('button').addEventListener('click', () => location.reload());
+});
 /*
   StallBook v4: a credit book for market traders.
   One file, works offline, data stays on this phone (back it up to WhatsApp).
@@ -400,7 +406,7 @@ a{color:inherit;text-decoration:none}
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '4.1';
+const APP_VERSION = '4.2';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -836,15 +842,15 @@ function toast(msg, actions) {
   t.innerHTML = `<span>${esc(msg)}</span>` + actions.map(a => a.href
     ? `<a href="${esc(a.href)}" ${linkAttrs(a.href)} data-act="${a.act || 'noop'}" data-id="${esc(a.id || '')}">${esc(a.label)}</a>`
     : `<button data-act="${a.act}" data-id="${esc(a.id || '')}">${esc(a.label)}</button>`).join('');
-  toastNode = t; placeToast(); clearTimeout(toastT); toastT = setTimeout(hideToast, actions.length ? 5500 : 3200);
+  toastNode = t; placeToast(); clearTimeout(toastT); toastT = setTimeout(hideToast, actions.length ? 3000 : 1500);
 }
-/* inside the bottom bar the list moves up instead of being covered */
+/* floats just above the bottom bar: nothing moves, and taps go through to the list */
 function placeToast() {
   if (!toastNode) return;
-  const dock = app.querySelector('.dock'), m = document.getElementById('mid');
-  const atBottom = m && m.scrollHeight - m.scrollTop - m.clientHeight < 6;
-  if (dock) { toastNode.classList.add('in-dock'); dock.prepend(toastNode); } else { toastNode.classList.remove('in-dock'); layer.appendChild(toastNode); }
-  if (m && atBottom) m.scrollTop = m.scrollHeight;
+  const dock = app.querySelector('.dock'), shell = document.getElementById('shell');
+  const above = dock ? shell.getBoundingClientRect().bottom - dock.getBoundingClientRect().top : 0;
+  toastNode.style.bottom = (above + 10) + 'px';
+  if (toastNode.parentNode !== layer) layer.appendChild(toastNode);
 }
 function hideToast() { if (toastNode) toastNode.remove(); toastNode = null; }
 
@@ -953,7 +959,7 @@ function viewGive() {
   if (!gives.length && !cashHere) mid += `<div class="empty"><h2>Nobody yet</h2><p>Type a name below, or tap a face.</p></div>`;
   if (held.length) mid += `<div class="sect w"><span>${svg('clock', 16)} Held · ${bagsTxt(sum(held, e => e.bags))}</span><button class="mini" data-act="handall" data-id="${car.id}" data-loc="${tabs.length ? tab : '*'}">Hand over all</button></div>`;
   mid += inOrder.map(e => row(e, !givenAt(e))).join('');
-  if (cashHere) mid += `<div class="row cashline" style="min-height:44px"><div class="who"><div class="sub" style="color:var(--paid)">${svg('cash', 18)} ${bagsTxt(cashHere)}</div></div></div>`;
+  if (cashHere) mid += `<button class="row cashline" style="min-height:44px" data-act="cashfix" data-loc="${tabs.length ? tab : '*'}"><div class="who"><div class="sub" style="color:var(--paid)">${svg('cash', 18)} ${bagsTxt(cashHere)}</div></div></button>`;
   mid += '</div>';
   const bagsAt = id => sum(S.entries.filter(e => (e.type === 'give' || e.type === 'cash') && e.carId === car.id && live(e) && locKey(e) === id), e => e.bags);
   const tabRow = `<div class="ptabs">${tabs.length ? `<div class="chips">${tabs.map(id => `<button class="chip ${id === tab ? 'on' : ''}" data-act="gtab" data-id="${id}">${id ? esc(locTxt(id)) : 'No place'}<em>${bagsNum(bagsAt(id))}</em></button>`).join('')}</div>` : ''}<button class="chip dash" data-act="here" aria-label="Add a place">${tabs.length ? svg('plus', 18) : svg('plus', 18) + ' Place'}</button></div>`;
@@ -965,8 +971,11 @@ function viewGive() {
   const slide = V.slide; V.slide = null;
   return {top, mid, cls: 'book' + (slide ? ' slide-' + slide : ''), dock, tabs: true, anchor: 'top', after: () => {
     attachFind();
-    const f = app.querySelector('#mid .flash'); if (f) f.scrollIntoView({block: 'nearest'});
-    const on = app.querySelector('.ptabs .chip.on'); if (on) on.scrollIntoView({block: 'nearest', inline: 'nearest'});
+    /* bring the new line and the open tab into view, moving only their own lists */
+    const m0 = document.getElementById('mid'), f = m0.querySelector('.flash');
+    if (f) { const fr = f.getBoundingClientRect(), mr = m0.getBoundingClientRect(); if (fr.bottom > mr.bottom) m0.scrollTop += fr.bottom - mr.bottom + 8; }
+    const row = app.querySelector('.ptabs .chips'), on = row && row.querySelector('.chip.on');
+    if (on) { const rr = row.getBoundingClientRect(), cr = on.getBoundingClientRect(); if (cr.right > rr.right) row.scrollLeft += cr.right - rr.right + 12; else if (cr.left < rr.left) row.scrollLeft -= rr.left - cr.left + 12; }
     V.flash = null;
     /* swipe the list left or right to go to the next place */
     const m = document.getElementById('mid'); let sx = 0, sy = 0, t0 = 0;
@@ -1090,8 +1099,6 @@ function saveGive(force) {
   const e = add({type: 'give', pid: p.id, carId: car.id, itemId: item.id, bags: g.bags, price: item.price, amount: r2(g.bags * item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: g.hold ? true : !p.phone});
   V.lastSave = Date.now();
   closeSheet(); sfx('bag'); buzz(15); V.pulse = true; V.flash = e.id; render();
-  const what = g.hold ? 'held' : 'given';
-  toast(`${p.name} · ${bagsTxt(e.bags)} ${what}`, [{label: 'Undo', act: 'undo', id: e.id}, !g.hold && p.phone ? {label: 'Receipt', href: sendHref(p, receiptMsg(p, pendingReceipts(car.id).get(p.id) || [e])), act: 'rcpt', id: p.id} : null]);
 }
 
 /* one line: hand over, release, correct, change customer or spot */
@@ -1117,9 +1124,9 @@ function entrySheet(id) {
       ${canBack ? `<button class="btn ghost" data-act="backsheet" data-id="${id}">${svg('ret')} She brought some back</button>` : ''}
       <button class="btn ghost redtext" data-act="undoask" data-id="${id}">Remove this line</button>`);
   }
-  if (e.type === 'move') return sheet(`<i class="grab"></i><h3>Moved to ${esc(locTxt(e.to) || 'no place')}</h3><p>${dmy(e.date)}, from ${esc(locTxt(e.from) || 'no place')}.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${id}">Undo the move</button></div>`);
+  if (e.type === 'move') return sheet(`<i class="grab"></i><h3>Moved to ${esc(locTxt(e.to) || 'no place')}</h3><p>${dmy(e.date)}, from ${esc(locTxt(e.from) || 'no place')}.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${id}">Remove</button></div>`);
   const what = e.type === 'pay' ? `Paid ${money(e.amount)}` : e.type === 'back' ? `Brought back ${bagsTxt(e.bags)}` : e.type === 'promise' ? `Promise for ${dayWord(e.on)}` : 'Refused to pay';
-  sheet(`<i class="grab"></i><h3>${dmy(e.date)}: ${what}</h3><p>${esc(p ? p.name : '')}</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${id}">Undo it</button></div>`);
+  sheet(`<i class="grab"></i><h3>${dmy(e.date)}: ${what}</h3><p>${esc(p ? p.name : '')}</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${id}">Remove</button></div>`);
 }
 function nameSheet(id) {
   const e = byId(id); V.ns = {id};
@@ -1242,7 +1249,7 @@ function savePay() {
   V.lastPay = {e, p, amount, bal};
   return true;
 }
-function payToast() { const {e, p, amount, bal} = V.lastPay; toast(`${p.name} paid ${money(amount)}`, [{label: 'Undo', act: 'undo', id: e.id}, p.phone ? {label: 'Receipt', href: sendHref(p, msgPay(p, amount, bal))} : null]); }
+function payToast() { const {e, p, amount, bal} = V.lastPay; toast(`${p.name} paid ${money(amount)}`, [p.phone ? {label: 'Receipt', href: sendHref(p, msgPay(p, amount, bal))} : null]); }
 function celebrate(car) {
   sfx('win'); buzz([30, 60, 30, 60, 90]); coins(26);
   const o = document.createElement('div'); o.className = 'celebrate';
@@ -1651,7 +1658,7 @@ function act(a, d, el) {
   case 'cash': { const car = givingCar(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Sold for cash</h3><p>Which one?</p>${car.items.map(i => `<button class="btn ghost" data-act="cashitem" data-i="${i.id}">${esc(i.name)}</button>`).join('')}<button class="btn ghost" data-act="sheetclose">Cancel</button>`); return act('cashitem', {i: car.items[0].id}); }
   case 'cashitem': { const car = givingCar(); const it = car.items.find(i => i.id === d.i); closeSheet(); if (carStats(car.id).free < 1) return toast('No ' + unit() + 's left in the vehicle');
     const e = add({type: 'cash', pid: null, carId: car.id, itemId: it.id, bags: 1, price: it.price, amount: it.price, loc: locById(S.lastLoc) ? S.lastLoc : ''}); sfx('coin'); buzz(15); V.pulse = true; render();
-    return toast(`1 ${unit()} sold for cash`, [{label: 'Undo', act: 'undo', id: e.id}]); }
+    return; }
   case 'rcpt': markReceipts(d.id); hideToast(); return render();
   case 'receipts': { const car = givingCar(); const m = pendingReceipts(car ? car.id : null); V.queue = {kind: 'rcpt', ids: [...m.keys()], i: 0, carId: car ? car.id : null}; return queueStep(); }
 
@@ -1660,31 +1667,30 @@ function act(a, d, el) {
   case 'qminus': if (V.qe.n >= 1.5) V.qe.n -= 1; else if (V.qe.n > 0.5 && S.settings.half) V.qe.n = 0.5; return render();
   case 'qplus': V.qe.n = Math.min(999, V.qe.n + 1); return render();
   case 'qcancel': V.qe = null; return render();
-  case 'qsave': { const Q = V.qe; V.qe = null; const e = byId(Q.id); if (!e || Q.n === e.bags) return render(); const n = fixGive(Q.id, {bags: Q.n}); const p = person(e.pid); V.flash = n.id; render(); return toast(`${p ? p.name : ''} · ${bagsNum(e.bags)} → ${bagsNum(Q.n)}`, [{label: 'Undo', act: 'unfix', id: n.id}]); }
+  case 'qsave': { const Q = V.qe; V.qe = null; const e = byId(Q.id); if (!e || Q.n === e.bags) return render(); const n = fixGive(Q.id, {bags: Q.n}); const p = person(e.pid); V.flash = n.id; render(); return toast(`${p ? p.name : ''} · ${bagsNum(e.bags)} → ${bagsNum(Q.n)}`, []); }
 
   /* one line */
   case 'entry': V.es = null; return entrySheet(d.id);
   case 'esminus': if (V.es.n >= 1.5) V.es.n -= 1; return entrySheet(V.es.id);
   case 'esplus': V.es.n = Math.min(999, V.es.n + 1); return entrySheet(V.es.id);
   case 'eshalf': { const n = V.es.n; V.es.n = Math.abs(n % 1 - 0.5) < 0.01 ? n - 0.5 : n + 0.5; if (V.es.n < 0.5) V.es.n = 0.5; return entrySheet(V.es.id); }
-  case 'essave': { const e = byId(V.es.id); const n = fixGive(V.es.id, {bags: V.es.n}); closeSheet(); V.flash = n.id; render(); return toast(`${bagsNum(e.bags)} → ${bagsNum(V.es.n)}`, [{label: 'Undo', act: 'unfix', id: n.id}]); }
+  case 'essave': { const e = byId(V.es.id); const n = fixGive(V.es.id, {bags: V.es.n}); closeSheet(); V.flash = n.id; render(); return toast(`${bagsNum(e.bags)} → ${bagsNum(V.es.n)}`, []); }
   case 'eswho': return nameSheet(V.es.id);
   case 'esloc': { const e = byId(V.es.id); return locSheet({mode: 'entry', id: e.id, sel: e.loc}); }
   case 'nspick': { const e = byId(V.ns.id); let pid = d.id; if (!pid) { const p = {id: uid(), name: d.name.trim(), phone: '', loc: e.loc || '', note: '', created: nowIso()}; S.people.push(p); pid = p.id; }
     const from = person(e.pid), to = person(pid); const n = fixGive(e.id, {pid}); closeSheet(); V.flash = n.id; render();
-    return toast(`${bagsTxt(e.bags)}: ${from ? from.name : '?'} → ${to.name}`, [{label: 'Undo', act: 'unfix', id: n.id}]); }
-  case 'unfix': unfix(d.id); hideToast(); return render();
+    return toast(`${bagsTxt(e.bags)}: ${from ? from.name : '?'} → ${to.name}`, []); }
   case 'hand': { const e = byId(d.id); const by = ((document.getElementById('es_by') || {}).value || '').trim(); const [h] = handOver([e], by); const p = person(e.pid); closeSheet(); sfx('bag'); buzz(15); V.flash = e.id; render();
-    return toast(`${p ? p.name : ''} · ${bagsTxt(e.bags)} handed over`, [{label: 'Undo', act: 'undo', id: h.id}, p && p.phone && !C().linked.has(e.id) ? {label: 'Receipt', href: sendHref(p, receiptMsg(p, [e])), act: 'rcpt', id: p.id} : null]); }
+    return toast(`${p ? p.name : ''} · ${bagsTxt(e.bags)} handed over`, [p && p.phone && !C().linked.has(e.id) ? {label: 'Receipt', href: sendHref(p, receiptMsg(p, [e])), act: 'rcpt', id: p.id} : null]); }
   case 'handall': { const car = carById(d.id) || givingCar(); const gs = heldOn(car.id).filter(e => d.loc === undefined || d.loc === '*' || locKey(e) === d.loc); if (!gs.length) return; const hs = handOver(gs, ''); sfx('bag');
-    if (V.sheetKind === 'close') { closeCarSheet(); render(); return; } closeSheet(); render(); return toast(`${bagsTxt(sum(gs, e => e.bags))} handed over`, [{label: 'Undo', act: 'undomany', id: hs.map(h => h.id).join(',')}]); }
-  case 'release': { const e = byId(d.id); undoEntry(d.id, 'release'); closeSheet(); render(); return toast(`${bagsTxt(e.bags)} back in the vehicle`, [{label: 'Undo', act: 'revive', id: d.id}]); }
+    if (V.sheetKind === 'close') { closeCarSheet(); render(); return; } closeSheet(); render(); return toast(`${bagsTxt(sum(gs, e => e.bags))} handed over`, []); }
+  case 'cashfix': { const car = givingCar(); const cs = S.entries.filter(e => e.type === 'cash' && e.carId === car.id && live(e) && (d.loc === '*' || locKey(e) === d.loc));
+    return sheet(`<i class="grab"></i><h3>${svg('cash', 22)} ${bagsTxt(sum(cs, e => e.bags))}</h3><div class="bar"><button class="btn ghost" data-act="sheetclose">Close</button><button class="btn danger" data-act="cashless" data-loc="${esc(d.loc)}">− 1</button></div>`); }
+  case 'cashless': { const car = givingCar(); const cs = S.entries.filter(e => e.type === 'cash' && e.carId === car.id && live(e) && (d.loc === '*' || locKey(e) === d.loc)); if (cs.length) undoEntry(cs[cs.length - 1].id); V.pulse = true; render(); return cs.length > 1 ? act('cashfix', d) : closeSheet(); }
+  case 'release': { const e = byId(d.id); undoEntry(d.id, 'release'); closeSheet(); render(); return toast(`${bagsTxt(e.bags)} back in the vehicle`, []); }
   case 'releaseall': { const gs = heldOn(d.id); gs.forEach(e => undoEntry(e.id, 'release')); if (V.sheetKind === 'close') { closeCarSheet(); render(); return; } closeSheet(); return render(); }
-  case 'revive': revive(d.id); hideToast(); return render();
-  case 'undomany': d.id.split(',').forEach(id => undoEntry(id)); hideToast(); return render();
   case 'undoask': { const e = byId(d.id); return sheet(`<h3>Remove this line?</h3><p>${dmy(givenAt(e) || e.date)}: ${bagsTxt(e.bags)}. It stays in her book, crossed out.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${d.id}">Remove</button></div>`); }
   case 'undoit': undoEntry(d.id); closeSheet(); hideToast(); return render();
-  case 'undo': undoEntry(d.id); hideToast(); return render();
   case 'backsheet': V.bk = null; return backSheet(d.id);
   case 'bkplus': V.bk.n = Math.min(V.bk.max, V.bk.n + 1); return backSheet(V.bk.id);
   case 'bkminus': V.bk.n = Math.max(0.5, V.bk.n - 1); return backSheet(V.bk.id);
@@ -1698,7 +1704,7 @@ function act(a, d, el) {
   case 'lssave': { const L = V.ls; const id = locById(L.sel) ? L.sel : '';
     if (L.mode === 'setup' || !id) { closeSheet(); return render(); }
     if (L.mode === 'here') { S.lastLoc = id; commit(); closeSheet(); render(); return toast(`You are at ${locTxt(id)}`); }
-    if (L.mode === 'entry') { const e = byId(L.id); if (e.loc === id) return closeSheet(); const n = fixGive(L.id, {loc: id}); closeSheet(); V.flash = n.id; render(); return toast(`Now ${locTxt(id)}`, [{label: 'Undo', act: 'unfix', id: n.id}]); }
+    if (L.mode === 'entry') { const e = byId(L.id); if (e.loc === id) return closeSheet(); const n = fixGive(L.id, {loc: id}); closeSheet(); V.flash = n.id; render(); return toast(`Now ${locTxt(id)}`, []); }
     if (L.mode === 'person') { const p = person(L.pid); const before = p.loc; movePerson(L.pid, id, L.mark.trim()); closeSheet(); render(); return before !== id ? toast(`${p.name} now at ${locTxt(id)}`) : null; }
     closeSheet(); return render(); }
   case 'addloc': return locSheet({mode: 'setup', sel: ''});
@@ -1719,7 +1725,7 @@ function act(a, d, el) {
   case 'prhow': V.pr.how = d.h; return promiseSheet(V.pr.pid);
   case 'prsave': { const P = V.pr; const p = person(P.pid); add({type: 'promise', pid: P.pid, on: P.on, how: P.how}); closeSheet(); render();
     return toast(`Promise saved: ${dayWord(P.on)}`, [p.phone ? {label: 'Send it to her', href: sendHref(p, msgPromise(p, P.on))} : null]); }
-  case 'refused': { add({type: 'note', kind: 'refused', pid: V.pr.pid}); closeSheet(); render(); return toast('Marked as refused. She goes to the top of the list.'); }
+  case 'refused': { add({type: 'note', kind: 'refused', pid: V.pr.pid}); closeSheet(); render(); return toast('Refused'); }
   case 'remindall': { const ids = remindList(); const none = debtors().filter(x => !x.p.phone && x.st.sev >= 3 && inFilter(x.p)).map(x => x.p.name); V.queue = {kind: 'remind', ids, i: 0, none}; return queueStep(); }
   case 'remindcar': { const st = carStats(d.id); const owing = st.people.filter(id => ledger(id).loads.some(x => x.carId === d.id && x.left > 0.001)); V.queue = {kind: 'remind', ids: remindList(owing), i: 0, none: owing.filter(id => !person(id).phone).map(id => person(id).name)}; return queueStep(); }
   case 'qsent': { const Q = V.queue; if (Q.kind === 'rcpt') markReceipts(d.id); else { const p = person(d.id); p.remindedOn = todayK(); commit(); } setTimeout(() => { if (V.queue) { V.queue.i++; queueStep(); } }, 600); return; }
@@ -1787,7 +1793,7 @@ function act(a, d, el) {
   case 'backup': closeSheet(); return doBackup();
   case 'restore': { const rf = document.getElementById('restorefile'); if (rf) rf.click(); return; }
   case 'restoreyes': { if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; } closeSheet(); toast('Your book is back'); return toRoot('give'); }
-  case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be undone. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
+  case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be reversed. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
   case 'wipeyes': S = blank(); commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
   case 'reload': location.reload(); return;
   case 'installok': lsSet('stallbook_install_hint', '1'); return closeSheet();
