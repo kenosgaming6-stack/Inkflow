@@ -66,6 +66,16 @@ It opens full screen, works with no data, and keeps the bottom bar above the key
 
 Change `VERSION` in `public/sw.js` and `APP_VERSION` in `public/index.html`, then push. Phones download the new version in the background and show **New version of StallBook ready · Reload**.
 
+## Receipts by SMS
+
+StallBook can send every receipt by itself, through [Arkesel](https://sms.arkesel.com), an SMS company in Ghana. An iPhone app or website cannot send text messages on its own; Apple asks for a tap on Send each time, so the messages come from Arkesel instead.
+
+1. Open an Arkesel account, buy SMS credit, and ask for a sender name (up to 11 letters, for example StallBook). Arkesel approves it.
+2. Copy your SMS API key from the Arkesel dashboard.
+3. In StallBook, open **Settings › Receipts by SMS**. Switch it on, paste the key and type the sender name. **Send a test** sends one to your MoMo number.
+
+After that, a customer with a phone number gets a receipt about 20 seconds after you give to her (held bags: when they are handed over) and after each payment. Without signal, receipts wait and go out when it comes back. Only lines saved after the switch is turned on are sent. The key stays on the phone: it is not in the book or in backup files, so a new phone needs it typed in again.
+
 ## Your data
 
 Everything is saved on the phone, in the browser's storage. The app asks the phone to keep it, but still use **Back up (WhatsApp or Files)** often. If the phone is lost, open the backup file with **Restore from a backup**.

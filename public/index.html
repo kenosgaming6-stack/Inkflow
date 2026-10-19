@@ -408,7 +408,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '4.3';
+const APP_VERSION = '4.4';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -565,7 +565,7 @@ S = load();
 
 /* Derived data is cached per change. */
 let VER = 0, CACHE = null;
-function commit() { VER++; if (!V.demo) S.changedAt = nowIso(); save(); }
+function commit() { VER++; if (!V.demo) S.changedAt = nowIso(); save(); smsSoon(); }
 function C() {
   if (CACHE && CACHE.v === VER && CACHE.S === S) return CACHE;
   const c = {v: VER, S, undone: new Set(), activeUndo: new Set(), byPid: new Map(), led: new Map(), byId: new Map(), hand: new Map(), linked: new Map()};
@@ -778,6 +778,68 @@ function needsBackup() { return !V.demo && !!S.changedAt && S.entries.length > 0
 /* ---------- messages (plain letters, see smsMoney) ---------- */
 function from() { const s = S.settings; return s.seller ? 'From ' + s.seller + (s.item ? ' (' + s.item + ')' : '') + ': ' : ''; }
 function msgGive(p, bags, amt, bal) { return `${from()}${p.name}, you took ${smsBags(bags)} on ${dmy(new Date())}. That is ${smsMoney(amt)}. You owe ${smsMoney(bal)} in total.`; }
+/* ---------- receipts by SMS, sent by themselves (Arkesel) ----------
+   The phone sends each receipt through Arkesel's web link. The API key stays on this phone, outside
+   the book, so backups never carry it. A receipt goes out about 20 seconds after the line is saved,
+   so a quick correction is included. Without signal it waits and tries again. Only lines saved after
+   the switch was turned on are sent; older ones stay on the message button. */
+const SMS_OK = true; /* the Claude artifact build turns this off: it cannot reach other websites */
+const SMS_URL = 'https://sms.arkesel.com/sms/api', SMSK = 'stallbook_sms';
+const SMS = Object.assign({key: '', from: '', on: false, since: '', last: '', err: '', sent: 0, cors: null}, (() => { try { return JSON.parse(localStorage.getItem(SMSK)) || {}; } catch (e) { return {}; } })());
+function smsSave() { try { localStorage.setItem(SMSK, JSON.stringify(SMS)); } catch (e) {} }
+const smsReady = () => SMS_OK && SMS.on && !!SMS.key && !!SMS.from;
+function smsDue() {
+  if (!smsReady() || V.demo) return [];
+  const cut = Date.now() - 20000, gives = new Map(), pays = [];
+  S.entries.forEach(e => {
+    const p = e.pid ? person(e.pid) : null; if (!p || digits(p.phone).length < 9 || !live(e)) return;
+    if (e.type === 'give' && !e.rcpt && givenAt(e) && givenAt(e) >= SMS.since && Date.parse(givenAt(e)) < cut) { if (!gives.has(p.id)) gives.set(p.id, []); gives.get(p.id).push(e); }
+    if (e.type === 'pay' && e.rcpt === false && !e.with && e.date >= SMS.since && Date.parse(e.date) < cut) pays.push({p, ids: [e.id], text: msgPay(p, e.amount, ledger(p.id).bal)});
+  });
+  return [...gives].map(([pid, es]) => ({p: person(pid), ids: es.map(e => e.id), text: receiptMsg(person(pid), es)})).concat(pays);
+}
+/* Can this page read Arkesel's answers? If so, a refused key or empty credit shows in Settings. */
+async function smsProbe() {
+  try {
+    const r = await fetch(SMS_URL + '?action=check-balance&response=json&api_key=' + encodeURIComponent(SMS.key)); const j = await r.json();
+    SMS.cors = true; SMS.err = j && j.balance === undefined && j.code ? (j.message || 'Arkesel did not accept the key') : '';
+  } catch (e) { if (!navigator.onLine) throw e; SMS.cors = false; }
+  smsSave();
+}
+async function smsSend(to, text) {
+  const url = SMS_URL + '?action=send-sms&api_key=' + encodeURIComponent(SMS.key) + '&to=' + intl(to) + '&from=' + encodeURIComponent(SMS.from) + '&sms=' + encodeURIComponent(text);
+  try {
+    if (SMS.cors === null) await smsProbe();
+    if (SMS.err) return {err: SMS.err};
+    if (!SMS.cors) { await fetch(url, {mode: 'no-cors'}); return 'ok'; } /* the answer can't be read, but the message is sent */
+    const j = await (await fetch(url)).json();
+    return j && j.code === 'ok' ? 'ok' : {err: (j && j.message) || 'Arkesel did not send it'};
+  } catch (e) { return {wait: true}; }
+}
+let smsBusy = false, smsT = 0;
+function smsSoon(ms) { clearTimeout(smsT); if (smsReady()) smsT = setTimeout(smsRun, ms === undefined ? 21000 : ms); }
+async function smsRun() {
+  clearTimeout(smsT);
+  if (smsBusy || !smsReady()) return;
+  smsBusy = true; let wait = false;
+  try {
+    for (const job of smsDue()) {
+      const r = await smsSend(job.p.phone, job.text);
+      if (r !== 'ok') { if (r.err) { SMS.err = r.err; smsSave(); } wait = true; break; }
+      job.ids.forEach(id => { const e = byId(id); if (e) { e.rcpt = true; e.sms = nowIso(); } });
+      SMS.sent++; SMS.last = nowIso(); SMS.err = ''; smsSave(); VER++; save();
+    }
+  } finally { smsBusy = false; }
+  if (smsReady() && (wait || smsDue().length || S.entries.some(e => e.type === 'pay' && e.rcpt === false && e.date >= SMS.since))) smsSoon(SMS.err ? 120000 : 20000);
+}
+window.addEventListener('online', () => smsSoon(1000));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') smsSoon(1500); });
+function smsStatus() {
+  if (!SMS.on) return 'Off. Receipts wait on the message button.';
+  if (!SMS.key || !SMS.from) return 'Add the key and the sender name.';
+  if (SMS.err) return 'Not sending: ' + SMS.err;
+  return SMS.last ? `On. Last receipt ${dmy(SMS.last)}, ${hm(SMS.last)}. ${SMS.sent} sent.` : 'On. Receipts go out by themselves.';
+}
 function msgPay(p, amt, bal) { return `${from()}${p.name}, you paid ${smsMoney(amt)} on ${dmy(new Date())}. ` + (bal > 0.001 ? `You still owe ${smsMoney(bal)}. Thank you.` : 'You owe nothing now. Thank you.'); }
 function msgRemind(p) {
   const L = ledger(p.id), st = status(p.id); let when;
@@ -1098,7 +1160,7 @@ function saveGive(force) {
   }
   if (!p.loc && g.loc) p.loc = g.loc;
   if (g.loc) S.lastLoc = g.loc;
-  const e = add({type: 'give', pid: p.id, carId: car.id, itemId: item.id, bags: g.bags, price: item.price, amount: r2(g.bags * item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: g.hold ? true : !p.phone});
+  const e = add({type: 'give', pid: p.id, carId: car.id, itemId: item.id, bags: g.bags, price: item.price, amount: r2(g.bags * item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: !p.phone});
   V.lastSave = Date.now();
   closeSheet(); sfx('bag'); buzz(15); V.pulse = true; V.flash = e.id; render();
 }
@@ -1242,7 +1304,7 @@ function savePay() {
   const amount = over && P.over === 'change' ? Math.max(0, L.bal) : a;
   if (!amount) { P.err = 'She owes nothing. Keep it as credit, or give it back.'; paySheet(); return false; }
   const outBefore = new Map(S.cars.filter(c => c.phase === 'out').map(c => [c.id, carStats(c.id).out]));
-  const e = add(Object.assign({type: 'pay', pid: p.id, amount, method: P.method, loadId: P.loadId || null, carId: null}, over && P.over === 'change' ? {change: r2(a - amount)} : {}));
+  const e = add(Object.assign({type: 'pay', pid: p.id, amount, method: P.method, loadId: P.loadId || null, carId: null, rcpt: !p.phone}, over && P.over === 'change' ? {change: r2(a - amount)} : {}));
   const bal = ledger(p.id).bal;
   sfx('cash'); buzz(25); if (bal <= 0.001) setTimeout(() => { sfx('thud'); coins(14); }, 250);
   const done = S.cars.find(c => c.phase === 'out' && outBefore.get(c.id) > 0.001 && carStats(c.id).out <= 0.001);
@@ -1251,7 +1313,7 @@ function savePay() {
   V.lastPay = {e, p, amount, bal};
   return true;
 }
-function payToast() { const {e, p, amount, bal} = V.lastPay; toast(`${p.name} paid ${money(amount)}`, [p.phone ? {label: 'Receipt', href: sendHref(p, msgPay(p, amount, bal))} : null]); }
+function payToast() { const {e, p, amount, bal} = V.lastPay; toast(`${p.name} paid ${money(amount)}`, [p.phone && !smsReady() ? {label: 'Receipt', href: sendHref(p, msgPay(p, amount, bal))} : null]); }
 function celebrate(car) {
   sfx('win'); buzz([30, 60, 30, 60, 90]); coins(26);
   const o = document.createElement('div'); o.className = 'celebrate';
@@ -1514,6 +1576,10 @@ function townsBlock() {
   return (all.length ? `<div class="setbox"><div class="chips wrap">${all.map(l => `<span class="chip">${esc(locTxt(l.id))}</span>`).join('')}</div></div>` : '<div class="setbox"><p class="small">No places yet. Add each place you deliver to as its own name, for example Bekwai, Bekwai Market or Koko Shell. Skip this if you only go to one place.</p></div>')
     + `<div class="setbox"><button class="btn ghost" data-act="addloc">${svg('plus')} Add a place</button></div>`;
 }
+function smsInputs() {
+  const st = () => { const el = document.getElementById('sms_status'); if (el) el.textContent = smsStatus(); };
+  [['sms_key', 'key'], ['sms_from', 'from']].forEach(([id, k]) => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { SMS[k] = el.value.trim(); SMS.err = ''; if (k === 'key') SMS.cors = null; smsSave(); st(); smsSoon(3000); }); });
+}
 function settingsInputs() {
   app.querySelectorAll('[data-set]').forEach(el => el.addEventListener('input', e => { const k = e.target.dataset.set; let v = e.target.value; if (k === 'cycle') v = Math.max(1, parseInt(v, 10) || 14); S.settings[k] = v; VER++; save(); }));
 }
@@ -1529,6 +1595,12 @@ VIEWS.settings = () => {
   return {top: `<div class="hrow"><div class="title"><b>Settings</b><small>Saved on this phone only</small></div></div>`,
     mid: `<div class="setbox">${setInp('seller', 'Your name (goes on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (goes on reminders)', '055 000 0000', 'tel')}${setInp('item', 'What you hand out', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Collect after how many days', '14', 'tel')}</div>
       <div class="setlabel">Places</div>${townsBlock()}
+      ${SMS_OK && !V.demo ? `<div class="setlabel">Receipts by SMS</div><div class="setbox">
+        <div class="set"><span>Send receipts by themselves</span><button class="chip ${SMS.on ? 'on' : ''}" data-act="smstoggle" aria-pressed="${SMS.on}">${SMS.on ? 'On' : 'Off'}</button></div>
+        <div class="field"><label for="sms_key">Arkesel API key (stays on this phone)</label><input id="sms_key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(SMS.key)}"></div>
+        <div class="field"><label for="sms_from">Sender name (up to 11 letters, approved by Arkesel)</label><input id="sms_from" maxlength="11" autocomplete="off" spellcheck="false" value="${esc(SMS.from)}" placeholder="StallBook"></div>
+        <p class="small" id="sms_status">${esc(smsStatus())}</p>
+        ${S.settings.momo ? `<button class="btn ghost" data-act="smstest">Send a test to ${esc(S.settings.momo)}</button>` : ''}</div>` : ''}
       <div class="setlabel">Messages go by</div><div class="setbox">${seg('via', [['sms', 'SMS'], ['wa', 'WhatsApp']])}</div>
       <div class="setlabel">Hand that holds the phone</div><div class="setbox">${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div>
       <div class="set"><span>Half ${esc(unit())}s</span><button class="chip ${s.half !== false ? 'on' : ''}" data-act="togglehalf" aria-pressed="${s.half !== false}">${s.half !== false ? 'On' : 'Off'}</button></div>
@@ -1539,7 +1611,7 @@ VIEWS.settings = () => {
       <div class="setbox">${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}<button class="btn ghost redtext" data-act="wipe">Delete everything</button></div>
       <p class="ver">StallBook ${APP_VERSION}</p>`,
     cls: 'plain', dock: `<div class="bar">${backSq()}<span class="sp"></span></div>`,
-    after: () => { settingsInputs(); const rf = document.getElementById('restorefile'); if (rf) rf.addEventListener('change', onRestoreFile); }};
+    after: () => { settingsInputs(); smsInputs(); const rf = document.getElementById('restorefile'); if (rf) rf.addEventListener('change', onRestoreFile); }};
 };
 function onRestoreFile(e) {
   const file = e.target.files && e.target.files[0]; if (!file) return;
@@ -1683,7 +1755,7 @@ function act(a, d, el) {
     const from = person(e.pid), to = person(pid); const n = fixGive(e.id, {pid}); closeSheet(); V.flash = n.id; render();
     return toast(`${bagsTxt(e.bags)}: ${from ? from.name : '?'} → ${to.name}`, []); }
   case 'hand': { const e = byId(d.id); const by = ((document.getElementById('es_by') || {}).value || '').trim(); const [h] = handOver([e], by); const p = person(e.pid); closeSheet(); sfx('bag'); buzz(15); V.flash = e.id; render();
-    return toast(`${p ? p.name : ''} · ${bagsTxt(e.bags)} handed over`, [p && p.phone && !C().linked.has(e.id) ? {label: 'Receipt', href: sendHref(p, receiptMsg(p, [e])), act: 'rcpt', id: p.id} : null]); }
+    return toast(`${p ? p.name : ''} · ${bagsTxt(e.bags)} handed over`, [p && p.phone && !smsReady() && !C().linked.has(e.id) ? {label: 'Receipt', href: sendHref(p, receiptMsg(p, [e])), act: 'rcpt', id: p.id} : null]); }
   case 'handall': { const car = carById(d.id) || givingCar(); const gs = heldOn(car.id).filter(e => d.loc === undefined || d.loc === '*' || locKey(e) === d.loc); if (!gs.length) return; const hs = handOver(gs, ''); sfx('bag');
     if (V.sheetKind === 'close') { closeCarSheet(); render(); return; } closeSheet(); render(); return toast(`${bagsTxt(sum(gs, e => e.bags))} handed over`, []); }
   case 'cashfix': { const car = givingCar(); const cs = S.entries.filter(e => e.type === 'cash' && e.carId === car.id && live(e) && (d.loc === '*' || locKey(e) === d.loc));
@@ -1788,6 +1860,9 @@ function act(a, d, el) {
 
   /* settings, backup */
   case 'setseg': S.settings[d.k] = d.v; commit(); return render();
+  case 'smstoggle': SMS.on = !SMS.on; if (SMS.on) { SMS.since = nowIso(); SMS.err = ''; SMS.cors = null; } smsSave(); render(); if (SMS.on) smsSoon(1000); return;
+  case 'smstest': { if (!SMS.key || !SMS.from) return toast('Add the key and the sender name first'); const sent = smsSend(S.settings.momo, `StallBook test. Receipts will come from ${SMS.from}.`);
+    toast('Sending a test…'); sent.then(r => { const el = document.getElementById('sms_status'); toast(r === 'ok' ? 'Test sent. Check your phone.' : r.err ? 'Not sent: ' + r.err : 'No signal. Try again.'); if (el) el.textContent = smsStatus(); }); return; }
   case 'togglesound': S.settings.sound = S.settings.sound === false; commit(); if (S.settings.sound) sfx('cash'); return render();
   case 'togglehalf': S.settings.half = S.settings.half === false; commit(); return render();
   case 'setupdone': S.setup = true; commit(); return toRoot('give');
@@ -1821,6 +1896,7 @@ if (!givingCar() && debtors().some(x => x.st.sev >= 3)) V.tab = 'collect';
 try { history.replaceState({root: 1}, ''); history.pushState({g: 1}, ''); } catch (e) {}
 if (!S.setup && !S.people.length && !S.cars.length) { V.stack = [{v: 'setup'}]; try { history.pushState({d: 1}, ''); } catch (e) {} }
 render();
+smsSoon(4000);
 /* iPhone: keep the bottom bar just above the keyboard, and hide the tabs while typing */
 if (IOS && window.visualViewport) {
   const vv = window.visualViewport;
