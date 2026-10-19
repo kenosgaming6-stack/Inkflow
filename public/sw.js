@@ -2,7 +2,7 @@
    Bump VERSION on every release: the new worker downloads fresh files, then the app offers a reload.
    The page is cached only as './' because Cloudflare redirects /index.html to /,
    and Safari refuses a cached page that came from a redirect. */
-const VERSION = '4.0';
+const VERSION = '4.1';
 const CACHE = 'stallbook-' + VERSION;
 const CORE = ['./', 'manifest.webmanifest', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png',
   'fonts/atkinson-400-latin.woff2', 'fonts/atkinson-400-latin-ext.woff2', 'fonts/atkinson-700-latin.woff2', 'fonts/atkinson-700-latin-ext.woff2'];

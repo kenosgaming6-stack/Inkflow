@@ -8,8 +8,8 @@ The app is the `public/` folder: one page (`index.html`) plus its icons, font an
 
 Three tabs at the bottom. Give and Collect never send you to another page; everything opens in a panel over the list.
 
-- **Give**: the open delivery. The place you are at sits on top, then a card with the bags left, given and held. The newest line is at the top of the list.
-  - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). Switch on **Hold for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She gets the place you are at.
+- **Give**: the open delivery. A card with the bags left, given and held, then one tab per place (Koko Shell, Market…) and **+** to add a place. Each tab lists only that place, top to bottom in the order you gave. Swipe left or right to move between places.
+  - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). Switch on **Hold for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She goes into the tab you are on.
   - **Cash sales:** the cash button counts a bag sold for cash, with no name.
   - **Correcting a line:** tap the number in her row to change it. Tap her name to hand over held bags, release them, pick the right customer or change the place.
 - **Collect**: who owes, most urgent first, filtered by place.
