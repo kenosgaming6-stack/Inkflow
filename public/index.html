@@ -3,42 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#24307A">
+<meta name="theme-color" content="#24307A" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0D12" media="(prefers-color-scheme: dark)">
 <meta name="description" content="A credit book for market traders: give bags, collect money, never miss a debt.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="StallBook">
+<meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-startup-image" href="splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="preload" href="fonts/atkinson-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/atkinson-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <title>StallBook</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* Atkinson Hyperlegible ships with the app (SIL Open Font License, fonts/OFL.txt), so it works offline. It has the cedi sign. */
+@font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/atkinson-400-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/atkinson-400-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/atkinson-700-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/atkinson-700-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 /* StallBook v3. Rule for every screen: look at the top, read the middle, touch the bottom. Give and Collect never leave the list. */
 :root{
   --paper:#FFFFFF;--page:#E4E8F0;--rule:#CBDAEE;--margin:#E0545A;--ink:#24307A;--text:#1A1D26;--muted:#555B69;--faint:#6F7585;
-  --owe:#BE2329;--owe-bg:#FDECEC;--paid:#17703F;--paid-bg:#E3F3E9;--warn:#7A4E00;--warn-bg:#FFEFC7;--held:#B76E00;
+  --owe:#BE2329;--owe-bg:#FDECEC;--paid:#17703F;--paid-bg:#E3F3E9;--warn:#7A4E00;--warn-bg:#FFEFC7;--held:#B76E00;--bar:#24307A;
   --on-btn:#FFFFFF;--key:#ECEFF5;--key-text:#1A1D26;--line:#DFE3EC;--sheet:#FFFFFF;--shade:rgba(5,8,18,.5);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --paper:#171A23;--page:#0B0D12;--rule:#283450;--margin:#A33C43;--ink:#B4C0FF;--text:#ECEEF4;--muted:#A9AFBE;--faint:#8A90A1;
-    --owe:#FF8086;--owe-bg:#3A1A1E;--paid:#62D69A;--paid-bg:#14301F;--warn:#FFD27A;--warn-bg:#382B0D;--held:#FFB547;
+    --owe:#FF8086;--owe-bg:#3A1A1E;--paid:#62D69A;--paid-bg:#14301F;--warn:#FFD27A;--warn-bg:#382B0D;--held:#FFB547;--bar:#0B0D12;
     --on-btn:#0D0F15;--key:#252935;--key-text:#ECEEF4;--line:#2B303E;--sheet:#1B1E28;--shade:rgba(0,0,0,.6);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --paper:#171A23;--page:#0B0D12;--rule:#283450;--margin:#A33C43;--ink:#B4C0FF;--text:#ECEEF4;--muted:#A9AFBE;--faint:#8A90A1;
-  --owe:#FF8086;--owe-bg:#3A1A1E;--paid:#62D69A;--paid-bg:#14301F;--warn:#FFD27A;--warn-bg:#382B0D;--held:#FFB547;
+  --owe:#FF8086;--owe-bg:#3A1A1E;--paid:#62D69A;--paid-bg:#14301F;--warn:#FFD27A;--warn-bg:#382B0D;--held:#FFB547;--bar:#0B0D12;
   --on-btn:#0D0F15;--key:#252935;--key-text:#ECEEF4;--line:#2B303E;--sheet:#1B1E28;--shade:rgba(0,0,0,.6);
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--page);color:var(--text);font-family:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent;overflow:hidden}
-#shell{position:relative;height:100%;max-width:480px;margin:0 auto;background:var(--paper);overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
+html{touch-action:manipulation}
+#shell{position:relative;height:var(--app-h,100%);max-width:480px;margin:0 auto;background:var(--paper);overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
 @media (min-width:600px) and (min-height:660px){body{display:flex;align-items:center;justify-content:center}#shell{width:400px;height:min(860px,calc(100% - 32px));border:10px solid #1C1E25;border-radius:44px;margin:0;flex:none}}
 #app{height:100%;display:flex;flex-direction:column;position:relative}
+#shell::before{content:"";position:absolute;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:60;pointer-events:none}
+button,a,.row,.tab,.chip,.key,.face{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.kb .tabs{display:none}
+.kb .dock{padding-bottom:8px}
+.steps3{margin:0;padding:0 0 0 22px;display:flex;flex-direction:column;gap:6px;color:var(--text)}
+.steps3 b{color:var(--ink)}
+.ver{font-size:13px;color:var(--faint);text-align:center;padding:4px 12px 16px}
 #layer{position:absolute;inset:0;pointer-events:none;z-index:30}
 #layer>*{pointer-events:auto}
 button,input{font:inherit;color:inherit}
@@ -386,7 +405,10 @@ a{color:inherit;text-decoration:none}
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
+const APP_VERSION = '3.1';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const NOTES = [200, 100, 50, 20, 10, 5];
@@ -907,7 +929,7 @@ function viewGive() {
   const recent = recentFaces(car.id);
   const dock = `${recent.length ? `<div class="faces">${recent.map(p => `<button class="face" data-act="give" data-id="${p.id}"><span class="av">${esc(initials(p.name))}</span>${esc(shortName(p.name))}</button>`).join('')}</div>` : ''}
     <div class="bar"><button class="sq cash" data-act="cash" aria-label="Sold one for cash">${svg('cash')}<small>+1 cash</small></button>
-    <label class="find ink">${svg('search')}<input id="gq" type="text" placeholder="Who's taking?" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Who is taking ${esc(unit())}s? Type her name" value="${esc(V.gq)}"></label></div>`;
+    <label class="find ink">${svg('search')}<input id="gq" type="text" placeholder="Who's taking?" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-label="Who is taking ${esc(unit())}s? Type her name" value="${esc(V.gq)}"></label></div>`;
   return {top, mid, cls: 'book', dock, tabs: true, anchor: 'bottom', after: () => { attachFind(); V.flash = null; }};
 }
 function giveEmpty() {
@@ -1067,7 +1089,7 @@ function entrySheet(id) {
 }
 function nameSheet(id) {
   const e = byId(id); V.ns = {id};
-  sheet(`<i class="grab"></i><h3>Who took these ${esc(unit())}s?</h3><div class="field"><input id="ns_q" placeholder="Type a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Customer name"></div><div id="ns_list" style="margin:0 -14px"></div><button class="btn ghost" data-act="sheetclose">Cancel</button>`);
+  sheet(`<i class="grab"></i><h3>Who took these ${esc(unit())}s?</h3><div class="field"><input id="ns_q" placeholder="Type a name" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" aria-label="Customer name"></div><div id="ns_list" style="margin:0 -14px"></div><button class="btn ghost" data-act="sheetclose">Cancel</button>`);
   V.sheetKind = 'name';
   const i = document.getElementById('ns_q');
   const draw = () => { const q = i.value.trim(); const ms = matchPeople(q, e.pid); document.getElementById('ns_list').innerHTML = ms.map(p => sgRow(p, 'nspick')).join('') + (q && !ms.some(p => p.name.toLowerCase() === q.toLowerCase()) ? `<button class="sg new" data-act="nspick" data-name="${esc(q)}"><span class="av">${svg('plus', 18)}</span><div class="who"><div class="name">New: ${esc(q)}</div></div></button>` : ''); };
@@ -1471,8 +1493,10 @@ VIEWS.settings = () => {
       <div class="set"><span>Half ${esc(unit())}s</span><button class="chip ${s.half !== false ? 'on' : ''}" data-act="togglehalf" aria-pressed="${s.half !== false}">${s.half !== false ? 'On' : 'Off'}</button></div>
       <div class="set"><span>Sounds and buzz</span><button class="chip ${s.sound !== false ? 'on' : ''}" data-act="togglesound" aria-pressed="${s.sound !== false}">${s.sound !== false ? 'On' : 'Off'}</button></div>
       ${V.demo ? '' : `<div class="setlabel">Backup</div><div class="setbox"><p class="small">${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) : 'No backup yet.'} If this phone is lost, the backup file brings the book back.</p>
-      <button class="btn ink" data-act="backup">${svg('cloud')} Back up to WhatsApp</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" accept=".json,application/json,text/plain" hidden></div>`}
-      <div class="setbox" style="padding-bottom:24px">${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}<button class="btn ghost redtext" data-act="wipe">Delete everything</button></div>`,
+      <button class="btn ink" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" hidden></div>`}
+      ${IOS && !STANDALONE ? `<div class="setbox"><button class="btn ghost" data-act="installhelp">Put StallBook on your Home Screen</button></div>` : ''}
+      <div class="setbox">${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}<button class="btn ghost redtext" data-act="wipe">Delete everything</button></div>
+      <p class="ver">StallBook ${APP_VERSION}</p>`,
     cls: 'plain', dock: `<div class="bar">${backSq()}<span class="sp"></span></div>`,
     after: () => { settingsInputs(); const rf = document.getElementById('restorefile'); if (rf) rf.addEventListener('change', onRestoreFile); }};
 };
@@ -1499,8 +1523,8 @@ function doBackup() {
 }
 function backupSheet() {
   const need = needsBackup();
-  sheet(`<i class="grab"></i><h3>${need ? 'Back up your book' : 'Book is backed up ✓'}</h3><p>${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) + '.' : 'No backup yet.'} ${need ? 'Some changes are only on this phone.' : ''} Send the file to your own WhatsApp. If the phone is lost, it brings everything back.</p>
-    <button class="btn ink tall" data-act="backup">${svg('cloud')} Back up to WhatsApp</button><button class="btn ghost" data-act="sheetclose">Close</button>`);
+  sheet(`<i class="grab"></i><h3>${need ? 'Back up your book' : 'Book is backed up ✓'}</h3><p>${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) + '.' : 'No backup yet.'} ${need ? 'Some changes are only on this phone.' : ''} Send the file to your own WhatsApp, or save it in Files. If the phone is lost, it brings everything back.</p>
+    <button class="btn ink tall" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="sheetclose">Close</button>`);
 }
 
 /* ===== Calculator (on Book; Collect has its own money pad) ===== */
@@ -1756,6 +1780,9 @@ function act(a, d, el) {
   case 'restoreyes': { if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; } closeSheet(); toast('Your book is back'); return toRoot('give'); }
   case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be undone. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
   case 'wipeyes': S = blank(); commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
+  case 'reload': location.reload(); return;
+  case 'installok': lsSet('stallbook_install_hint', '1'); return closeSheet();
+  case 'installhelp': return installSheet();
   case 'calc': return calcSheet();
   case 'ck': return calcKey(d.k);
   case 'celclose': { const c = layer.querySelector('.celebrate'); if (c) c.remove(); return; }
@@ -1779,7 +1806,30 @@ if (!givingCar() && debtors().some(x => x.st.sev >= 3)) V.tab = 'collect';
 try { history.replaceState({root: 1}, ''); history.pushState({g: 1}, ''); } catch (e) {}
 if (!S.setup && !S.people.length && !S.cars.length) { V.stack = [{v: 'setup'}]; try { history.pushState({d: 1}, ''); } catch (e) {} }
 render();
-if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); }); }
+/* iPhone: keep the bottom bar just above the keyboard, and hide the tabs while typing */
+if (IOS && window.visualViewport) {
+  const vv = window.visualViewport;
+  const fit = () => { const h = Math.round(vv.height); document.documentElement.style.setProperty('--app-h', h + 'px'); document.documentElement.classList.toggle('kb', window.innerHeight - h > 120); if (window.scrollY) window.scrollTo(0, 0); };
+  vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); fit();
+}
+/* ask the phone not to clear the book when it runs low on space */
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+/* in Safari, explain once how to put the app on the Home Screen, where the book lives */
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function installSheet() {
+  sheet(`<i class="grab"></i><h3>Put StallBook on your Home Screen</h3>
+    <ol class="steps3"><li>Tap the <b>Share</b> button in Safari.</li><li>Choose <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open StallBook from the new icon.</li></ol>
+    <p>It then opens full screen and works with no data. Always use the icon: a book started in Safari stays in Safari.</p>
+    <button class="btn ink tall" data-act="installok">Got it</button>`);
+}
+if (IOS && !STANDALONE && /^https?:$/.test(location.protocol) && !lsGet('stallbook_install_hint')) setTimeout(installSheet, 600);
+/* updates download in the background; offer a reload when the new version is ready */
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  const hadWorker = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadWorker) toast('New version of StallBook ready', [{label: 'Reload', act: 'reload'}]); });
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
 
 </script>
 </body>
