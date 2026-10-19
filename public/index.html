@@ -89,6 +89,8 @@ a{color:inherit;text-decoration:none}
 .mid.center::before{content:"";flex:1 1 auto}
 .mid.run{background:var(--page);padding:12px}
 .mid.run::before,.mid.run::after{content:"";flex:1 1 auto}
+*{scrollbar-width:none}
+*::-webkit-scrollbar{display:none;width:0;height:0}
 .enter{animation:enter .16s ease-out}
 .ptabs{margin-top:10px;display:flex;align-items:center;gap:6px}
 .ptabs .chips{flex:1;min-width:0;margin-right:0;padding-right:0}
@@ -406,7 +408,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '4.2';
+const APP_VERSION = '4.3';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
