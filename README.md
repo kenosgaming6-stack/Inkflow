@@ -21,33 +21,35 @@ Nothing is ever overwritten. Corrections, handovers, releases and moves are new 
 
 **Closing a delivery:** you can only close once no bags are held. Then choose what happened to what's left: kept for the next delivery, sent back, spoiled or lost, sold for cash, or the count was wrong.
 
-## Put it online with Cloudflare Pages (free)
+## Put it online with Cloudflare (free)
 
-### Option A: connect this GitHub repo (recommended)
+The repo is set up as a Cloudflare **Worker with static assets**: `wrangler.toml` points at `public/`, and there is no build step.
 
-Cloudflare then puts every new version online by itself.
+### Connected to GitHub (updates itself)
 
-1. Sign in at [dash.cloudflare.com](https://dash.cloudflare.com) and open **Workers & Pages**.
-2. Choose **Create**, then **Pages**, then **Connect to Git**.
-3. Allow access to GitHub and pick **kenosgaming6-stack/Inkflow**.
-4. **Production branch:** `main`, after the pull request is merged, or the PR branch until then.
-5. **Framework preset:** None. **Build command:** leave empty. **Build output directory:** `public`.
-6. Choose **Save and Deploy**.
+In Cloudflare, under **Workers & Pages**, the Worker **stallbook** is connected to this repo. Its build settings:
 
-The address appears at the end, for example `https://stallbook.pages.dev`. It has a few extra letters if that name is taken. Every push to the production branch updates it.
+| Setting | Value |
+|---|---|
+| Build command | none |
+| Deploy command | `npx wrangler deploy` |
+| Root directory | `/` |
+| Production branch | the branch that has the app: `main` after the pull request is merged, or `claude/new-session-j3q0ao` |
 
-### Option B: from a computer with Node.js
+Every push to the production branch puts the new version online. The address is shown on the Worker's page, for example `https://stallbook.<your-name>.workers.dev`.
+
+### From a computer with Node.js
 
 ```sh
 npx wrangler login
-npx wrangler pages deploy public --project-name stallbook
+npx wrangler deploy
 ```
 
-`wrangler.toml` already points Cloudflare at `public/`. `public/_headers` sets caching (the page and offline file are always rechecked, fonts are cached for a year) and basic security headers.
+`public/_headers` sets caching (the page and offline file are always rechecked, fonts are cached for a year) and basic security headers.
 
 ## Install on an iPhone
 
-1. Open the `pages.dev` address in **Safari**.
+1. Open the Worker's address in **Safari**.
 2. Tap **Share**, then **Add to Home Screen**, then **Add**.
 3. Open StallBook from the new icon.
 
