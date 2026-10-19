@@ -1,0 +1,7 @@
+# Cloudflare Workers with static assets: the app is the files in public/. No build step.
+# Cloudflare runs `npx wrangler deploy`. The name must match the Worker in the dashboard.
+name = "stallbook"
+compatibility_date = "2025-10-01"
+
+[assets]
+directory = "./public"
