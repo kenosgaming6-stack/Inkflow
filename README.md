@@ -8,14 +8,15 @@ The app is the `public/` folder: one page (`index.html`) plus its icons, font an
 
 Three tabs at the bottom. Give and Collect never send you to another page; everything opens in a panel over the list.
 
-- **Give**: the open delivery. A card shows the bags left, given and held.
-  - **Recording someone:** type two letters or tap a face. Her spot and her usual number are filled in. Switch on **Hold for her** to keep bags for her (she owes nothing until they're handed over) or **Paid cash** if she pays now.
-  - **Correcting a line:** tap the number in her row to change it. Tap her name to hand over held bags, release them, pick the right customer or change the spot.
-- **Collect**: who owes, most urgent first, filtered by town and spot.
+- **Give**: the open delivery. The place you are at sits on top, then a card with the bags left, given and held. The newest line is at the top of the list.
+  - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). Switch on **Hold for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She gets the place you are at.
+  - **Cash sales:** the cash button counts a bag sold for cash, with no name.
+  - **Correcting a line:** tap the number in her row to change it. Tap her name to hand over held bags, release them, pick the right customer or change the place.
+- **Collect**: who owes, most urgent first, filtered by place.
   - **Taking a payment:** tap a name and the money pad opens. Tap the cedi notes as she counts. **Done** shows her new balance in the list. **Next** saves and opens the next woman at that spot. **Not today** saves a promise.
   - **Overpayment:** if she pays more than she owes, you choose: keep it as credit, or record that you gave change.
-- **Book**: everyone, by town and spot, and every delivery.
-  - **Her page:** where she sells now (tap to change it) and what she owes, then one list of everything she took and paid. Each line keeps the delivery and the spot it happened at.
+- **Book**: everyone, by place, and every delivery.
+  - **Her page:** where she sells now (tap to change it) and what she owes, then one list of everything she took and paid. Each line keeps the delivery and the place it happened at.
 
 Nothing is ever overwritten. Corrections, handovers, releases and moves are new lines. Undo crosses a line out.
 
@@ -55,6 +56,12 @@ npx wrangler deploy
 
 It opens full screen, works with no data, and keeps the bottom bar above the keyboard. Always use the icon: the iPhone keeps the Home Screen app's book separate from Safari's.
 
+## One file to upload anywhere
+
+`python3 tools/build-single.py stallbook.html` makes one file with the font and icons inside. Upload it to any static host. It has no offline file, so it needs internet to open; the book itself is kept on the phone.
+
+`python3 tools/build-artifact.py stallbook-app.html` makes the Claude artifact version, which also saves the book in the owner's Claude account.
+
 ## Releasing an update
 
 Change `VERSION` in `public/sw.js` and `APP_VERSION` in `public/index.html`, then push. Phones download the new version in the background and show **New version of StallBook ready · Reload**.
@@ -63,6 +70,6 @@ Change `VERSION` in `public/sw.js` and `APP_VERSION` in `public/index.html`, the
 
 Everything is saved on the phone, in the browser's storage. The app asks the phone to keep it, but still use **Back up (WhatsApp or Files)** often. If the phone is lost, open the backup file with **Restore from a backup**.
 
-Books from versions 1 and 2 are upgraded automatically when v3 opens. Old place names become towns, and the version 1 copy is left untouched.
+Older books are upgraded automatically when the app opens, and a version 1 copy is left untouched. Places are one list of names: a town and spot such as Bakwai and Market become the place Bakwai Market. Half bags are off until you switch them on in Settings.
 
 The font is Atkinson Hyperlegible by the Braille Institute, included under the SIL Open Font License (`public/fonts/OFL.txt`).
