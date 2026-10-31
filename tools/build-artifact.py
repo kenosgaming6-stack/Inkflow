@@ -33,9 +33,10 @@ s, n = re.subn(r"/\* Atkinson Hyperlegible ships with the app.*?\*/\n(@font-face
 assert n == 1
 
 # ---- the viewer pads the page for the notch and home bar, so the app adds nothing of its own
-rep('#shell{position:relative;height:var(--app-h,100%);max-width:480px;margin:0 auto;background:var(--paper);overflow:hidden;padding-top:env(safe-area-inset-top,0px)}',
-    '#shell{position:relative;height:100%;max-width:480px;margin:0 auto;background:var(--paper);overflow:hidden}')
-rep('#shell::before{content:"";position:absolute;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:60;pointer-events:none}\n', '')
+rep('#shell{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;max-width:35rem;margin:0 auto;background:var(--paper);overflow:hidden;padding-top:env(safe-area-inset-top,0px)}',
+    '#shell{position:relative;height:100%;width:100%;max-width:35rem;margin:0 auto;background:var(--paper);overflow:hidden}')
+rep('html.kb #shell{bottom:auto;top:var(--app-top,0px);height:var(--app-h)}\n', '')
+rep('body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:60;pointer-events:none}\n', '')
 s = s.replace('env(safe-area-inset-bottom,0px)', '0px')
 assert 'safe-area' not in s
 
@@ -263,7 +264,7 @@ else { app.innerHTML = `<div class="empty" style="padding-top:64px"><h2>Opening 
 clConnect().then(changed => { if (!STARTED) start(); else clShow(changed); }, () => start());
 """ + s[s.index('</script>'):]
 
-for gone in ['serviceWorker', 'installSheet', 'visualViewport', 'STANDALONE', 'IOS', 'apple-touch', 'manifest', 'fonts/']:
+for gone in ['serviceWorker', 'installSheet', 'STANDALONE', 'IOS', 'apple-touch', 'manifest', 'fonts/']:
     assert gone not in s, gone
 open(OUT, 'w', encoding='utf-8').write(s)
 print('wrote', OUT, len(s), 'bytes')

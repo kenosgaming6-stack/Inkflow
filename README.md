@@ -22,6 +22,10 @@ Nothing is ever overwritten. Corrections, handovers, releases and moves are new 
 
 **Closing a delivery:** you can only close once no bags are held. Then choose what happened to what's left: kept for the next delivery, sent back, spoiled or lost, sold for cash, or the count was wrong.
 
+## Every screen size
+
+The app fills the whole screen at any size: small phones, iPhones, tablets, computers, and both ways round. Everything is sized in `rem`, and one number (`--s`, set by `fit()` in `public/index.html`) scales all of it: 1 on an iPhone 12, a little less on small phones (down to 0.8), and more on tablets and computers (up to 1.35, so the text is bigger and more rows fit). Wide screens show one centred column the full height of the screen. When the keyboard opens on a phone, the app stays the same size and the bottom bar sits above the keyboard.
+
 ## Put it online with Cloudflare (free)
 
 The repo is set up as a Cloudflare **Worker with static assets**: `wrangler.toml` points at `public/`, and there is no build step.
