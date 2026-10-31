@@ -37,6 +37,7 @@ rep('#shell{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;max-width:35
     '#shell{position:relative;height:100%;width:100%;max-width:35rem;margin:0 auto;background:var(--paper);overflow:hidden}')
 rep('html.kb #shell{bottom:auto;top:var(--app-top,0px);height:var(--app-h)}\n', '')
 rep('body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:60;pointer-events:none}\n', '')
+s = s.replace('--safe-b:max(0px,calc(env(safe-area-inset-bottom,0px) - 22px));', '--safe-b:0px;')
 s = s.replace('env(safe-area-inset-bottom,0px)', '0px')
 assert 'safe-area' not in s
 

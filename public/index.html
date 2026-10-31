@@ -25,6 +25,7 @@
 @font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/atkinson-700-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 /* StallBook v3. Rule for every screen: look at the top, read the middle, touch the bottom. Give and Collect never leave the list. */
 :root{
+  --safe-b:max(0px,calc(env(safe-area-inset-bottom,0px) - 22px));
   --paper:#FFFFFF;--page:#FFFFFF;--rule:#CBDAEE;--margin:#E0545A;--ink:#24307A;--text:#1A1D26;--muted:#555B69;--faint:#6F7585;
   --owe:#BE2329;--owe-bg:#FDECEC;--paid:#17703F;--paid-bg:#E3F3E9;--warn:#7A4E00;--warn-bg:#FFEFC7;--held:#B76E00;--bar:#24307A;
   --on-btn:#FFFFFF;--key:#ECEFF5;--key-text:#1A1D26;--line:#DFE3EC;--sheet:#FFFFFF;--shade:rgba(5,8,18,.5);
@@ -141,7 +142,7 @@ a{color:inherit;text-decoration:none}
 
 /* bottom: touch */
 .dock{flex:none;padding:.5rem .75rem .625rem;border-top:.0625rem solid var(--line);display:flex;flex-direction:column;gap:.5rem;background:var(--paper);position:relative;z-index:5}
-.dock.last{padding-bottom:calc(.625rem + env(safe-area-inset-bottom,0px))}
+.dock.last{padding-bottom:calc(.625rem + var(--safe-b))}
 .bar{display:flex;gap:.5rem;align-items:stretch}
 .lh .bar{flex-direction:row-reverse}
 .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:3.5rem;padding:0 .75rem;border-radius:.875rem;font-size:1.0625rem;font-weight:700;text-align:center;min-width:0;line-height:1.15}
@@ -179,7 +180,7 @@ a{color:inherit;text-decoration:none}
 .sg{display:flex;align-items:center;gap:.625rem;width:100%;min-height:3.625rem;padding:.5rem .875rem;border-top:.0625rem solid var(--line);text-align:left}
 .sg .who{flex:1;min-width:0}
 .sg.new .name{color:var(--owe)}
-.tabs{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:.0625rem solid var(--line);background:var(--paper);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:.0625rem solid var(--line);background:var(--paper);padding-bottom:var(--safe-b)}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.125rem;min-height:3.625rem;font-size:.8125rem;font-weight:700;color:var(--faint);position:relative;text-align:center}
 .tab.on{color:var(--ink)}
 .tab.on::before{content:"";position:absolute;top:0;left:28%;right:28%;height:.1875rem;border-radius:0 0 .1875rem .1875rem;background:var(--ink)}
@@ -219,7 +220,7 @@ a{color:inherit;text-decoration:none}
 
 /* sheets, toasts */
 .ov{position:absolute;inset:0;background:var(--shade);display:flex;align-items:flex-end;animation:fade .15s ease-out;z-index:35}
-.sheet{width:100%;max-height:92%;overflow-y:auto;background:var(--sheet);border-radius:1.375rem 1.375rem 0 0;padding:.5rem .875rem calc(.875rem + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:.75rem;animation:up .2s ease-out;scrollbar-width:none}
+.sheet{width:100%;max-height:92%;overflow-y:auto;background:var(--sheet);border-radius:1.375rem 1.375rem 0 0;padding:.5rem .875rem calc(.875rem + var(--safe-b));display:flex;flex-direction:column;gap:.75rem;animation:up .2s ease-out;scrollbar-width:none}
 .sheet::-webkit-scrollbar{display:none}
 .ov.still,.ov.still .sheet{animation:none}
 .grab{display:block;width:2.625rem;height:.3125rem;border-radius:.1875rem;background:var(--line);margin:.125rem auto 0}
@@ -230,7 +231,7 @@ a{color:inherit;text-decoration:none}
 @keyframes fade{from{opacity:0}}
 @keyframes up{from{transform:translateY(2.5rem);opacity:.6}}
 @keyframes pop{from{transform:scale(.6);opacity:0}}
-.toast{position:absolute;left:.75rem;right:.75rem;bottom:calc(.75rem + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:.375rem;padding:.5rem .5rem .5rem .875rem;border-radius:.875rem;background:var(--text);color:var(--paper);font-size:.9375rem;box-shadow:0 .5rem 1.375rem rgba(0,0,0,.25);animation:pop .17s ease-out;z-index:40}
+.toast{position:absolute;left:.75rem;right:.75rem;bottom:calc(.75rem + var(--safe-b));display:flex;align-items:center;gap:.375rem;padding:.5rem .5rem .5rem .875rem;border-radius:.875rem;background:var(--text);color:var(--paper);font-size:.9375rem;box-shadow:0 .5rem 1.375rem rgba(0,0,0,.25);animation:pop .17s ease-out;z-index:40}
 .toast span{flex:1;padding:.25rem 0}
 .toast{pointer-events:none}
 .toast.over-dock{bottom:calc(100% + .625rem)}
@@ -410,7 +411,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '5.1';
+const APP_VERSION = '5.2';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -1611,7 +1612,7 @@ VIEWS.settings = () => {
       <button class="btn ink" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" hidden></div>`}
       ${IOS && !STANDALONE ? `<div class="setbox"><button class="btn ghost" data-act="installhelp">Put StallBook on your Home Screen</button></div>` : ''}
       <div class="setbox">${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}<button class="btn ghost redtext" data-act="wipe">Delete everything</button></div>
-      <p class="ver">StallBook ${APP_VERSION}</p>`,
+      <p class="ver">StallBook ${APP_VERSION} · ${innerWidth}×${innerHeight} · ${navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? 'Home Screen' : 'browser'}</p>`,
     cls: 'plain', dock: `<div class="bar">${backSq()}<span class="sp"></span></div>`,
     after: () => { settingsInputs(); smsInputs(); const rf = document.getElementById('restorefile'); if (rf) rf.addEventListener('change', onRestoreFile); }};
 };
