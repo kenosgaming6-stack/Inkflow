@@ -410,7 +410,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '5.0';
+const APP_VERSION = '5.1';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -1373,7 +1373,7 @@ VIEWS.person = f => {
     <div class="owes">${L.bal > 0.001 ? `<small>Owes</small><b>${money(L.bal)}</b><div class="hrow" style="justify-content:center"><button class="showher" data-act="show" data-id="${p.id}">${svg('eye', 18)} Show her</button><button class="showher" data-act="promise" data-id="${p.id}">${svg('clock', 18)} Promise</button></div>` : `<small>${L.bal < -0.001 ? 'Credit' : 'Owes'}</small><b class="ok">${L.bal < -0.001 ? money(-L.bal) : 'Nothing'}</b>`}</div>
     ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}`;
   const lineDate = e => e.type === 'give' ? (givenAt(e) || e.date) : e.date;
-  const lines = S.entries.filter(e => e.pid === p.id && ['give', 'pay', 'back', 'promise', 'note', 'move'].includes(e.type) && !(e.type === 'pay' && e.with)).sort((a, b) => cmp(lineDate(a), lineDate(b)));
+  const lines = S.entries.filter(e => e.pid === p.id && ['give', 'pay', 'back', 'promise', 'note', 'move'].includes(e.type) && !(e.type === 'pay' && e.with)).sort((a, b) => cmp(lineDate(b), lineDate(a)));
   const line = e => {
     const gone = c.undone.has(e.id); const kind = gone ? undoKind(e.id) : '';
     let mk = '', t = '', sub = [], right = '';
@@ -1393,10 +1393,10 @@ VIEWS.person = f => {
     const s = sub.filter(Boolean).join(' · ');
     return `<button class="row ${gone ? 'gone' : ''}" data-act="${gone ? 'noop' : 'entry'}" data-id="${e.id}">${mk}<span class="d">${dmy(lineDate(e))}</span><div class="who"><div class="line">${esc(t)}</div>${s ? `<div class="sub wrap">${esc(s)}</div>` : ''}</div>${right}</button>`;
   };
-  const mid = `<div class="lines">${lines.length ? lines.map(line).join('') : `<div class="empty"><p>Nothing in her book yet.</p></div>`}</div>`;
+  const mid = `<div class="lines down">${lines.length ? lines.map(line).join('') : `<div class="empty"><p>Nothing in her book yet.</p></div>`}</div>`;
   const dock = `<div class="bar">${backSq()}${p.phone ? `<a class="btn call" href="tel:${esc(digits(p.phone))}" target="_top" data-act="noop" aria-label="Call ${esc(p.name)}">${svg('phone', 26)}</a><button class="btn msg" data-act="msg" data-id="${p.id}" aria-label="Message ${esc(p.name)}">${svg('msg', 26)}</button>` : `<button class="btn ghost" data-act="edit" data-id="${p.id}">${svg('phone')} Add her number</button>`}</div>
     <div class="bar"><button class="btn ink tall" data-act="give" data-id="${p.id}">${svg('bag')} Give</button><button class="btn take tall" data-act="paybook" data-id="${p.id}">${svg('cash')} Collect</button></div>`;
-  return {top, mid, cls: 'book', dock, anchor: 'bottom'};
+  return {top, mid, cls: 'book', dock, anchor: 'top'};
 };
 function backSheet(id) {
   const e = byId(id); const ld = ledger(e.pid).loads.find(x => x.id === id); const max = e.bags - ld.backBags;
