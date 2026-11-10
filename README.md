@@ -12,6 +12,11 @@ Three tabs at the bottom. Give and Collect never send you to another page; every
   - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). Switch on **Hold for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She goes into the tab you are on.
   - **Cash sales:** the cash button counts a bag sold for cash, with no name.
   - **Correcting a line:** tap the number in her row to change it. Tap her name to hand over held bags, release them, pick the right customer or change the place.
+- **Count check**: tap the big number on the card ("40 left") any time. It shows what the book says, you set what is really in the car with − and + (tap the number to type it), and save.
+  - Same number: one tap. More than the book: the book is fixed. Fewer than the book: the missing bags show in the list as an amber line, **Who took these?**, in the place you are at. Tap it and pick who took them, or **Nobody. They are lost**. Naming turns them into a normal give, so the book stays right.
+  - A later count that finds bags again gives them back to those no-name lines first.
+  - Every 10 minutes (or 5, or 15, or never: Settings › Count the car, every) the number glows amber and plays a soft sound until you count. It only asks while the Give screen is open and something was done in the last 3 hours.
+  - A delivery can't be closed while bags still have no name: name them or write them off as lost.
 - **Collect**: who owes, most urgent first, filtered by place.
   - **Taking a payment:** tap a name and the money pad opens. Tap the cedi notes as she counts. **Done** shows her new balance in the list. **Next** saves and opens the next woman at that spot. **Not today** saves a promise.
   - **Overpayment:** if she pays more than she owes, you choose: keep it as credit, or record that you gave change.
