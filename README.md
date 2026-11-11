@@ -65,6 +65,15 @@ npx wrangler deploy
 
 It opens full screen, works with no data, and keeps the bottom bar above the keyboard. Always use the icon: the iPhone keeps the Home Screen app's book separate from Safari's.
 
+## Download the app
+
+The `download/` folder always holds the latest ready-made files:
+
+- `download/index.html` is the whole app in one file. Upload it to any static host.
+- `download/look.html` is the new look sample: four screens to look at and tap. It is not the app and saves nothing.
+
+On GitHub, open the file and press the download arrow at the top right of the file. After changing the app, rebuild the file with `python3 tools/build-single.py download/index.html`.
+
 ## One file to upload anywhere
 
 `python3 tools/build-single.py stallbook.html` makes one file with the font and icons inside. Upload it to any static host. It has no offline file, so it needs internet to open; the book itself is kept on the phone.
