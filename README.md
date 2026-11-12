@@ -27,6 +27,14 @@ Nothing is ever overwritten. Corrections, handovers, releases and moves are new 
 
 **Closing a delivery:** you can only close once no bags are held. Then choose what happened to what's left: kept for the next delivery, sent back, spoiled or lost, sold for cash, or the count was wrong.
 
+## The look
+
+- **Colour has one job each.** Blue is the pen (what you write), red is debt and the notebook margin, green is money in, amber is waiting (held bags, no-name bags).
+- **The band at the top says the job:** blue for Give (with the page number, like a receipt book), green for Collect, black for Book. The phone's status bar takes the same colour.
+- **Numbers are painted big** in Barlow Condensed (SIL Open Font License, `public/fonts/OFL-barlow.txt`). Words stay in Atkinson Hyperlegible.
+- **Places are index tabs** standing on the page.
+- **Every number pad is a calculator:** + − × with C and ⌫, all keys the same size. What you type shows small on top ("5 + 6 + 7 + 8") and the total shows big underneath; times goes before plus and minus. On the money pad the cedi notes add themselves to the sum.
+
 ## Every screen size
 
 The app fills the whole screen at any size: small phones, iPhones, tablets, computers, and both ways round. Everything is sized in `rem`, and one number (`--s`, set by `fit()` in `public/index.html`) scales all of it: 1 on an iPhone 12, a little less on small phones (down to 0.8), and more on tablets and computers (up to 1.35, so the text is bigger and more rows fit). Wide screens show one centred column the full height of the screen. When the keyboard opens on a phone, the app stays the same size and the bottom bar sits above the keyboard.

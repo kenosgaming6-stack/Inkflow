@@ -7,7 +7,7 @@ uri = lambda f, t: 'data:%s;base64,%s' % (t, base64.b64encode(open(d + f, 'rb').
 def rep(a, b):
     global s
     assert s.count(a) == 1, a[:70]; s = s.replace(a, b)
-for f in ['atkinson-400-latin', 'atkinson-400-latin-ext', 'atkinson-700-latin', 'atkinson-700-latin-ext']:
+for f in ['atkinson-400-latin', 'atkinson-400-latin-ext', 'atkinson-700-latin', 'atkinson-700-latin-ext', 'barlow-condensed-700-latin', 'barlow-condensed-800-latin']:
     rep(f"url(fonts/{f}.woff2)", f"url({uri('fonts/' + f + '.woff2', 'font/woff2')})")
 rep('<link rel="preload" href="fonts/atkinson-400-latin.woff2" as="font" type="font/woff2" crossorigin>\n', '')
 rep('<link rel="preload" href="fonts/atkinson-700-latin.woff2" as="font" type="font/woff2" crossorigin>\n', '')

@@ -23,13 +23,15 @@ head_end = s.index('<style>')
 s = ('<title>StallBook</title>\n'
      '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
      '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-     '<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">\n'
+     '<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">\n'
      + s[head_end:])
 rep('</style>\n</head>\n<body>\n', '</style>\n')
 rep('</script>\n</body>\n</html>', '</script>')
 
 # ---- fonts come from Google Fonts (the same Atkinson Hyperlegible files, cedi sign included)
 s, n = re.subn(r"/\* Atkinson Hyperlegible ships with the app.*?\*/\n(@font-face\{[^\n]*\}\n){4}", '', s, flags=re.S)
+assert n == 1
+s, n = re.subn(r"/\* Barlow Condensed \(SIL Open Font License.*?\*/\n(@font-face\{[^\n]*\}\n){2}", '', s, flags=re.S)
 assert n == 1
 
 # ---- the viewer pads the page for the notch and home bar, so the app adds nothing of its own

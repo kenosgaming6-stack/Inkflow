@@ -23,12 +23,16 @@
 @font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/atkinson-400-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/atkinson-700-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:'Atkinson Hyperlegible';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/atkinson-700-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+/* Barlow Condensed (SIL Open Font License, see OFL-barlow.txt next to the font files): tall, heavy numbers like a painted shop sign. Digits only; ₵ and words stay in Atkinson. */
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/barlow-condensed-700-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:800;font-display:swap;src:url(fonts/barlow-condensed-800-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+2000-206F,U+2212}
 /* StallBook v3. Rule for every screen: look at the top, read the middle, touch the bottom. Give and Collect never leave the list. */
 :root{
   --safe-b:max(0px,calc(env(safe-area-inset-bottom,0px) - 22px));
-  --paper:#FFFFFF;--page:#FFFFFF;--rule:#CBDAEE;--margin:#E0545A;--ink:#24307A;--text:#1A1D26;--muted:#555B69;--faint:#6F7585;
-  --owe:#BE2329;--owe-bg:#FDECEC;--paid:#17703F;--paid-bg:#E3F3E9;--warn:#7A4E00;--warn-bg:#FFEFC7;--held:#B76E00;--bar:#24307A;
-  --on-btn:#FFFFFF;--key:#ECEFF5;--key-text:#1A1D26;--line:#DFE3EC;--sheet:#FFFFFF;--shade:rgba(5,8,18,.5);
+  --paper:#FFFFFF;--page:#FFFFFF;--rule:#C9D7F0;--margin:#E2343F;--ink:#1D3FBB;--text:#14161C;--muted:#5A6070;--faint:#6B7180;
+  --owe:#D12B36;--owe-bg:#FDE8E9;--paid:#12804A;--paid-bg:#E3F4EA;--warn:#8A4F06;--warn-bg:#FFF0D2;--held:#B4690E;--bar:#1D3FBB;
+  --on-btn:#FFFFFF;--key:#F1F3F8;--key-edge:#C9CFDD;--key-text:#14161C;--line:#DFE3EC;--sheet:#FFFFFF;--shade:rgba(5,8,18,.5);
+  --pen-wash:#EAF0FE;--num:'Barlow Condensed','Atkinson Hyperlegible',system-ui,sans-serif;
   color-scheme:light;
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -39,6 +43,16 @@ body{margin:0;background:var(--page);color:var(--text);font-family:'Atkinson Hyp
 html{touch-action:manipulation;-webkit-text-size-adjust:100%;font-size:calc(16px * var(--s, 1));background:#FFFFFF}
 #shell{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;max-width:35rem;margin:0 auto;background:var(--paper);overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
 html.kb #shell{bottom:auto;top:var(--app-top,0px);height:var(--app-h)}
+/* the band at the top says which job you are doing: blue is Give, green is Collect, black is Book. The status bar takes the same colour. */
+html[data-mode="collect"]{--bar:#12804A}html[data-mode="book"]{--bar:#14161C}
+.band{flex:none;height:2.75rem;display:flex;align-items:center;gap:.5rem;padding:0 .75rem;background:var(--bar);color:#FFFFFF}
+.band .i{width:1.375rem;height:1.375rem}
+.band b{flex:1;min-width:0;font:800 1.5rem/1 var(--num);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pageno{flex:none;background:#FFFFFF;color:var(--owe);font:700 1rem/1 var(--num);letter-spacing:.12em;padding:.3em .45em .24em .55em;border-radius:.2em}
+.pageno.dark{color:var(--text)}
+/* every number that matters is painted in the number face */
+.stock .big b,.disp .v,.disp .tape,.step .num,.amt,.qbox,.csum b,.owes b,.key,.note,.tile b,.sum4 b,.chip em,.hero .n,.sv,.ccn{font-family:var(--num);font-weight:800;letter-spacing:.01em}
+.amt small,.csum small{font-family:'Atkinson Hyperlegible',system-ui,sans-serif;letter-spacing:0}
 #app{height:100%;display:flex;flex-direction:column;position:relative}
 body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:60;pointer-events:none}
 button,a,.row,.tab,.chip,.key,.face{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -95,9 +109,14 @@ a{color:inherit;text-decoration:none}
 *{scrollbar-width:none}
 *::-webkit-scrollbar{display:none;width:0;height:0}
 .enter{animation:enter .16s ease-out}
-.ptabs{margin-top:.625rem;display:flex;align-items:center;gap:.375rem}
-.ptabs .chips{flex:1;min-width:0;margin-right:0;padding-right:0}
+.ptabs{margin-top:.5rem;display:flex;align-items:flex-end;gap:.375rem}
+.ptabs .chips{flex:1;min-width:0;margin-right:0;padding-right:0;align-items:flex-end}
 .ptabs > .chip{flex:none}
+.ptabs .chip{border:.125rem solid var(--text);border-bottom:0;border-radius:.5rem .5rem 0 0;background:var(--key);color:var(--muted);padding:.42rem .75rem .38rem}
+.ptabs .chip.on{background:var(--paper);border-color:var(--text);color:var(--text);padding-bottom:.6rem}
+.ptabs .chip.dash{border-style:dashed}
+.top.tabbed{padding-bottom:0}
+.top.tabbed + .mid{border-top:.125rem solid var(--text)}
 .mid.slide-l{animation:slidel .2s ease-out}
 .mid.slide-r{animation:slider .2s ease-out}
 @keyframes slidel{from{opacity:.3;transform:translateX(2.25rem)}to{opacity:1;transform:none}}
@@ -114,7 +133,7 @@ a{color:inherit;text-decoration:none}
 .name{font-size:1.125rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sub{font-size:.8125rem;color:var(--faint);margin-top:.0625rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .line{font-size:1rem;color:var(--text)}
-.amt{font-size:1.125rem;font-weight:700;color:var(--owe);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
+.amt{font-size:1.5rem;font-weight:700;color:var(--owe);white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
 .amt.ink{color:var(--ink)}.amt.ok{color:var(--paid)}.amt.faint{color:var(--faint);font-weight:400;font-size:.9375rem}
 .amt small{display:block;font-size:.75rem;font-weight:400;color:var(--faint)}
 .d{flex:none;width:2.875rem;font-size:.8125rem;color:var(--faint)}
@@ -135,7 +154,7 @@ a{color:inherit;text-decoration:none}
 .tags.l{justify-content:flex-start}
 .owes{text-align:center;display:flex;flex-direction:column;align-items:center}
 .owes small{font-size:.875rem;color:var(--muted)}
-.owes b{font-size:2.75rem;line-height:1.05;color:var(--owe);font-variant-numeric:tabular-nums}
+.owes b{font-size:3.5rem;line-height:1.05;color:var(--owe);font-variant-numeric:tabular-nums}
 .owes b.ok{color:var(--paid);font-size:1.875rem}
 .owes span{font-size:.875rem;color:var(--muted)}
 .showher{display:inline-flex;align-items:center;gap:.375rem;margin-top:.375rem;padding:.375rem .875rem;border-radius:62.4375rem;background:var(--key);color:var(--ink);font-weight:700;font-size:.875rem}
@@ -149,8 +168,8 @@ a{color:inherit;text-decoration:none}
 .btn small{display:block;font-size:.75rem;font-weight:400;opacity:.85}
 .btn.tall{min-height:4rem;font-size:1.1875rem}
 .btn.give{background:var(--owe);color:var(--on-btn)}
-.btn.take{background:var(--paid);color:var(--on-btn)}
-.btn.ink{background:var(--ink);color:var(--on-btn)}
+.btn.take{background:var(--paid);color:var(--on-btn);border-bottom:.22rem solid rgba(0,0,0,.28)}
+.btn.ink{background:var(--ink);color:var(--on-btn);border-bottom:.22rem solid rgba(0,0,0,.28)}
 .btn.ghost{border:.09375rem solid var(--line);color:var(--ink)}
 .btn.call{background:var(--paid-bg);color:var(--paid)}
 .btn.msg{background:var(--key);color:var(--ink)}
@@ -187,16 +206,18 @@ a{color:inherit;text-decoration:none}
 .badge{position:absolute;top:.3125rem;left:calc(50% + .375rem);min-width:1.1875rem;height:1.1875rem;border-radius:.625rem;background:var(--owe);color:var(--on-btn);font-size:.6875rem;display:flex;align-items:center;justify-content:center;padding:0 .3125rem}
 
 /* keypad and money */
-.kp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4375rem}
-.key{min-height:3.375rem;border-radius:.8125rem;background:var(--key);color:var(--key-text);font-size:1.5rem;font-weight:700;display:flex;align-items:center;justify-content:center}
-.key.op{background:var(--paid-bg);color:var(--paid)}
+.kp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.4375rem}
+.key{min-height:3.375rem;border-radius:.75rem;background:var(--key);border-bottom:.22rem solid var(--key-edge);color:var(--key-text);font-size:1.875rem;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.key:active{transform:translateY(.1rem);border-bottom-width:.1rem}
+.key.op{background:var(--pen-wash);border-bottom-color:#B9C8F2;color:var(--ink)}
+.key.c{background:var(--owe-bg);border-bottom-color:#F1BDC1;color:var(--owe)}
 .kp.pay .key{min-height:3.125rem}
 .notes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.3125rem}
 .note{min-height:2.625rem;border-radius:.5625rem;border:.09375rem dashed var(--paid);background:var(--paid-bg);color:var(--paid);font-weight:700;font-size:.9375rem;display:flex;align-items:center;justify-content:center}
 .disp{padding:.625rem .875rem;border-radius:1rem;background:var(--key);text-align:right;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:.125rem}
-.disp .tape{font-size:.9375rem;color:var(--muted);white-space:nowrap;overflow-x:auto;scrollbar-width:none;min-height:1.25rem}
+.disp .tape{font-size:1.25rem;font-weight:700;color:var(--muted);white-space:nowrap;overflow-x:auto;scrollbar-width:none;min-height:1.25rem}
 .disp .tape::-webkit-scrollbar{display:none}
-.disp .v{font-size:2.625rem;font-weight:700;line-height:1.1;color:var(--ink);word-break:break-all}
+.disp .v{font-size:3.25rem;font-weight:700;line-height:1.1;color:var(--ink);word-break:break-all}
 .disp .v.g{color:var(--paid)}
 .disp .s{font-size:.875rem;color:var(--muted);min-height:1.1875rem}
 .clears{font-size:.875rem;color:var(--muted);text-align:center;min-height:1.1875rem}
@@ -277,7 +298,7 @@ a{color:inherit;text-decoration:none}
 .big-tiles{display:flex;flex-direction:column;gap:.625rem;padding:.75rem}
 .tile{border-radius:1.25rem;padding:1rem;background:var(--key);display:flex;flex-direction:column;gap:.125rem}
 .tile small{font-size:1rem;color:var(--muted);font-weight:700}
-.tile b{font-size:2.875rem;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--ink)}
+.tile b{font-size:3.5rem;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--ink)}
 .tile b.r{color:var(--owe)}.tile b.g{color:var(--paid)}
 .tile span{font-size:1rem;color:var(--muted)}
 .tile.r{background:var(--owe-bg)}.tile.g{background:var(--paid-bg)}
@@ -304,7 +325,7 @@ a{color:inherit;text-decoration:none}
 /* v3 */
 .stock{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.25rem .875rem;align-items:center;padding:.625rem .75rem;border-radius:1.125rem;background:var(--key)}
 .stock .big{grid-row:span 2;display:flex;flex-direction:column;align-items:center;min-width:4.75rem}
-.stock .big b{font-size:3.375rem;line-height:.95;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.stock .big b{font-size:4.125rem;line-height:.95;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
 .stock .big b.z{color:var(--paid)}
 .stock .big b.ask{color:var(--warn);border-radius:.875rem;padding:0 .5rem;margin-bottom:.1875rem;box-shadow:0 0 0 .1875rem var(--warn);animation:askpulse 1.6s ease-in-out infinite}
 @keyframes askpulse{0%,100%{box-shadow:0 0 0 .1875rem var(--warn)}50%{box-shadow:0 0 0 .5rem rgba(183,110,0,.22)}}
@@ -322,12 +343,12 @@ a{color:inherit;text-decoration:none}
 .csum{display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border-radius:1.125rem;background:var(--key)}
 .csum .cl{flex:1;display:flex;flex-direction:column;min-width:0}
 .csum small{font-size:.8125rem;color:var(--muted);font-weight:700}
-.csum .cl b{font-size:2.125rem;line-height:1.05;color:var(--owe);font-variant-numeric:tabular-nums}
+.csum .cl b{font-size:2.75rem;line-height:1.05;color:var(--owe);font-variant-numeric:tabular-nums}
 .csum .cl b.ok{color:var(--paid)}
 .csum .cr{display:flex;flex-direction:column;align-items:flex-end;gap:.25rem}
-.csum .cr b{font-size:1.1875rem;color:var(--paid);font-variant-numeric:tabular-nums}
+.csum .cr b{font-size:1.625rem;color:var(--paid);font-variant-numeric:tabular-nums}
 .mini{padding:.4375rem .75rem;border-radius:.5625rem;background:var(--paper);color:var(--ink);font-size:.875rem;font-weight:700;display:inline-flex;align-items:center;gap:.3125rem}
-.qbox{flex:none;min-width:3rem;height:2.875rem;padding:0 .625rem;border-radius:.75rem;border:.09375rem solid var(--line);background:var(--paper);font-size:1.3125rem;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.qbox{flex:none;min-width:3rem;height:2.875rem;padding:0 .625rem;border-radius:.75rem;border:.125rem solid var(--text);background:var(--paper);font-size:1.75rem;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
 .row.editing{background:var(--key)}
 .qstep{display:flex;align-items:center;gap:.375rem}
 .qstep button{width:2.875rem;height:2.875rem;border-radius:50%;background:var(--paper);border:.09375rem solid var(--line);font-size:1.5rem;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center}
@@ -366,7 +387,7 @@ a{color:inherit;text-decoration:none}
 .radio button.on::before{border:.375rem solid var(--ink)}
 .sum4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.375rem;text-align:center}
 .sum4 div{padding:.5rem .25rem;border-radius:.75rem;background:var(--key);display:flex;flex-direction:column}
-.sum4 b{font-size:1.375rem;color:var(--ink)}.sum4 small{font-size:.75rem;color:var(--muted)}
+.sum4 b{font-size:1.75rem;color:var(--ink)}.sum4 small{font-size:.75rem;color:var(--muted)}
 .sum4 .ok b{color:var(--paid)}.sum4 .w b{color:var(--warn)}
 .addrow{display:flex;gap:.5rem}
 .addrow input{flex:1;min-width:0;padding:.625rem .75rem;border-radius:.75rem;border:.09375rem solid var(--ink);background:var(--paper);font-size:1.0625rem;outline:none}
@@ -416,7 +437,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '5.3';
+const APP_VERSION = '6.0';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -930,10 +951,40 @@ function placeToast() {
 function hideToast() { if (toastNode) toastNode.remove(); toastNode = null; }
 
 /* ---------- shared pieces ---------- */
+/* every number pad is a small calculator: 5 + 6 + 7, or 3 × 650 + 2 × 700. Times goes before plus and minus. The total always shows. */
 function keypad(mode) {
-  const k = (v, l, cls) => `<button class="key ${cls || ''}" data-act="key" data-k="${v}">${l || v}</button>`;
-  return `<div class="kp ${mode === 'pay' ? 'pay' : ''}">${['7', '8', '9', '4', '5', '6', '1', '2', '3'].map(x => k(x)).join('')}${mode === 'pay' ? k('+', '+', 'op') : mode === 'money' ? k('00') : '<span></span>'}${k('0')}${k('del', svg('del', 26), '')}</div>`;
+  const k = (v, l, cls, aria) => `<button class="key ${cls || ''}" data-act="key" data-k="${v}"${aria ? ` aria-label="${aria}"` : ''}>${l || v}</button>`;
+  return `<div class="kp ${mode === 'pay' ? 'pay' : ''}">${k('7')}${k('8')}${k('9')}${k('*', '×', 'op', 'Times')}${k('4')}${k('5')}${k('6')}${k('-', '−', 'op', 'Minus')}${k('1')}${k('2')}${k('3')}${k('+', '+', 'op', 'Plus')}${k('c', 'C', 'c', 'Clear')}${k('0')}${k('00')}${k('del', svg('del', 26), '', 'Delete one')}</div>`;
 }
+const OPS = '+-*';
+function exprAdd(s, k, max) {
+  s = s || '';
+  if (k === 'c') return '';
+  if (k === 'del') return s.slice(0, -1);
+  const last = s.slice(-1), num = (s.match(/\d+$/) || [''])[0];
+  if (OPS.includes(k)) return !s ? s : OPS.includes(last) ? s.slice(0, -1) + k : s + k;
+  if (k === '00' && (!num || /^0+$/.test(num))) return s;
+  const n = (num + k).replace(/^0+(?=\d)/, '');
+  return n.length > (max || 7) ? s : s.slice(0, s.length - num.length) + n;
+}
+function exprVal(s) {
+  const t = String(s || '').match(/\d+|[-+*]/g) || []; while (t.length && OPS.includes(t[t.length - 1])) t.pop();
+  let total = 0, term = 0, sign = 1;
+  for (let i = 0; i < t.length; i++) {
+    const x = t[i];
+    if (x === '+' || x === '-') { total += sign * term; term = 0; sign = x === '-' ? -1 : 1; }
+    else if (x === '*') term *= Number(t[++i]);
+    else term = Number(x);
+  }
+  return total + sign * term;
+}
+const exprNum = s => Math.max(0, exprVal(s));
+function exprTape(s) {
+  s = String(s || ''); if (!/[-+*]/.test(s)) return '';
+  return (s.match(/\d+|[-+*]/g) || []).map(x => x === '*' ? '×' : x === '-' ? '−' : x === '+' ? '+' : fmt(Number(x))).join(' ');
+}
+/* the display over a pad: what was typed, small, and the total, big */
+const exprDisp = (s, isMoney, lab) => `<div class="disp"><div class="tape">${exprTape(s) || '&nbsp;'}</div><div class="v">${isMoney ? money(exprNum(s)) : fmt(exprNum(s))}${lab ? ` <span style="font-size:1.25rem;font-family:'Atkinson Hyperlegible',sans-serif">${lab}</span>` : ''}</div></div>`;
 function backupBtn() { const need = needsBackup(); return `<button class="ib ${need ? '' : 'faint'}" data-act="backupsheet" aria-label="${need ? 'Backup needed' : 'Backed up'}">${svg(need ? 'cloud' : 'cloudok')}${need ? '<span class="dot"></span>' : ''}</button>`; }
 const gearBtn = () => `<button class="ib faint" data-act="settings" aria-label="Settings">${svg('set')}</button>`;
 const backSq = act => `<button class="sq" data-act="${act || 'back'}" aria-label="Back">${svg('back')}</button>`;
@@ -975,8 +1026,10 @@ function render() {
   const keepTop = same ? old.scrollTop : 0;
   const wasBottom = same ? old.scrollHeight - old.scrollTop - old.clientHeight < 6 : true;
   app.classList.toggle('lh', S.settings.hand === 'left');
+  if (!f) document.documentElement.dataset.mode = V.tab;
   app.innerHTML = (V.demo ? `<div class="demobar"><span>Example book. Not real.</span><button data-act="leavedemo">Leave</button></div>` : '')
-    + `<header class="top">${o.top}</header><main class="mid ${o.cls || ''}${same ? '' : ' enter'}" id="mid">${o.mid}</main>`
+    + (o.tabs ? band() : '')
+    + `<header class="top ${o.topCls || ''}">${o.top}</header><main class="mid ${o.cls || ''}${same ? '' : ' enter'}" id="mid">${o.mid}</main>`
     + (o.dock ? `<footer class="dock${o.tabs ? '' : ' last'}">${o.dock}</footer>` : '') + (o.tabs ? tabBar() : '');
   const m = document.getElementById('mid');
   if (o.anchor === 'bottom') m.scrollTop = (!same || wasBottom) ? m.scrollHeight : keepTop;
@@ -984,6 +1037,14 @@ function render() {
   lastKey = key; V.pulse = false;
   if (o.after) o.after();
   placeToast();
+}
+
+/* the coloured band: what you are doing, and the page you are on */
+function band() {
+  const car = givingCar(); const pageNo = car ? 'No ' + String(carsNewest().slice().reverse().indexOf(car) + 1).padStart(3, '0') : '';
+  if (V.tab === 'collect') return `<div class="band">${svg('cash')}<b>Collect</b><span class="pageno">${dmy(new Date())}</span></div>`;
+  if (V.tab === 'book') return `<div class="band">${svg('book')}<b>Book</b><span class="pageno dark">${S.people.length} ${S.people.length === 1 ? 'name' : 'names'}</span></div>`;
+  return `<div class="band">${svg('bag')}<b>Give</b>${pageNo ? `<span class="pageno">${pageNo}</span>` : ''}</div>`;
 }
 
 /* ===== Give ===== */
@@ -1046,7 +1107,7 @@ function viewGive() {
     <div class="bar"><button class="sq cash" data-act="cash" aria-label="Sold one for cash">${svg('cash', 28)}</button>
     <label class="find ink">${svg('search')}<input id="gq" type="text" placeholder="Who's taking?" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-label="Who is taking ${esc(unit())}s? Type her name" value="${esc(V.gq)}"></label></div>`;
   const slide = V.slide; V.slide = null;
-  return {top, mid, cls: 'book' + (slide ? ' slide-' + slide : ''), dock, tabs: true, anchor: 'top', after: () => {
+  return {top, topCls: 'tabbed', mid, cls: 'book' + (slide ? ' slide-' + slide : ''), dock, tabs: true, anchor: 'top', after: () => {
     attachFind();
     /* bring the new line and the open tab into view, moving only their own lists */
     const m0 = document.getElementById('mid'), f = m0.querySelector('.flash');
@@ -1062,8 +1123,7 @@ function viewGive() {
 }
 function giveEmpty() {
   const fresh = !S.people.length && !S.cars.length;
-  const top = `<div class="hrow"><div class="brand">Give</div></div>
-    <div class="csum"><div class="cl"><small>No delivery open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting for the next one' : 'Start one when the vehicle arrives'}</b></div></div>`;
+  const top = `    <div class="csum"><div class="cl"><small>No delivery open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting for the next one' : 'Start one when the vehicle arrives'}</b></div></div>`;
   let mid;
   if (fresh) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Your book is empty</h2><p>When a vehicle arrives, tap <b>New delivery</b>. Then give ${esc(unit())}s one customer at a time.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">See an example first</button></div>`;
   else { const cars = carsNewest().slice(0, 6); mid = cars.length ? `<div class="sect"><span>Deliveries</span></div>` + cars.map(carRow).join('') : ''; }
@@ -1145,7 +1205,7 @@ function giveSheet() {
 }
 function qtySheet() {
   const Q = V.qk;
-  sheet(`<i class="grab"></i><h3>How many ${esc(unit())}s?</h3><div class="disp"><div class="v">${esc(Q.v) || '0'}</div></div>${keypad('count')}<div class="bar"><button class="btn ghost" data-act="qtyback">Back</button><button class="btn ink" data-act="qtyuse">Use ${esc(Q.v) || '0'}</button></div>`);
+  sheet(`<i class="grab"></i><h3>How many ${esc(unit())}s?</h3>${exprDisp(Q.v, false, esc(unit()) + 's')}${keypad('count')}<div class="bar"><button class="btn ghost" data-act="qtyback">Back</button><button class="btn ink" data-act="qtyuse">Use ${fmt(exprNum(Q.v))}</button></div>`);
   V.sheetKind = 'qty';
 }
 function saveGive(force) {
@@ -1378,23 +1438,22 @@ function remindList(ids) {
 }
 
 /* money pad over the list: the calculator lives where money is typed */
-const paySum = () => r2(sum([...V.pay.terms, V.pay.cur], x => Number(x) || 0));
+const paySum = () => r2(exprNum(V.pay.ex));
 function payPreview(pid, amt, loadId) {
   const open = ledger(pid).loads.filter(L => L.left > 0.001); const first = open.find(L => L.id === loadId);
   const order = (first ? [first] : []).concat(open.filter(L => L !== first)); let r = amt; const outp = [];
   for (const L of order) { if (r <= 0.001) break; const k = Math.min(L.left, r); r -= k; outp.push({L, k, cleared: k >= L.left - 0.001}); }
   return outp;
 }
-function openPay(pid, o) { V.pay = Object.assign({pid, terms: [], cur: '', method: 'cash', err: '', loadId: null, ctx: 'collect', over: ''}, o || {}); paySheet(); }
+function openPay(pid, o) { V.pay = Object.assign({pid, ex: '', method: 'cash', err: '', loadId: null, ctx: 'collect', over: ''}, o || {}); paySheet(); }
 function nextPayId(pid) { const ord = collectLists().order.map(x => x.p.id); const i = ord.indexOf(pid); return ord.slice(i + 1).find(id => id !== pid) || null; }
 function paySheet() {
   const P = V.pay; const p = person(P.pid); const L = ledger(p.id); const a = paySum(); const left = r2(L.bal - a);
-  const tape = [...P.terms, P.cur].filter(Boolean);
   const over = a > Math.max(0, L.bal) + 0.001;
   const pv = payPreview(p.id, a, P.loadId);
   const next = P.ctx === 'collect' ? nextPayId(p.id) : null;
   sheet(`<div class="hrow"><span class="av">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${L.bal > 0.001 ? 'Owes ' + money(L.bal) : 'Owes nothing'}${p.loc ? ' · ' + esc(locTxt(p.loc)) : ''}</small></div>${L.bal > 0.001 ? `<button class="lnk" data-act="promise" data-id="${p.id}">Not today</button>` : ''}<button class="lnk" data-act="person" data-id="${p.id}">History ›</button></div>
-    <div class="disp"><div class="tape">${tape.length > 1 ? tape.map(x => fmt(Number(x))).join(' + ') : '&nbsp;'}</div><div class="v ${a ? 'g' : ''}">${money(a)}</div><div class="s">${!a ? 'Tap the notes as she counts' : over ? money(a - Math.max(0, L.bal)) + ' more than she owes' : left > 0.001 ? money(left) + ' left after this' : 'All paid'}</div></div>
+    <div class="disp"><div class="tape">${exprTape(P.ex) || '&nbsp;'}</div><div class="v ${a ? 'g' : ''}">${money(a)}</div><div class="s">${!a ? 'Tap the notes as she counts' : over ? money(a - Math.max(0, L.bal)) + ' more than she owes' : left > 0.001 ? money(left) + ' left after this' : 'All paid'}</div></div>
     ${over ? `<div class="over">What about the extra ${money(a - Math.max(0, L.bal))}?<div class="bar"><button class="chip ${P.over === 'credit' ? 'on' : ''}" data-act="pover" data-v="credit">Keep as credit</button><button class="chip ${P.over === 'change' ? 'on' : ''}" data-act="pover" data-v="change">Gave change</button></div></div>`
       : `<p class="clears">${a ? pv.map(x => x.cleared ? `Clears <b>${dmy(x.L.date)}</b>` : `${money(x.k)} off ${dmy(x.L.date)}`).join(', ') : '&nbsp;'}</p>`}
     <div class="seg mini2"><button class="${P.method === 'cash' ? 'on' : ''}" data-act="method" data-m="cash">Cash</button><button class="${P.method === 'momo' ? 'on' : ''}" data-act="method" data-m="momo">MoMo</button></div>
@@ -1405,9 +1464,7 @@ function paySheet() {
 }
 function payKey(k) {
   const P = V.pay;
-  if (k === 'del') { if (P.cur) P.cur = P.cur.slice(0, -1); else P.terms.pop(); }
-  else if (k === '+') { if (P.cur) { P.terms.push(P.cur); P.cur = ''; } }
-  else { const n = (P.cur + k).replace(/^0+(?=\d)/, ''); if (n.length <= 7) P.cur = n; }
+  P.ex = exprAdd(P.ex, k, 7);
   P.err = ''; P.over = ''; paySheet();
 }
 /* saves the payment; returns false when something is missing */
@@ -1452,7 +1509,7 @@ function viewBook() {
   const all = debtors(); const out = sum(all, x => x.L.bal);
   const wk = new Date(Date.now() - 7 * 864e5).toISOString();
   const week = sum(S.entries.filter(e => e.type === 'pay' && live(e) && e.date >= wk), e => e.amount);
-  const top = `<div class="hrow"><div class="brand">Book</div><button class="pill" data-act="mom">${svg('eye', 18)} Show Mom</button>${backupBtn()}${gearBtn()}</div>
+  const top = `<div class="hrow"><span class="sp" style="flex:1"></span><button class="pill" data-act="mom">${svg('eye', 18)} Show Mom</button>${backupBtn()}${gearBtn()}</div>
     <div class="csum"><div class="cl"><small>Owed to you · ${all.length} ${all.length === 1 ? 'customer' : 'customers'}</small><b class="${out > 0.001 ? '' : 'ok'}">${money(out)}</b></div><div class="cr"><small>This week</small><b>${money(week)}</b></div></div>
     <div class="seg mini2"><button class="${V.bseg === 'people' ? 'on' : ''}" data-act="bseg" data-s="people">People</button><button class="${V.bseg === 'cars' ? 'on' : ''}" data-act="bseg" data-s="cars">Deliveries</button></div>
     ${V.bseg === 'people' ? filterChips(id => S.people.filter(p => p.loc === id).length) : ''}`;
@@ -1562,18 +1619,18 @@ VIEWS.newcar = () => {
       {after: () => { const i = document.getElementById('w_label'); if (i) i.addEventListener('input', () => { V.w.label = i.value; }); }});
   }
   if (W.s === 1 && W.same) {
-    if (W.sub === 0) return shell(2, `How many ${esc(u)}s?`, S.carry ? `${bagsNum(S.carry)} kept from the last delivery are included` : '', pad(esc(W.tmp) || '0', esc(u) + 's'), `${keypad('count')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
-    return shell(2, `Price for one ${esc(u)}?`, '', pad(money(+W.tmp || 0)), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wlast">Same as last<br><small>${money(S.settings.price)}</small></button><button class="btn ink" data-act="wnext">Next</button></div>`);
+    if (W.sub === 0) return shell(2, `How many ${esc(u)}s?`, S.carry ? `${bagsNum(S.carry)} kept from the last delivery are included` : '', exprDisp(W.tmp, false, esc(u) + 's'), `${keypad('count')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
+    return shell(2, `Price for one ${esc(u)}?`, '', exprDisp(W.tmp, true), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wlast">Same as last<br><small>${money(S.settings.price)}</small></button><button class="btn ink" data-act="wnext">Next</button></div>`);
   }
   if (W.s === 1) {
     const it = W.items[W.si];
     if (W.sub === 0) return shell(2, `Size ${W.si + 1}: what do you call it?`, '', '', `<div class="chips wrap" style="justify-content:center">${['Big', 'Medium', 'Small', 'Mini'].filter(n => !W.items.some((x, i) => i !== W.si && x.name === n)).map(n => `<button class="btn ghost tall" style="flex:1 1 40%" data-act="wname" data-n="${n}">${n}</button>`).join('')}</div><div class="bar">${backSq('wback')}</div>`);
-    if (W.sub === 1) return shell(2, `How many ${esc(it.name)}?`, '', pad(esc(W.tmp) || '0', esc(u) + 's'), `${keypad('count')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
-    if (W.sub === 2) return shell(2, `${esc(it.name)}: price for one?`, '', pad(money(+W.tmp || 0)), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
+    if (W.sub === 1) return shell(2, `How many ${esc(it.name)}?`, '', exprDisp(W.tmp, false, esc(u) + 's'), `${keypad('count')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
+    if (W.sub === 2) return shell(2, `${esc(it.name)}: price for one?`, '', exprDisp(W.tmp, true), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
     return shell(2, 'Another size?', W.items.map(i => `${esc(i.name)}: ${bagsNum(i.count)} at ${money(i.price)}`).join('<br>'), '', `<button class="btn ghost tall" data-act="wmore">Yes, add a size</button><button class="btn ink tall" data-act="wdone">No, that's all</button><div class="bar">${backSq('wback')}</div>`);
   }
   const total = sum(W.items, i => i.count);
-  return shell(3, 'What did the load cost you?', `${bagsTxt(total)}. Put the ${esc(S.settings.item || 'goods')}, transport and loading together. You can skip this.`, pad(money(+W.tmp || 0)), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wfinish" data-skip="1">Skip</button><button class="btn ink" data-act="wfinish">${svg('truck')} Start</button></div>`);
+  return shell(3, 'What did the load cost you?', `${bagsTxt(total)}. Put the ${esc(S.settings.item || 'goods')}, transport and loading together. You can skip this.`, exprDisp(W.tmp, true), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wfinish" data-skip="1">Skip</button><button class="btn ink" data-act="wfinish">${svg('truck')} Start</button></div>`);
 };
 function wizBack() {
   const W = V.w; W.err = ''; W.tmp = '';
@@ -1590,11 +1647,11 @@ VIEWS.num = () => {
   const N = V.num;
   return {top: `<div class="hrow"><div class="title"><b>${esc(N.title)}</b>${N.sub ? `<small>${esc(N.sub)}</small>` : ''}</div></div>`,
     mid: `${N.chips ? `<div class="chips wrap" style="justify-content:center">${N.chips.map(c => `<button class="chip ${N.chip === c ? 'on' : ''}" data-act="numchip" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
-      <div class="disp"><div class="v">${N.mode === 'count' ? (esc(N.value) || '0') + ` <span style="font-size:1.25rem">${esc(unit())}s</span>` : money(+N.value || 0)}</div></div><div class="err">${esc(N.err || '')}</div>`,
+      ${exprDisp(N.value, N.mode !== 'count', N.mode === 'count' ? esc(unit()) + 's' : '')}<div class="err">${esc(N.err || '')}</div>`,
     cls: 'center plain', dock: `${keypad(N.mode)}<div class="bar">${backSq()}<button class="btn ink" data-act="numsave">Save</button></div>`};
 };
 function openNum(o) { V.num = Object.assign({value: '', mode: 'money', err: ''}, o); push({v: 'num'}); }
-function editNum(s, k, mode) { if (k === 'del') return s.slice(0, -1); if (k === '00' && !s) return s; const n = (s + k).replace(/^0+(?=\d)/, ''); return n.length > (mode === 'count' ? 4 : 7) ? s : n; }
+function editNum(s, k, mode) { return exprAdd(s, k, mode === 'count' ? 4 : 7); }
 
 /* ===== Delivery report and closing ===== */
 const STOCK_WORD = {count: 'Count fixed', next: 'Kept for the next delivery', back: 'Sent back', bad: 'Spoiled or lost', lost: 'Lost, nobody took them'};
@@ -1837,7 +1894,7 @@ function act(a, d, el) {
   case 'gplus': V.g.bags += 1; return giveSheet();
   case 'gqmore': V.qk = {v: ''}; return qtySheet();
   case 'qtyback': return giveSheet();
-  case 'qtyuse': { const n = parseInt(V.qk.v, 10); if (n > 0) V.g.bags = n; return giveSheet(); }
+  case 'qtyuse': { const n = Math.round(exprNum(V.qk.v)); if (n > 0) V.g.bags = n; return giveSheet(); }
   case 'ghold': V.g.hold = !V.g.hold; return giveSheet();
   case 'ghalf': V.g.bags = Math.abs(V.g.bags % 1 - 0.5) < 0.01 ? V.g.bags - 0.5 : V.g.bags + 0.5; if (V.g.bags < 0.5) V.g.bags = 0.5; return giveSheet();
   case 'gitem': V.g.itemId = d.i; return giveSheet();
@@ -1907,10 +1964,10 @@ function act(a, d, el) {
   case 'pay': return openPay(d.id, {ctx: 'collect'});
   case 'paybook': return openPay(d.id, {ctx: 'person'});
   case 'payload': { const e = byId(d.id); closeSheet(); return openPay(e.pid, {loadId: d.id, ctx: 'person'}); }
-  case 'note': { const P = V.pay; if (P.cur) { P.terms.push(P.cur); P.cur = ''; } P.terms.push(d.n); P.err = ''; P.over = ''; buzz(8); return paySheet(); }
+  case 'note': { const P = V.pay; P.ex = !P.ex ? String(d.n) : OPS.includes(P.ex.slice(-1)) ? P.ex + d.n : P.ex + '+' + d.n; P.err = ''; P.over = ''; buzz(8); return paySheet(); }
   case 'method': V.pay.method = d.m; return paySheet();
   case 'pover': V.pay.over = d.v; V.pay.err = ''; return paySheet();
-  case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.terms = [String(b)]; V.pay.cur = ''; V.pay.err = ''; V.pay.over = ''; return paySheet(); }
+  case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.ex = String(Math.round(b)); V.pay.err = ''; V.pay.over = ''; return paySheet(); }
   case 'paydone': { if (!savePay()) return; closeSheet(); render(); return payToast(); }
   case 'paynext': { const P = V.pay; const nx = nextPayId(P.pid); if (paySum() > 0) { if (!savePay()) return; } render(); if (V.lastPay && V.lastPay.p.id === P.pid && paySum() > 0) payToast(); if (!nx) return closeSheet(); return openPay(nx, {ctx: 'collect'}); }
   case 'promise': V.pr = null; return promiseSheet(d.id);
@@ -1935,7 +1992,7 @@ function act(a, d, el) {
     if (f.v === 'newcar') { const W = V.w; const isMoney = W.s === 2 || (W.s === 1 && (W.same ? W.sub === 1 : W.sub === 2)); W.tmp = editNum(W.tmp, d.k, isMoney ? 'money' : 'count'); W.err = ''; return render(); }
     return; }
   case 'numchip': V.num.chip = d.c; return render();
-  case 'numsave': { const N = V.num; const err = N.onSave(Number(N.value) || 0, N.chip); if (err) { N.err = err; return render(); } return pop(); }
+  case 'numsave': { const N = V.num; const err = N.onSave(exprNum(N.value), N.chip); if (err) { N.err = err; return render(); } return pop(); }
 
   /* her page */
   case 'edit': return editSheet(d.id);
@@ -1979,11 +2036,11 @@ function act(a, d, el) {
   case 'wmore': V.w.items.push({id: uid(), name: '', count: 0, price: 0}); V.w.si = V.w.items.length - 1; V.w.sub = 0; V.w.tmp = ''; return render();
   case 'wdone': V.w.s = 2; V.w.tmp = ''; return render();
   case 'wlast': V.w.items[0].price = Number(S.settings.price) || 0; V.w.s = 2; V.w.tmp = ''; return render();
-  case 'wnext': { const W = V.w; const n = +W.tmp || 0; const it = W.items[W.si]; W.err = '';
+  case 'wnext': { const W = V.w; const n = exprNum(W.tmp); const it = W.items[W.si]; W.err = '';
     if ((W.sub === 0 && W.same) || (W.sub === 1 && !W.same)) { if (!(n > 0)) { W.err = 'Type how many.'; return render(); } it.count = n; W.sub = W.same ? 1 : 2; W.tmp = ''; return render(); }
     if (!(n > 0)) { W.err = 'Type the price.'; return render(); }
     it.price = n; W.tmp = ''; if (W.same) W.s = 2; else W.sub = 3; return render(); }
-  case 'wfinish': { const W = V.w; const cost = d.skip ? 0 : +W.tmp || 0;
+  case 'wfinish': { const W = V.w; const cost = d.skip ? 0 : exprNum(W.tmp);
     const car = {id: uid(), date: nowIso(), label: (W.label || '').trim(), items: W.items.map(i => ({id: i.id, name: W.same ? '' : i.name, count: i.count, price: i.price})), costs: cost ? [{id: uid(), name: 'Load', amount: cost}] : [], phase: 'giving'};
     S.cars.push(car); S.carry = 0; S.settings.price = car.items[0].price; commit(); V.w = null; return toRoot('give'); }
 
