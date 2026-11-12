@@ -311,6 +311,35 @@ a{color:inherit;text-decoration:none}
 .cs-amt{font-size:2.875rem;font-weight:700;color:var(--paid);text-align:center;font-variant-numeric:tabular-nums;line-height:1.1}
 .cs-left{text-align:center;font-size:1.125rem;color:var(--muted)}
 .cs-left b{color:var(--owe);font-size:1.375rem}
+/* proof of payment: the pen at work */
+.proof{position:relative}
+.pf-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.25rem 0 .75rem}
+.pf-head>div{min-width:0}
+.pf-head small{display:block;font-weight:700;color:var(--muted)}
+.pf-head b{font:800 3.5rem/1 var(--num);color:var(--paid)}
+.pf-lines{border-top:.125rem solid var(--text);margin:0 -.875rem;background:linear-gradient(to right,transparent 2.4rem,var(--margin) 2.4rem,var(--margin) 2.525rem,transparent 2.525rem)}
+.pf-line{position:relative;display:flex;align-items:center;gap:.5rem;min-height:3.75rem;padding-right:.875rem;border-bottom:.09375rem solid var(--rule)}
+.pf-mk{width:2.4rem;flex:none;display:flex;justify-content:center}
+.pf-d{flex:1;min-width:0;padding-left:.5rem;font-weight:700;color:var(--ink)}
+.pf-d small{display:block;font-weight:400;font-size:.8125rem;color:var(--muted)}
+.pf-a{font:800 1.875rem/1 var(--num);color:var(--text)}
+.pf-note{flex:none;font:700 1.5rem/1 var(--num);color:var(--ink);transform:rotate(-5deg);animation:pfshow .25s ease-out backwards;animation-delay:var(--d)}
+.pf-strike{position:absolute;left:2.8rem;top:50%;height:1.9rem;width:calc(100% - 3.3rem);transform:translateY(-50%);overflow:visible;pointer-events:none}
+.pf-strike path,.pf-ring path{fill:none;stroke:var(--ink);stroke-width:4.5;stroke-linecap:round;stroke-dasharray:1;animation:pfdraw .45s ease-out backwards;animation-delay:var(--d)}
+.pf-tick{width:1.375rem;height:1.375rem;fill:none;stroke:var(--paid);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;animation:pfshow .2s ease-out backwards;animation-delay:var(--d)}
+.pf-left{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.75rem 0 .25rem}
+.pf-owe{position:relative;font:800 3.75rem/1 var(--num);color:var(--owe);padding:.1em .35em}
+.pf-ring{position:absolute;left:-.1em;top:-.1em;width:calc(100% + .2em);height:calc(100% + .2em);overflow:visible;pointer-events:none}
+.pf-ring path{stroke-width:3}
+.pf-left small{font-weight:700;color:var(--muted)}
+.pf-zero{font:800 2rem/1.1 var(--num);color:var(--paid);text-transform:uppercase;letter-spacing:.04em}
+.pf-extra{text-align:center;font-weight:700;color:var(--muted)}
+.pf-stamp{flex:none;margin-right:.25rem;transform:rotate(-9deg);border:.22rem solid var(--paid);outline:.09rem solid var(--paid);outline-offset:.15rem;border-radius:.3rem;padding:.15rem .6rem .2rem;color:var(--paid);background:rgba(255,255,255,.85);text-align:center;pointer-events:none;animation:pfslam .32s cubic-bezier(.2,1.5,.4,1) backwards;animation-delay:var(--d)}
+.pf-stamp b{display:block;font:800 2.25rem/1 var(--num);letter-spacing:.08em}
+.pf-stamp small{display:block;font:700 .75rem/1.2 var(--num);letter-spacing:.1em}
+@keyframes pfdraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes pfshow{from{opacity:0}to{opacity:1}}
+@keyframes pfslam{0%{opacity:0;transform:rotate(-9deg) scale(2.2)}100%{opacity:1;transform:rotate(-9deg) scale(1)}}
 .stamp{align-self:center;margin:.25rem 0;border:.25rem solid var(--paid);color:var(--paid);font-size:1.875rem;font-weight:700;padding:.125rem 1.125rem;border-radius:.625rem;transform:rotate(-6deg);letter-spacing:.1875rem;animation:slam .38s cubic-bezier(.3,1.5,.5,1) both}
 @keyframes slam{0%{transform:scale(2.4) rotate(-16deg);opacity:0}60%{transform:scale(.92) rotate(-6deg);opacity:1}100%{transform:scale(1) rotate(-6deg);opacity:1}}
 .coin{position:absolute;z-index:45;width:1.75rem;height:1.75rem;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFE38A,#E2A814 60%,#B47F00);color:#6E4A00;font-weight:700;font-size:.9375rem;display:flex;align-items:center;justify-content:center;pointer-events:none;animation:coinfly 1.1s cubic-bezier(.2,.7,.3,1) both}
@@ -778,16 +807,16 @@ function status(pid) {
   if (L.refusedOpen) return {k: 'refused', sev: 5, label: 'Refused to pay', cls: 'r', due};
   if (L.activePromise) {
     const on = L.activePromise.on;
-    if (on === t) return {k: 'promise-today', sev: 4, label: 'Promised today', cls: 'w', due, on};
-    return {k: 'promised', sev: 1, label: 'Promised ' + dayWord(on), cls: 'w', due, on};
+    if (on === t) return {k: 'promise-today', sev: 4, label: 'Pays today', cls: 'w', due, on};
+    return {k: 'promised', sev: 1, label: 'Pays ' + dayWord(on), cls: 'w', due, on};
   }
-  if (L.brokeOpen) return {k: 'broke', sev: 5, label: 'Broke promise' + (L.brokenCount > 1 ? ' ×' + L.brokenCount : ''), cls: 'r', due};
+  if (L.brokeOpen) return {k: 'broke', sev: 5, label: 'Missed pay date' + (L.brokenCount > 1 ? ' ×' + L.brokenCount : ''), cls: 'r', due};
   if (!due) return {k: 'later', sev: 0, label: 'Owes', cls: '', due};
   const dd = diffK(t, due);
   if (dd > 0) return {k: 'late', sev: 4, label: dd === 1 ? '1 day late' : dd + ' days late', cls: 'r', due, dd};
-  if (dd === 0) return {k: 'due', sev: 3, label: 'Due today', cls: 'r', due};
-  if (dd === -1) return {k: 'soon', sev: 1, label: 'Due tomorrow', cls: 'w', due};
-  return {k: 'later', sev: 0, label: 'Due ' + dmy(due), cls: '', due};
+  if (dd === 0) return {k: 'due', sev: 3, label: 'Pay today', cls: 'r', due};
+  if (dd === -1) return {k: 'soon', sev: 1, label: 'Pay tomorrow', cls: 'w', due};
+  return {k: 'later', sev: 0, label: 'Pay by ' + dmy(due), cls: '', due};
 }
 function record(pid) {
   const L = ledger(pid); const t = todayK();
@@ -931,6 +960,16 @@ const linkAttrs = href => href.startsWith('http') ? 'target="_blank" rel="noopen
 
 /* ---------- sound and feel ---------- */
 let AC = null;
+/* a short noise, shaped: pen on paper, a page turning */
+function noise(t0, dur, vol, freq) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume();
+    const n = Math.floor(AC.sampleRate * dur), buf = AC.createBuffer(1, n, AC.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / n);
+    const src = AC.createBufferSource(); src.buffer = buf; const f = AC.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = .9;
+    const g = AC.createGain(); g.gain.value = vol; src.connect(f); f.connect(g); g.connect(AC.destination); src.start(AC.currentTime + t0);
+  } catch (e) {}
+}
 function tone(f, t0, dur, type, vol) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); const t = AC.currentTime + t0; const o = AC.createOscillator(), g = AC.createGain(); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || 0.2, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + 0.03); } catch (e) {} }
 function sfx(k) {
   if (S.settings.sound === false) return;
@@ -939,6 +978,9 @@ function sfx(k) {
   else if (k === 'coin') { tone(1568, 0, 0.09, 'triangle', 0.13); tone(2093, 0.05, 0.16, 'triangle', 0.09); }
   else if (k === 'thud') { tone(95, 0, 0.2, 'sine', 0.35); tone(62, 0.02, 0.22, 'sine', 0.25); }
   else if (k === 'key') tone(1500, 0, 0.025, 'sine', 0.035);
+  else if (k === 'pen') noise(0, 0.38, 0.5, 3000);
+  else if (k === 'page') { noise(0, 0.28, 0.35, 1400); noise(0.08, 0.2, 0.25, 900); }
+  else if (k === 'stamp') { tone(110, 0, 0.16, 'sine', 0.4); noise(0, 0.08, 0.4, 600); }
   else if (k === 'shutter') { tone(2400, 0, 0.03, 'square', 0.04); tone(1200, 0.05, 0.05, 'square', 0.035); }
   else if (k === 'clear') { tone(520, 0, 0.08, 'sine', 0.12); tone(330, 0.07, 0.12, 'sine', 0.1); }
   else if (k === 'ding') { tone(880, 0, 0.2, 'sine', 0.2); tone(660, 0.22, 0.34, 'sine', 0.18); }
@@ -1039,7 +1081,7 @@ function statusTag(st) { return st.k === 'clear' ? '' : `<span class="tag ${st.c
 function tabBar() {
   const n = debtors().filter(x => x.st.sev >= 3).length;
   const t = (id, ic, label, badge, dot) => `<button class="tab ${V.tab === id ? 'on' : ''}" data-act="tab" data-t="${id}" ${V.tab === id ? 'aria-current="page"' : ''}>${svg(ic, 24)}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}${dot ? '<span class="tabdot" aria-label="Backup needed"></span>' : ''}</button>`;
-  return `<nav class="tabs">${t('give', 'bag', 'Give')}${t('collect', 'cash', 'Collect', n)}${t('book', 'book', 'Book', 0, needsBackup())}</nav>`;
+  return `<nav class="tabs">${t('give', 'bag', 'Give ' + unit() + 's')}${t('collect', 'cash', 'Take money', n)}${t('book', 'book', 'Book', 0, needsBackup())}</nav>`;
 }
 /* one chip per place */
 function filterChips(count) {
@@ -1089,9 +1131,9 @@ function render() {
 /* the coloured band: what you are doing, and the page you are on */
 function band() {
   const car = givingCar(); const pageNo = car ? 'No ' + String(carsNewest().slice().reverse().indexOf(car) + 1).padStart(3, '0') : '';
-  if (V.tab === 'collect') return `<div class="band">${svg('cash')}<b>Collect</b><span class="pageno">${dmy(new Date())}</span></div>`;
+  if (V.tab === 'collect') return `<div class="band">${svg('cash')}<b>Take money</b><span class="pageno">${dmy(new Date())}</span></div>`;
   if (V.tab === 'book') return `<div class="band">${svg('book')}<b>Book</b><span class="pageno dark">${S.people.length} ${S.people.length === 1 ? 'name' : 'names'}</span></div>`;
-  return `<div class="band">${svg('bag')}<b>Give</b>${pageNo ? `<span class="pageno">${pageNo}</span>` : ''}</div>`;
+  return `<div class="band">${svg('bag')}<b>Give ${esc(unit())}s</b>${pageNo ? `<span class="pageno">${pageNo}</span>` : ''}</div>`;
 }
 
 /* ===== Bag photos =====
@@ -1132,9 +1174,9 @@ function stockCard(car, st) {
   const pend = pendingReceipts(car.id).size;
   return `<div class="stock">
     <button class="big" data-act="count" aria-label="Count the car"><b class="${st.free <= 0 ? 'z' : ''} ${V.pulse ? 'pulse' : ''} ${V.ask ? 'ask' : ''}">${bagsNum(Math.max(0, st.free))}</b><span>${V.ask ? 'count?' : 'left'}</span></button>
-    <div class="dl"><span>${esc(carName(car))}</span>${pend ? `<button data-act="receipts" aria-label="${pend} receipts to send">${svg('msg', 16)}${pend}</button>` : ''}<button data-act="carmenu" data-id="${car.id}" aria-label="Delivery options">${svg('down', 18)}</button></div>
+    <div class="dl"><span>${esc(carName(car))}</span>${pend ? `<button data-act="receipts" aria-label="${pend} receipts to send">${svg('msg', 16)}${pend}</button>` : ''}<button data-act="carmenu" data-id="${car.id}" aria-label="Load options">${svg('down', 18)}</button></div>
     <div class="info"><div class="sbar"><i class="g" style="width:${pct(st.given)}"></i><i class="h" style="width:${pct(st.wait + st.gap)}"></i></div>
-      <div class="leg"><span>${bagsNum(st.given)} given</span>${st.wait ? `<span class="h">${bagsNum(st.wait)} held</span>` : ''}${st.gap ? `<span class="h">${bagsNum(st.gap)} no name</span>` : ''}<span>${bagsNum(st.loaded)} loaded</span></div>
+      <div class="leg"><span>${bagsNum(st.given)} given</span>${st.wait ? `<span class="h">${bagsNum(st.wait)} kept</span>` : ''}${st.gap ? `<span class="h">${bagsNum(st.gap)} no name</span>` : ''}<span>${bagsNum(st.loaded)} loaded</span></div>
       ${st.items.length > 1 ? `<div class="leg">${st.items.map(i => `<span>${kindImg(i, 'xs')} <b>${bagsNum(Math.max(0, i.free))}</b></span>`).join('')}</div>` : ''}</div></div>`;
 }
 /* Give has one tab per place in this delivery, in the order you went there, plus the place you are at.
@@ -1170,17 +1212,17 @@ function viewGive() {
     const p = person(e.pid) || {name: '?'};
     if (V.qe && V.qe.id === e.id) return `<div class="row editing"><button class="who" data-act="qcancel"><div class="name">${esc(p.name)}</div><div class="sub">${esc(locTxt(e.loc)) || '&nbsp;'}</div></button><div class="qstep"><button data-act="qminus" aria-label="One less">−</button><b>${bagsNum(V.qe.n)}</b><button data-act="qplus" aria-label="One more">+</button></div><button class="qok" data-act="qsave" aria-label="Save">${svg('check')}</button></div>`;
     const sub = [tabs.length ? '' : locTxt(e.loc), isHeld ? 'since ' + hm(e.date) : '', linked.has(e.id) ? 'paid cash' : ''].filter(Boolean).join(' · ');
-    return `<div class="row ${isHeld ? 'held' : ''} ${V.flash === e.id ? 'flash' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="entry" data-id="${e.id}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button>${isHeld ? '<span class="hpill">Held</span>' : ''}${car.items.length > 1 ? kindImg(car.items.find(x => x.id === e.itemId), 'sm') : ''}<button class="qbox" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${bagsNum(e.bags)}</button></div>`;
+    return `<div class="row ${isHeld ? 'held' : ''} ${V.flash === e.id ? 'flash' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="entry" data-id="${e.id}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button>${isHeld ? '<span class="hpill">Kept</span>' : ''}${car.items.length > 1 ? kindImg(car.items.find(x => x.id === e.itemId), 'sm') : ''}<button class="qbox" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${bagsNum(e.bags)}</button></div>`;
   };
   let mid = '<div class="lines down">';
   if (!gives.length && !cashHere && !gapsHere.length) mid += `<div class="empty"><h2>Nobody yet</h2><p>Type a name below, or tap a face.</p></div>`;
-  if (held.length) mid += `<div class="sect w"><span>${svg('clock', 16)} Held · ${bagsTxt(sum(held, e => e.bags))}</span><button class="mini" data-act="handall" data-id="${car.id}" data-loc="${tabs.length ? tab : '*'}">Hand over all</button></div>`;
+  if (held.length) mid += `<div class="sect w"><span>${svg('clock', 16)} Kept for her · ${bagsTxt(sum(held, e => e.bags))}</span><button class="mini" data-act="handall" data-id="${car.id}" data-loc="${tabs.length ? tab : '*'}">Hand over all</button></div>`;
   mid += inOrder.map(e => row(e, e.type === 'give' && !givenAt(e))).join('');
   if (cashHere) mid += `<button class="row cashline" style="min-height:2.75rem" data-act="cashfix" data-loc="${tabs.length ? tab : '*'}"><div class="who"><div class="sub" style="color:var(--paid)">${svg('cash', 18)} ${bagsTxt(cashHere)}</div></div></button>`;
   mid += '</div>';
   const bagsAt = id => sum(S.entries.filter(e => (e.type === 'give' || e.type === 'cash' || e.type === 'gap') && e.carId === car.id && live(e) && locKey(e) === id), e => e.bags);
   const tabRow = `<div class="ptabs">${tabs.length ? `<div class="chips">${tabs.map(id => `<button class="chip ${id === tab ? 'on' : ''}" data-act="gtab" data-id="${id}">${id ? esc(locTxt(id)) : 'No place'}<em>${bagsNum(bagsAt(id))}</em></button>`).join('')}</div>` : ''}<button class="chip dash" data-act="here" aria-label="Add a place">${tabs.length ? svg('plus', 18) : svg('plus', 18) + ' Place'}</button></div>`;
-  const top = stockCard(car, st) + tabRow + (st.free <= 0 && st.wait <= 0 && !st.gap ? `<button class="emptybar" data-act="closecar" data-id="${car.id}">${svg('ok', 20)}<span>Car empty</span><b>Close delivery ›</b></button>` : '');
+  const top = stockCard(car, st) + tabRow + (st.free <= 0 && st.wait <= 0 && !st.gap ? `<button class="emptybar" data-act="closecar" data-id="${car.id}">${svg('ok', 20)}<span>Car empty</span><b>Close load ›</b></button>` : '');
   const recent = recentFaces(car.id);
   const dock = `${recent.length ? `<div class="faces">${recent.map(p => `<button class="face" data-act="give" data-id="${p.id}"><span class="av">${esc(initials(p.name))}</span>${esc(shortName(p.name))}</button>`).join('')}</div>` : ''}
     <div class="bar"><button class="sq cash" data-act="cash" aria-label="Sold one for cash">${svg('cash', 28)}</button>
@@ -1202,16 +1244,16 @@ function viewGive() {
 }
 function giveEmpty() {
   const fresh = !S.people.length && !S.cars.length;
-  const top = `    <div class="csum"><div class="cl"><small>No delivery open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting for the next one' : 'Start one when the vehicle arrives'}</b></div></div>`;
+  const top = `    <div class="csum"><div class="cl"><small>No load open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting for the next one' : 'Start one when the vehicle arrives'}</b></div></div>`;
   let mid;
-  if (fresh) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Your book is empty</h2><p>When a vehicle arrives, tap <b>New delivery</b>. Then give ${esc(unit())}s one customer at a time.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">See an example first</button></div>`;
-  else { const cars = carsNewest().slice(0, 6); mid = cars.length ? `<div class="sect"><span>Deliveries</span></div>` + cars.map(carRow).join('') : ''; }
-  return {top, mid, cls: 'book', dock: `<div class="bar"><button class="btn ink tall" data-act="newcar">${svg('truck')} New delivery</button></div>`, tabs: true, anchor: 'top'};
+  if (fresh) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Your book is empty</h2><p>When a vehicle arrives, tap <b>New load</b>. Then give ${esc(unit())}s one customer at a time.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">See an example first</button></div>`;
+  else { const cars = carsNewest().slice(0, 6); mid = cars.length ? `<div class="sect"><span>Loads</span></div>` + cars.map(carRow).join('') : ''; }
+  return {top, mid, cls: 'book', dock: `<div class="bar"><button class="btn ink tall" data-act="newcar">${svg('truck')} New load</button></div>`, tabs: true, anchor: 'top'};
 }
 function carRow(car) {
   const st = carStats(car.id);
-  const right = car.phase === 'giving' ? `<span class="amt ink">${bagsNum(Math.max(0, st.free))}<small>left</small></span>` : st.out > 0.001 ? `<span class="amt">${money(st.out)}<small>to collect</small></span>` : `<span class="amt ok">All paid ✓</span>`;
-  const tag = car.phase === 'giving' ? '<span class="tag w">Open</span>' : st.out > 0.001 ? '<span class="tag r">Collecting</span>' : '<span class="tag ok">Done</span>';
+  const right = car.phase === 'giving' ? `<span class="amt ink">${bagsNum(Math.max(0, st.free))}<small>left</small></span>` : st.out > 0.001 ? `<span class="amt">${money(st.out)}<small>still owed</small></span>` : `<span class="amt ok">All paid ✓</span>`;
+  const tag = car.phase === 'giving' ? '<span class="tag w">Open</span>' : st.out > 0.001 ? '<span class="tag r">Taking money</span>' : '<span class="tag ok">Done</span>';
   return `<button class="row" data-act="report" data-id="${car.id}"><div class="who"><div class="name">${esc(carName(car))} ${tag}</div><div class="sub">${bagsTxt(st.loaded)} · ${st.people.length} ${st.people.length === 1 ? 'customer' : 'customers'}</div></div>${right}</button>`;
 }
 function pendingReceipts(carId) {
@@ -1256,8 +1298,8 @@ function openGive(pid, name) {
 }
 function noCarSheet() {
   const last = carsNewest()[0];
-  sheet(`<i class="grab"></i><h3>No delivery open</h3><p>Start a new delivery, or give more from the last one.</p>
-    <button class="btn ink" data-act="newcar">${svg('truck')} New delivery</button>
+  sheet(`<i class="grab"></i><h3>No load open</h3><p>Start a new load, or give more from the last one.</p>
+    <button class="btn ink" data-act="newcar">${svg('truck')} New load</button>
     ${last ? `<button class="btn ghost" data-act="reopen" data-id="${last.id}">Give more from ${esc(carName(last))}</button>` : ''}
     <button class="btn ghost" data-act="sheetclose">Close</button>`);
 }
@@ -1278,7 +1320,7 @@ function giveSheet() {
     <div class="ktot"><b>${money(sum(car.items, i => (g.kinds[i.id] || 0) * i.price))}</b><small>${bagsTxt(g.bags)}</small></div>`
     : `<div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><button class="num" data-act="gqmore" aria-label="Type how many">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></button><button class="key" data-act="gplus" aria-label="One more">+</button></div>
     ${S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="ghalf">± ½</button></div>` : ''}`}
-    <div class="togs"><button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Hold for her</button></div>
+    <div class="togs"><button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Keep for her</button></div>
     <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave" ${g.bags > 0 ? '' : 'disabled'}>${g.bags > 0 ? (g.hold ? 'Hold ' : 'Give ') + bagsTxt(g.bags) : 'Tap a photo'}</button>`);
   V.sheetKind = 'give';
   const ph = document.getElementById('gph'); if (ph) ph.addEventListener('input', e => { V.g.phone = e.target.value; });
@@ -1303,7 +1345,7 @@ function saveGive(force) {
   }
   if (!force && g.bags > st.free + 1e-9) {
     V.sheetKind = 'over';
-    sheet(`<h3>Only ${bagsTxt(Math.max(0, st.free))} left</h3><p>${st.wait ? `${bagsTxt(st.wait)} are held for other customers.` : 'Count the vehicle before you give more.'}</p><div class="bar"><button class="btn ghost" data-act="gback">Back</button><button class="btn danger" data-act="gforce">Give anyway</button></div>`);
+    sheet(`<h3>Only ${bagsTxt(Math.max(0, st.free))} left</h3><p>${st.wait ? `${bagsTxt(st.wait)} are kept for other customers.` : 'Count the vehicle before you give more.'}</p><div class="bar"><button class="btn ghost" data-act="gback">Back</button><button class="btn danger" data-act="gforce">Give anyway</button></div>`);
     return;
   }
   let p = g.pid ? person(g.pid) : null;
@@ -1345,7 +1387,7 @@ function checkSheet() {
   const total = sum(rows, r => r.n), same = !short && !more;
   sheet(`<i class="grab"></i><h3>How many ${one ? '' : esc(unit()) + 's '}left in the car?</h3>
     ${rows.map(stepper).join('')}
-    <p class="small center" style="margin:0">The book says ${rows.map(r => bagsNum(Math.max(0, r.was))).join(' + ')}${wait ? '. ' + bagsTxt(wait) + ' held are not counted here' : ''}.${msg ? ' ' + msg : ''}</p>
+    <p class="small center" style="margin:0">The book says ${rows.map(r => bagsNum(Math.max(0, r.was))).join(' + ')}${wait ? '. ' + bagsTxt(wait) + ' kept are not counted here' : ''}.${msg ? ' ' + msg : ''}</p>
     <button class="btn ink tall" data-act="ccsave">${same ? 'Yes, ' + bagsNum(total) : 'Save ' + bagsNum(total)}</button>`);
   V.sheetKind = 'check';
 }
@@ -1437,7 +1479,7 @@ function entrySheet(id) {
   if (e.type === 'give') {
     const at = givenAt(e); const lp = c.linked.get(e.id);
     if (!V.es || V.es.id !== id) V.es = {id, n: e.bags};
-    const head = `<i class="grab"></i><div class="hrow"><span class="av lg">${esc(initials(p ? p.name : '?'))}</span><button class="title" data-act="eswho" style="text-align:left"><b>${esc(p ? p.name : '?')} ${svg('down', 16)}</b><small>${at ? 'Given ' + dmy(at) + ', ' + hm(at) : 'Held since ' + hm(e.date)}${lp ? ' · paid cash' : ''}</small></button>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}</div>
+    const head = `<i class="grab"></i><div class="hrow"><span class="av lg">${esc(initials(p ? p.name : '?'))}</span><button class="title" data-act="eswho" style="text-align:left"><b>${esc(p ? p.name : '?')} ${svg('down', 16)}</b><small>${at ? 'Given ' + dmy(at) + ', ' + hm(at) : 'Kept since ' + hm(e.date)}${lp ? ' · paid cash' : ''}</small></button>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}</div>
       <button class="locchip" data-act="esloc">${svg('pin', 18)} ${e.loc ? esc(locTxt(e.loc)) : 'No place'} ${svg('down', 16)}</button>`;
     const n = V.es.n; const half = S.settings.half;
     const stepper = `<div class="step"><button class="key" data-act="esminus" aria-label="One less">−</button><div class="num">${bagsNum(n)}<small>${esc(unit())}${n > 1 ? 's' : ''}</small></div><button class="key" data-act="esplus" aria-label="One more">+</button></div>
@@ -1445,7 +1487,7 @@ function entrySheet(id) {
       ${n !== e.bags ? `<button class="btn ink tall" data-act="essave">Change ${bagsNum(e.bags)} → ${bagsNum(n)}</button>` : ''}`;
     if (!at) return sheet(head + `
       <button class="btn ink tall" data-act="hand" data-id="${id}">${svg('check')} Hand over ${bagsTxt(e.bags)}</button>
-      <div class="field"><label for="es_by">Someone else collecting? (optional)</label><input id="es_by" autocomplete="off" placeholder="Her son, her sister…"></div>
+      <div class="field"><label for="es_by">Someone else taking them? (optional)</label><input id="es_by" autocomplete="off" placeholder="Her son, her sister…"></div>
       ${stepper}
       <button class="btn ghost redtext" data-act="release" data-id="${id}">Release ${bagsTxt(e.bags)}</button>`);
     const ld = p ? ledger(p.id).loads.find(x => x.id === id) : null; const canBack = ld && e.bags - ld.backBags > 0.001;
@@ -1454,7 +1496,7 @@ function entrySheet(id) {
       <button class="btn ghost redtext" data-act="undoask" data-id="${id}">Remove this line</button>`);
   }
   if (e.type === 'move') return sheet(`<i class="grab"></i><h3>Moved to ${esc(locTxt(e.to) || 'no place')}</h3><p>${dmy(e.date)}, from ${esc(locTxt(e.from) || 'no place')}.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${id}">Remove</button></div>`);
-  const what = e.type === 'pay' ? `Paid ${money(e.amount)}` : e.type === 'back' ? `Brought back ${bagsTxt(e.bags)}` : e.type === 'promise' ? `Promise for ${dayWord(e.on)}` : 'Refused to pay';
+  const what = e.type === 'pay' ? `Paid ${money(e.amount)}` : e.type === 'back' ? `Brought back ${bagsTxt(e.bags)}` : e.type === 'promise' ? `Pay date ${dayWord(e.on)}` : 'Refused to pay';
   sheet(`<i class="grab"></i><h3>${dmy(e.date)}: ${what}</h3><p>${esc(p ? p.name : '')}</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${id}">Remove</button></div>`);
 }
 function nameSheet(id) {
@@ -1503,7 +1545,7 @@ function collectListHtml() {
   const sect = (label, arr) => arr.length ? `<div class="sect"><span>${label} · ${arr.length}</span><span style="flex:none">${money(sum(arr, x => x.L.bal))}</span></div>` + arr.map(row).join('') : '';
   let mid = '';
   if (!all.length && !paidIds.length) mid += `<div class="empty"><h2>${V.cq || V.fTown ? 'Nobody here owes' : 'Nobody owes you'}</h2><p>${V.cq || V.fTown ? 'Try All, or check the spelling.' : 'Money given on credit shows up here.'}</p></div>`;
-  mid += sect('Collect now', now) + sect('Promised', prom) + sect('Not due yet', later);
+  mid += sect('Take now', now) + sect('Pay dates', prom) + sect('Not yet', later);
   if (paidIds.length) mid += `<div class="sect"><span>Paid today · ${paidIds.length}</span></div>` + paidIds.map(id => { const p = person(id); return `<button class="row paidtoday" data-act="person" data-id="${id}"><span class="mk ok">✓</span><div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${esc(locTxt(p.loc))}</div></div><span class="amt ok">Paid ✓</span></button>`; }).join('');
   return {html: mid, all};
 }
@@ -1514,7 +1556,7 @@ function viewCollect() {
   const mid = `<div class="lines down" id="collist">${html}</div>`;
   const total = sum(all, x => x.L.bal);
   const remindN = remindList().length;
-  const top = `<div class="csum"><div class="cl"><small>To collect${V.fTown ? ' · ' + esc(V.fLoc ? locTxt(V.fLoc) : V.fTown) : ''}</small><b class="${total > 0.001 ? '' : 'ok'}">${money(total)}</b></div>
+  const top = `<div class="csum"><div class="cl"><small>Still owed${V.fTown ? ' · ' + esc(V.fLoc ? locTxt(V.fLoc) : V.fTown) : ''}</small><b class="${total > 0.001 ? '' : 'ok'}">${money(total)}</b></div>
     <div class="cr"><small>In today</small><b>${money(inToday)}</b>${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}</div></div>`;
   const dock = `${filterChips(id => debtors().filter(x => x.p.loc === id).length)}
     <div class="bar"><label class="find ink">${svg('search')}<input id="cq" type="search" placeholder="Find a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name" value="${esc(V.cq)}"></label></div>`;
@@ -1566,20 +1608,46 @@ function savePay() {
   const amount = over && P.over === 'change' ? Math.max(0, L.bal) : a;
   if (!amount) { P.err = 'She owes nothing. Keep it as credit, or give it back.'; paySheet(); return false; }
   const outBefore = new Map(S.cars.filter(c => c.phase === 'out').map(c => [c.id, carStats(c.id).out]));
+  const pv = payPreview(p.id, amount, P.loadId);
   const e = add(Object.assign({type: 'pay', pid: p.id, amount, method: P.method, loadId: P.loadId || null, carId: null, rcpt: !p.phone}, over && P.over === 'change' ? {change: r2(a - amount)} : {}));
   const bal = ledger(p.id).bal;
-  sfx('cash'); buzz(25); if (bal <= 0.001) setTimeout(() => { sfx('thud'); coins(14); }, 250);
+  sfx('cash'); buzz(25);
   const done = S.cars.find(c => c.phase === 'out' && outBefore.get(c.id) > 0.001 && carStats(c.id).out <= 0.001);
-  if (done) setTimeout(() => celebrate(done), 900);
+  V.celebrateCar = done || null;
   V.flashPay = {pid: p.id, amt: amount, t: Date.now()};
-  V.lastPay = {e, p, amount, bal};
+  V.lastPay = {e, p, amount, bal, pv, change: over && P.over === 'change' ? r2(a - amount) : 0, credit: over && P.over !== 'change' ? r2(a - amount) : 0};
   return true;
 }
+/* turned to her: the pen strikes what she cleared, writes what came off, circles what is left, and stamps PAID */
+function proofSheet(nextId) {
+  const {p, amount, bal, pv, change, credit} = V.lastPay; const now = new Date();
+  let t = 0.2; const marks = [];
+  const lines = pv.map(x => {
+    const L = x.L, car = carById(L.carId), d = t; t += x.cleared ? 0.5 : 0.3; marks.push([d, x.cleared ? 'pen' : '']);
+    return `<div class="pf-line"><span class="pf-mk">${x.cleared ? `<svg class="pf-tick" style="--d:${(d + 0.4).toFixed(2)}s" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>` : ''}</span><div class="pf-d">${bagsTxt(L.bags)}<small>${esc(car ? carName(car) : dmy(L.date))}</small></div>${x.cleared ? '' : `<span class="pf-note" style="--d:${d.toFixed(2)}s">− ${fmt(x.k)}</span>`}<span class="pf-a">${fmt(L.left)}</span>${x.cleared ? `<svg class="pf-strike" viewBox="0 0 300 30" preserveAspectRatio="none"><path pathLength="1" style="--d:${d.toFixed(2)}s" d="M3 18C70 8 150 24 297 11"/></svg>` : ''}</div>`;
+  }).join('');
+  const ringAt = t; t += bal > 0.001 ? 0.55 : 0.1; const stampAt = t;
+  const left = bal > 0.001
+    ? `<b class="pf-owe">${money(bal)}<svg class="pf-ring" viewBox="0 0 200 80" preserveAspectRatio="none"><path pathLength="1" style="--d:${ringAt.toFixed(2)}s" d="M30 12C80 0 160 4 186 26C204 46 170 72 104 75C40 78 2 62 8 36C12 20 40 8 78 7"/></svg></b><small>left to pay</small>`
+    : `<b class="pf-zero">Nothing left to pay</b>`;
+  const extra = change ? `Gave ${money(change)} change` : credit ? `${money(credit)} kept as credit` : '';
+  const rcpt = p.phone && !smsReady() ? `<a class="btn ghost" href="${esc(sendHref(p, msgPay(p, amount, bal)))}" target="_top" data-act="noop">${svg('msg')} Receipt</a>` : '';
+  sheet(`<div class="proof"><div class="pf-head"><div><small>${esc(p.name)} paid</small><b>${money(amount)}</b></div><div class="pf-stamp" style="--d:${stampAt.toFixed(2)}s"><b>PAID</b><small>${esc(dmy(now).toUpperCase())}</small></div></div>
+    ${lines ? `<div class="pf-lines">${lines}</div>` : ''}
+    <div class="pf-left">${left}</div>${extra ? `<p class="pf-extra">${extra}</p>` : ''}</div>
+    <div class="bar">${rcpt}${nextId ? `<button class="btn ghost" data-act="pfnext" data-id="${nextId}">Next ›</button>` : ''}<button class="btn take tall" data-act="pfdone">Done</button></div>`);
+  V.sheetKind = 'proof';
+  /* the sounds follow the pen (only while this proof is still open) */
+  const live = layer.querySelector('.proof');
+  marks.forEach(([d, k]) => { if (k) setTimeout(() => { if (live.isConnected) sfx(k); }, d * 1000); });
+  setTimeout(() => { if (!live.isConnected) return; sfx('stamp'); if (bal <= 0.001) coins(14); }, stampAt * 1000);
+}
+function proofDone() { closeSheet(); render(); if (V.celebrateCar) { const c = V.celebrateCar; V.celebrateCar = null; setTimeout(() => celebrate(c), 150); } }
 function payToast() { const {e, p, amount, bal} = V.lastPay; toast(`${p.name} paid ${money(amount)}`, [p.phone && !smsReady() ? {label: 'Receipt', href: sendHref(p, msgPay(p, amount, bal))} : null]); }
 function celebrate(car) {
   sfx('win'); buzz([30, 60, 30, 60, 90]); coins(26);
   const o = document.createElement('div'); o.className = 'celebrate';
-  o.innerHTML = `<div class="cel-card"><div class="cel-ic">✓</div><b>All collected</b><span>${esc(carName(car))} is fully paid.</span><button class="btn ink" data-act="celclose">Nice</button></div>`;
+  o.innerHTML = `<div class="cel-card"><div class="cel-ic">✓</div><b>All paid</b><span>${esc(carName(car))} is fully paid.</span><button class="btn ink" data-act="celclose">Nice</button></div>`;
   layer.appendChild(o);
 }
 function promiseSheet(pid) {
@@ -1589,7 +1657,7 @@ function promiseSheet(pid) {
   sheet(`<i class="grab"></i><h3>When will ${esc(p.name)} pay?</h3><p>She owes ${money(ledger(pid).bal)}.</p>
     <div class="dates">${opts.map((k, i) => `<button class="datebtn ${V.pr.on === k ? 'on' : ''}" data-act="pron" data-k="${k}"><b>${i === 0 ? 'Tomorrow' : i === 3 ? 'Next week' : WD[kDate(k).getDay()]}</b><small>${dmy(k)}</small></button>`).join('')}</div>
     <div class="seg"><button class="${V.pr.how === 'come' ? 'on' : ''}" data-act="prhow" data-h="come">I go back</button><button class="${V.pr.how === 'momo' ? 'on' : ''}" data-act="prhow" data-h="momo">She sends MoMo</button></div>
-    <button class="btn ink tall" data-act="prsave">Save her promise</button>
+    <button class="btn ink tall" data-act="prsave">Save pay date</button>
     <button class="btn ghost redtext" data-act="refused">She refused to pay</button>`);
   V.sheetKind = 'promise';
 }
@@ -1601,11 +1669,11 @@ function viewBook() {
   const week = sum(S.entries.filter(e => e.type === 'pay' && live(e) && e.date >= wk), e => e.amount);
   const top = `<div class="hrow"><span class="sp" style="flex:1"></span><button class="pill" data-act="mom">${svg('eye', 18)} Show Mom</button>${backupBtn()}${gearBtn()}</div>
     <div class="csum"><div class="cl"><small>Owed to you · ${all.length} ${all.length === 1 ? 'customer' : 'customers'}</small><b class="${out > 0.001 ? '' : 'ok'}">${money(out)}</b></div><div class="cr"><small>This week</small><b>${money(week)}</b></div></div>
-    <div class="seg mini2"><button class="${V.bseg === 'people' ? 'on' : ''}" data-act="bseg" data-s="people">People</button><button class="${V.bseg === 'cars' ? 'on' : ''}" data-act="bseg" data-s="cars">Deliveries</button></div>
+    <div class="seg mini2"><button class="${V.bseg === 'people' ? 'on' : ''}" data-act="bseg" data-s="people">People</button><button class="${V.bseg === 'cars' ? 'on' : ''}" data-act="bseg" data-s="cars">Loads</button></div>
     ${V.bseg === 'people' ? filterChips(id => S.people.filter(p => p.loc === id).length) : ''}`;
   if (V.bseg === 'cars') {
     const cars = carsNewest();
-    return {top, mid: `<div class="lines down">${cars.length ? cars.map(carRow).join('') : '<div class="empty"><h2>No deliveries yet</h2><p>Start one from Give.</p></div>'}</div>`, cls: 'book', dock: `<div class="bar"><button class="btn ink" data-act="newcar">${svg('truck')} New delivery</button></div>`, tabs: true, anchor: 'top'};
+    return {top, mid: `<div class="lines down">${cars.length ? cars.map(carRow).join('') : '<div class="empty"><h2>No loads yet</h2><p>Start one from Give.</p></div>'}</div>`, cls: 'book', dock: `<div class="bar"><button class="btn ink" data-act="newcar">${svg('truck')} New load</button></div>`, tabs: true, anchor: 'top'};
   }
   const dock = `<div class="bar"><label class="find ink">${svg('search')}<input id="bq" type="search" placeholder="Find a name or number" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name or number" value="${esc(V.bq)}"></label><button class="sq" data-act="bsort" aria-label="${V.sort === 'az' ? 'Sorted A to Z' : 'Sorted by money owed'}"><b style="font-size:1.125rem">${V.sort === 'az' ? 'A–Z' : '₵'}</b>${svg('down', 16)}</button></div>`;
   return {top, mid: `<div class="lines down" id="booklist">${bookList()}</div>`, cls: 'book', dock, tabs: true, anchor: 'top',
@@ -1619,7 +1687,7 @@ function bookList() {
   if (!ps.length) return `<div class="empty"><h2>${q || V.fTown ? 'Not found' : 'No names yet'}</h2><p>${q ? 'Check the spelling, or try her number.' : V.fTown ? 'Nobody here yet.' : 'Names are added when you give ' + esc(unit()) + 's.'}</p></div>`;
   return ps.map(p => { const L = ledger(p.id), st = status(p.id); const w = sum(L.waiting, e => e.bags);
     const where = [V.fLoc ? '' : locTxt(p.loc), p.note].filter(Boolean).join(' · ');
-    return `<button class="row" data-act="person" data-id="${p.id}">${L.bal <= 0.001 && L.loads.length ? '<span class="mk ok">✓</span>' : ''}<div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${where ? esc(where) + ' · ' : ''}${L.bal > 0.001 ? statusTag(st) : w ? `<span class="tag w">${bagsTxt(w)} held</span>` : 'Owes nothing'}</div></div>${L.bal > 0.001 ? `<span class="amt">${money(L.bal)}</span>` : ''}</button>`; }).join('');
+    return `<button class="row" data-act="person" data-id="${p.id}">${L.bal <= 0.001 && L.loads.length ? '<span class="mk ok">✓</span>' : ''}<div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${where ? esc(where) + ' · ' : ''}${L.bal > 0.001 ? statusTag(st) : w ? `<span class="tag w">${bagsTxt(w)} kept</span>` : 'Owes nothing'}</div></div>${L.bal > 0.001 ? `<span class="amt">${money(L.bal)}</span>` : ''}</button>`; }).join('');
 }
 
 /* ===== Her page: the full record ===== */
@@ -1627,10 +1695,10 @@ VIEWS.person = f => {
   const p = person(f.pid); if (!p) { pop(); return null; }
   const L = ledger(p.id), st = status(p.id), c = C();
   const heldBags = sum(L.waiting, e => e.bags);
-  const tags = [L.bal > 0.001 ? statusTag(st) : '', recordTag(p.id), heldBags ? `<span class="tag w">${bagsTxt(heldBags)} held</span>` : ''].filter(Boolean);
+  const tags = [L.bal > 0.001 ? statusTag(st) : '', recordTag(p.id), heldBags ? `<span class="tag w">${bagsTxt(heldBags)} kept</span>` : ''].filter(Boolean);
   const top = `<div class="hrow"><span class="av lg">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${esc(p.phone) || 'No number yet'}</small></div><button class="ib" data-act="edit" data-id="${p.id}" aria-label="Edit name or number">${svg('edit')}</button></div>
     <button class="locchip" data-act="ploc" data-id="${p.id}">${svg('pin', 18)} ${p.loc ? esc(locTxt(p.loc)) : 'Where does she sell?'} ${svg('down', 16)}</button>${p.note ? `<div class="landmark">${esc(p.note)}</div>` : ''}
-    <div class="owes">${L.bal > 0.001 ? `<small>Owes</small><b>${money(L.bal)}</b><div class="hrow" style="justify-content:center"><button class="showher" data-act="show" data-id="${p.id}">${svg('eye', 18)} Show her</button><button class="showher" data-act="promise" data-id="${p.id}">${svg('clock', 18)} Promise</button></div>` : `<small>${L.bal < -0.001 ? 'Credit' : 'Owes'}</small><b class="ok">${L.bal < -0.001 ? money(-L.bal) : 'Nothing'}</b>`}</div>
+    <div class="owes">${L.bal > 0.001 ? `<small>Owes</small><b>${money(L.bal)}</b><div class="hrow" style="justify-content:center"><button class="showher" data-act="show" data-id="${p.id}">${svg('eye', 18)} Show her</button><button class="showher" data-act="promise" data-id="${p.id}">${svg('clock', 18)} Pay date</button></div>` : `<small>${L.bal < -0.001 ? 'Credit' : 'Owes'}</small><b class="ok">${L.bal < -0.001 ? money(-L.bal) : 'Nothing'}</b>`}</div>
     ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}`;
   const lineDate = e => e.type === 'give' ? (givenAt(e) || e.date) : e.date;
   const lines = S.entries.filter(e => e.pid === p.id && ['give', 'pay', 'back', 'promise', 'note', 'move'].includes(e.type) && !(e.type === 'pay' && e.with)).sort((a, b) => cmp(lineDate(b), lineDate(a)));
@@ -1639,24 +1707,24 @@ VIEWS.person = f => {
     let mk = '', t = '', sub = [], right = '';
     if (e.type === 'give') {
       const car = carById(e.carId); const ld = L.loads.find(x => x.id === e.id); const at = givenAt(e); const hand = c.hand.get(e.id); const old = e.fixes ? c.byId.get(e.fixes) : null;
-      t = bagsTxt(e.bags) + (car ? ' · ' + (car.label || 'delivery ' + dmy(car.date)) : '');
+      t = bagsTxt(e.bags) + (car ? ' · ' + (car.label || 'load ' + dmy(car.date)) : '');
       if (car && car.items.length > 1) { const it = car.items.find(x => x.id === e.itemId); if (it) mk = mk || kindImg(it, 'xs'); }
-      sub = [locTxt(e.loc), !at && !gone ? 'held since ' + hm(e.date) : '', hand ? 'handed over ' + hm(hand.date) + (hand.by ? ' to ' + hand.by : '') : '', e.by ? 'to ' + e.by : '', old ? 'corrected from ' + bagsNum(old.bags) : '', c.linked.has(e.id) ? 'paid cash' : '', gone ? (kind === 'fix' ? 'corrected' : kind === 'release' ? 'released' : 'removed') : ''];
+      sub = [locTxt(e.loc), !at && !gone ? 'kept since ' + hm(e.date) : '', hand ? 'handed over ' + hm(hand.date) + (hand.by ? ' to ' + hand.by : '') : '', e.by ? 'to ' + e.by : '', old ? 'corrected from ' + bagsNum(old.bags) : '', c.linked.has(e.id) ? 'paid cash' : '', gone ? (kind === 'fix' ? 'corrected' : kind === 'release' ? 'released' : 'removed') : ''];
       if (gone) right = '';
-      else if (!at) { mk = `<span class="mk w">${svg('clock', 16)}</span>`; right = '<span class="tag w">Held</span>'; }
+      else if (!at) { mk = `<span class="mk w">${svg('clock', 16)}</span>`; right = '<span class="tag w">Kept</span>'; }
       else if (ld && ld.left <= 0.001) { mk = '<span class="mk ok">✓</span>'; right = '<span class="amt ok">Paid</span>'; }
       else right = `<span class="amt">${money(ld ? ld.left : e.amount)}<small>${ld && ld.left < e.amount - 0.001 ? 'of ' + money(e.amount) : 'left'}</small></span>`;
     } else if (e.type === 'pay') { t = 'Paid ' + money(e.amount); sub = [e.method === 'momo' ? 'MoMo' : 'cash', e.change ? 'gave ' + money(e.change) + ' change' : '']; right = gone ? '' : '<span class="amt ok">✓</span>'; }
     else if (e.type === 'back') { t = 'Brought back ' + bagsTxt(e.bags); right = `<span class="amt ok">−${money(e.amount)}</span>`; }
     else if (e.type === 'move') { t = 'Moved to ' + (locTxt(e.to) || 'no place'); sub = ['from ' + (locTxt(e.from) || 'no place'), e.mark || '']; }
-    else if (e.type === 'promise') { const pr = L.proms.find(x => x.e.id === e.id); t = "Said she'll pay " + dayWord(e.on); sub = [e.how === 'momo' ? 'by MoMo' : '']; right = gone ? '' : pr && pr.kept ? '<span class="tag ok">Kept</span>' : pr && pr.broken ? '<span class="tag r">Broken</span>' : pr && pr.active ? '<span class="tag w">Waiting</span>' : '<span class="tag">Moved</span>'; }
+    else if (e.type === 'promise') { const pr = L.proms.find(x => x.e.id === e.id); t = "Said she'll pay " + dayWord(e.on); sub = [e.how === 'momo' ? 'by MoMo' : '']; right = gone ? '' : pr && pr.kept ? '<span class="tag ok">Paid ✓</span>' : pr && pr.broken ? '<span class="tag r">Missed</span>' : pr && pr.active ? '<span class="tag w">Waiting</span>' : '<span class="tag">Moved</span>'; }
     else if (e.type === 'note') { t = 'Refused to pay'; right = '<span class="tag r">Refused</span>'; }
     const s = sub.filter(Boolean).join(' · ');
     return `<button class="row ${gone ? 'gone' : ''}" data-act="${gone ? 'noop' : 'entry'}" data-id="${e.id}">${mk}<span class="d">${dmy(lineDate(e))}</span><div class="who"><div class="line">${esc(t)}</div>${s ? `<div class="sub wrap">${esc(s)}</div>` : ''}</div>${right}</button>`;
   };
   const mid = `<div class="lines down">${lines.length ? lines.map(line).join('') : `<div class="empty"><p>Nothing in her book yet.</p></div>`}</div>`;
   const dock = `<div class="bar">${backSq()}${p.phone ? `<a class="btn call" href="tel:${esc(digits(p.phone))}" target="_top" data-act="noop" aria-label="Call ${esc(p.name)}">${svg('phone', 26)}</a><button class="btn msg" data-act="msg" data-id="${p.id}" aria-label="Message ${esc(p.name)}">${svg('msg', 26)}</button>` : `<button class="btn ghost" data-act="edit" data-id="${p.id}">${svg('phone')} Add her number</button>`}</div>
-    <div class="bar"><button class="btn ink tall" data-act="give" data-id="${p.id}">${svg('bag')} Give</button><button class="btn take tall" data-act="paybook" data-id="${p.id}">${svg('cash')} Collect</button></div>`;
+    <div class="bar"><button class="btn ink tall" data-act="give" data-id="${p.id}">${svg('bag')} Give ${esc(unit())}s</button><button class="btn take tall" data-act="paybook" data-id="${p.id}">${svg('cash')} Take money</button></div>`;
   return {top, mid, cls: 'book', dock, anchor: 'top'};
 };
 function backSheet(id) {
@@ -1702,7 +1770,7 @@ const newKind = () => ({id: uid(), name: '', count: 0, price: 0, photo: ''});
 VIEWS.newcar = () => {
   const W = V.w; const u = unit(); const it = W.items[W.si];
   const strip = W.items.length && W.s !== 'from' ? `<div class="kstrip">${W.items.map((x, i) => `<button class="kthumb ${i === W.si && !['more', 'cost'].includes(W.s) ? 'on' : ''}" data-act="wedit" data-i="${i}" aria-label="Kind ${i + 1}">${kindImg(x, 'sm')}</button>`).join('')}</div>` : '';
-  const view = (small, q, sub, body, dock, after) => ({top: `<div class="hrow"><div class="title"><b>New delivery</b><small>${small}</small></div></div>${strip}`,
+  const view = (small, q, sub, body, dock, after) => ({top: `<div class="hrow"><div class="title"><b>New load</b><small>${small}</small></div></div>${strip}`,
     mid: `<div class="q">${q}</div>${sub ? `<div class="qs">${sub}</div>` : ''}${body || ''}<div class="err">${esc(W.err || '')}</div>`, cls: 'center plain', dock, after});
   const kn = `Kind ${W.si + 1}`;
   if (W.s === 'from') {
@@ -1719,7 +1787,7 @@ VIEWS.newcar = () => {
       `<div class="bar">${backSq('wback')}${src ? `${W.items.length > 1 ? `<button class="btn ghost redtext" data-act="wdel">Remove</button>` : ''}<button class="btn ink tall" data-act="wphoto">Yes, next</button>` : `<button class="btn ghost" data-act="wphoto">No photo</button>`}</div>`,
       () => { const c = document.getElementById('camin'); if (c) c.addEventListener('change', onCamera); });
   }
-  if (W.s === 'count') return view(kn, `How many of these ${esc(u)}s?`, W.si === 0 && S.carry ? `${bagsNum(S.carry)} kept from the last delivery are counted in` : '', `<div class="photowrap">${kindImg(it, 'sm')}</div>${exprDisp(W.tmp, false, esc(u) + 's')}`,
+  if (W.s === 'count') return view(kn, `How many of these ${esc(u)}s?`, W.si === 0 && S.carry ? `${bagsNum(S.carry)} from the last load are counted in` : '', `<div class="photowrap">${kindImg(it, 'sm')}</div>${exprDisp(W.tmp, false, esc(u) + 's')}`,
     `${keypad('count', {act: 'wnext', label: 'Next'})}<div class="bar">${backSq('wback')}</div>`);
   if (W.s === 'price') return view(kn, `Price for one ${esc(u)}?`, '', `<div class="photowrap">${kindImg(it, 'sm')}</div>${exprDisp(W.tmp, true)}`,
     `${keypad('money', {act: 'wnext', label: 'Next'})}<div class="bar">${backSq('wback')}${Number(S.settings.price) ? `<button class="btn ghost" data-act="wlast">Same as last · ${money(S.settings.price)}</button>` : ''}</div>`);
@@ -1760,15 +1828,15 @@ function openNum(o) { V.num = Object.assign({value: '', mode: 'money', err: ''},
 function editNum(s, k, mode) { return exprAdd(s, k, mode === 'count' ? 4 : 7); }
 
 /* ===== Delivery report and closing ===== */
-const STOCK_WORD = {count: 'Count fixed', next: 'Kept for the next delivery', back: 'Sent back', bad: 'Spoiled or lost', lost: 'Lost, nobody took them'};
+const STOCK_WORD = {count: 'Count fixed', next: 'For the next load', back: 'Sent back', bad: 'Spoiled or lost', lost: 'Lost, nobody took them'};
 VIEWS.report = f => {
   const car = carById(f.cid); if (!car) { pop(); return null; }
   const st = carStats(car.id);
   const hasCost = (car.costs || []).length > 0;
   const pct = st.credit > 0 ? Math.round(st.collected / st.credit * 100) : 0;
-  const top = `<div class="hrow"><div class="title"><b>${esc(carName(car))}</b><small>${bagsTxt(st.loaded)} · ${car.phase === 'giving' ? 'open' : st.out > 0.001 ? 'collecting' : 'done'}</small></div><button class="ib" data-act="carmenu" data-id="${car.id}" aria-label="Delivery options">${svg('more')}</button></div>
+  const top = `<div class="hrow"><div class="title"><b>${esc(carName(car))}</b><small>${bagsTxt(st.loaded)} · ${car.phase === 'giving' ? 'open' : st.out > 0.001 ? 'collecting' : 'done'}</small></div><button class="ib" data-act="carmenu" data-id="${car.id}" aria-label="Load options">${svg('more')}</button></div>
     ${hasCost ? `<div class="hero"><div class="n ${st.profitNow >= 0 ? 'ok' : 'owe'}">${money(st.profitNow)}</div><div class="l">profit so far</div><div class="s">${money(st.profitAll)} when everyone pays</div></div>`
-      : `<div class="hero"><div class="n ${st.out > 0.001 ? 'owe' : 'ok'}">${money(st.out)}</div><div class="l">still to collect</div><button class="showher" data-act="addcost" data-id="${car.id}">${svg('plus', 18)} Add what the load cost</button></div>`}`;
+      : `<div class="hero"><div class="n ${st.out > 0.001 ? 'owe' : 'ok'}">${money(st.out)}</div><div class="l">still owed</div><button class="showher" data-act="addcost" data-id="${car.id}">${svg('plus', 18)} Add what the load cost</button></div>`}`;
   const ln = (label, sub, amt, cls) => `<div class="row" style="min-height:3.25rem"><div class="who"><div class="line">${label}</div>${sub ? `<div class="sub">${sub}</div>` : ''}</div><span class="amt ${cls || ''}">${amt}</span></div>`;
   const people = st.people.map(id => { const p = person(id); const ls = ledger(id).loads.filter(x => x.carId === car.id); return {p, left: sum(ls, x => x.left), bags: sum(ls, x => x.bags - x.backBags), w: sum(ledger(id).waiting.filter(x => x.carId === car.id), x => x.bags)}; }).sort((a, b) => b.left - a.left);
   let mid = '<div class="lines down">';
@@ -1780,12 +1848,12 @@ VIEWS.report = f => {
   mid += st.stock.map(e => ln(STOCK_WORD[e.reason] || 'Stock', dmy(e.date), (e.bags > 0 ? '+' : '−') + bagsNum(Math.abs(e.bags)), 'ink')).join('');
   if (st.cash) mid += ln(`${bagsTxt(st.cash)} sold for cash`, '', '+' + money(st.cashAmt), 'ok');
   mid += ln('Given on credit', bagsTxt(st.off), money(st.credit), 'ink');
-  mid += ln('Collected so far', `${pct}% of credit`, '+' + money(st.collected), 'ok');
+  mid += ln('Paid so far', `${pct}% of credit`, '+' + money(st.collected), 'ok');
   mid += ln('Still out', `${people.filter(x => x.left > 0.001).length} customers`, money(st.out), '');
-  if (people.length) mid += `<div class="sect"><span>Who took from this delivery</span></div>` + people.map(x => `<button class="row" data-act="person" data-id="${x.p.id}">${x.left <= 0.001 && !x.w ? '<span class="mk ok">✓</span>' : ''}<div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${bagsTxt(x.bags)}${x.w ? ' · ' + bagsTxt(x.w) + ' held' : ''}</div></div>${x.left > 0.001 ? `<span class="amt">${money(x.left)}</span>` : x.w ? '' : '<span class="amt ok">Paid</span>'}</button>`).join('');
+  if (people.length) mid += `<div class="sect"><span>Who took from this load</span></div>` + people.map(x => `<button class="row" data-act="person" data-id="${x.p.id}">${x.left <= 0.001 && !x.w ? '<span class="mk ok">✓</span>' : ''}<div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${bagsTxt(x.bags)}${x.w ? ' · ' + bagsTxt(x.w) + ' kept' : ''}</div></div>${x.left > 0.001 ? `<span class="amt">${money(x.left)}</span>` : x.w ? '' : '<span class="amt ok">Paid</span>'}</button>`).join('');
   mid += '</div>';
   const remN = remindList(people.filter(x => x.left > 0.001).map(x => x.p.id)).length;
-  const dock = `${st.credit > 0 ? `<div class="sumline"><span>Credit collected</span><span>${pct}%</span></div><div class="prog"><i style="width:${pct}%"></i></div>` : ''}
+  const dock = `${st.credit > 0 ? `<div class="sumline"><span>Credit paid</span><span>${pct}%</span></div><div class="prog"><i style="width:${pct}%"></i></div>` : ''}
     <div class="bar">${backSq()}${car.phase === 'giving' ? `<button class="btn ink" data-act="gotogive">${svg('bag')} Give ${esc(unit())}s</button>` : `<button class="btn ghost" data-act="remindcar" data-id="${car.id}" ${remN ? '' : 'disabled'}>${svg('bell')} Remind${remN ? ' ' + remN : ''}</button>`}</div>`;
   return {top, mid, cls: 'book', dock, anchor: 'top'};
 };
@@ -1793,15 +1861,15 @@ function carMenu(cid) {
   const car = carById(cid); const open = car.phase === 'giving';
   sheet(`<i class="grab"></i><h3>${esc(carName(car))}</h3>
     ${open ? `<button class="btn ghost" data-act="price" data-id="${cid}">Price · ${car.items.map(i => (i.name ? i.name + ' ' : '') + money(i.price)).join(', ')}</button>` : ''}
-    <button class="btn ghost" data-act="label" data-id="${cid}">${car.label ? 'Rename: ' + esc(car.label) : 'Name this delivery'}</button>
+    <button class="btn ghost" data-act="label" data-id="${cid}">${car.label ? 'Rename: ' + esc(car.label) : 'Name this load'}</button>
     ${open ? `<button class="btn ghost" data-act="count">Count the car</button>` : ''}
     <button class="btn ghost" data-act="addcost" data-id="${cid}">Add a cost</button>
-    ${cur() && cur().v === 'report' ? '' : `<button class="btn ghost" data-act="report" data-id="${cid}">Delivery report</button>`}
-    ${open ? `<button class="btn ink tall" data-act="closecar" data-id="${cid}">Close delivery</button>` : `<button class="btn ghost" data-act="reopen" data-id="${cid}">Reopen to give more</button>`}`);
+    ${cur() && cur().v === 'report' ? '' : `<button class="btn ghost" data-act="report" data-id="${cid}">Load report</button>`}
+    ${open ? `<button class="btn ink tall" data-act="closecar" data-id="${cid}">Close load</button>` : `<button class="btn ghost" data-act="reopen" data-id="${cid}">Reopen to give more</button>`}`);
 }
 function labelSheet(cid) {
   const car = carById(cid); const labels = [...new Set(carsNewest().map(c => c.label).filter(Boolean))].slice(0, 5);
-  sheet(`<i class="grab"></i><h3>Name this delivery</h3><div class="field"><input id="lb_in" value="${esc(car.label)}" autocomplete="off" placeholder="Where it came from, or the vehicle" aria-label="Delivery name"></div>
+  sheet(`<i class="grab"></i><h3>Name this load</h3><div class="field"><input id="lb_in" value="${esc(car.label)}" autocomplete="off" placeholder="Where it came from, or the vehicle" aria-label="Load name"></div>
     ${labels.length ? `<div class="chips wrap">${labels.map(l => `<button class="chip" data-act="lbchip" data-l="${esc(l)}">${esc(l)}</button>`).join('')}</div>` : ''}
     <button class="btn ink tall" data-act="lbsave" data-id="${cid}">Save</button>`);
   setTimeout(() => { const i = document.getElementById('lb_in'); if (i) i.focus(); }, 60);
@@ -1809,14 +1877,14 @@ function labelSheet(cid) {
 function openClose(cid, o) { V.cl = Object.assign({cid, choice: null, thenNew: false}, o || {}); closeCarSheet(); }
 function closeCarSheet() {
   const car = carById(V.cl.cid); const st = carStats(car.id); const held = heldOn(car.id); const gaps = gapsOn(car.id); const left = Math.max(0, st.free);
-  const opts = [['next', 'Kept for the next delivery'], ['back', 'Sent back'], ['bad', 'Spoiled or lost'], ['cash', 'Sold for cash'], ['count', 'The count was wrong']];
+  const opts = [['next', 'For the next load'], ['back', 'Sent back'], ['bad', 'Spoiled or lost'], ['cash', 'Sold for cash'], ['count', 'The count was wrong']];
   const can = !held.length && !gaps.length && (left <= 0 || V.cl.choice);
   sheet(`<i class="grab"></i><h3>${V.cl.thenNew ? 'First close ' : 'Close '}${esc(carName(car))}</h3>
-    <div class="sum4"><div><b>${bagsNum(st.loaded)}</b><small>loaded</small></div><div><b>${bagsNum(st.given)}</b><small>given</small></div><div class="${held.length ? 'w' : 'ok'}"><b>${bagsNum(st.wait)}</b><small>held${held.length ? '' : ' ✓'}</small></div><div><b>${bagsNum(left)}</b><small>left</small></div></div>
-    ${held.length ? `<p><b>Still held:</b> ${held.map(e => esc((person(e.pid) || {}).name || '?') + ' ' + bagsNum(e.bags)).join(', ')}. Hand them over or release them first.</p><div class="bar"><button class="btn ghost redtext" data-act="releaseall" data-id="${car.id}">Release all</button><button class="btn ink" data-act="handall" data-id="${car.id}">Hand over all</button></div>` : ''}
+    <div class="sum4"><div><b>${bagsNum(st.loaded)}</b><small>loaded</small></div><div><b>${bagsNum(st.given)}</b><small>given</small></div><div class="${held.length ? 'w' : 'ok'}"><b>${bagsNum(st.wait)}</b><small>kept${held.length ? '' : ' ✓'}</small></div><div><b>${bagsNum(left)}</b><small>left</small></div></div>
+    ${held.length ? `<p><b>Still kept for her:</b> ${held.map(e => esc((person(e.pid) || {}).name || '?') + ' ' + bagsNum(e.bags)).join(', ')}. Hand them over or release them first.</p><div class="bar"><button class="btn ghost redtext" data-act="releaseall" data-id="${car.id}">Release all</button><button class="btn ink" data-act="handall" data-id="${car.id}">Hand over all</button></div>` : ''}
     ${gaps.length ? `<p><b>No name yet:</b> ${bagsTxt(sum(gaps, e => e.bags))}. Name them, or write them off, before closing.</p><div class="bar"><button class="btn ghost redtext" data-act="gaplostall" data-id="${car.id}">They are lost</button><button class="btn ink" data-act="sheetclose">Name them</button></div>` : ''}
     ${!held.length && !gaps.length && left > 0 ? `<p><b>What happened to the ${bagsTxt(left)} left?</b></p><div class="radio">${opts.map(([k, l]) => `<button class="${V.cl.choice === k ? 'on' : ''}" data-act="clopt" data-k="${k}">${l}</button>`).join('')}</div>` : ''}
-    <button class="btn ink tall" data-act="cldo" ${can ? '' : 'disabled'}>Close delivery</button>
+    <button class="btn ink tall" data-act="cldo" ${can ? '' : 'disabled'}>Close load</button>
     <button class="btn ghost" data-act="sheetclose">Not now</button>`);
   V.sheetKind = 'close';
 }
@@ -1831,7 +1899,7 @@ function closeCar() {
   car.phase = 'out'; car.closedAt = nowIso(); car.closeIds = ids; car.closeCarry = ch === 'next' ? left : 0; commit();
   const then = V.cl.thenNew; V.cl = null; closeSheet();
   if (then) return startWizard();
-  toRoot('give'); toast(`${car.label || 'Delivery'} closed`);
+  toRoot('give'); toast(`${car.label || 'Load'} closed`);
 }
 function handOver(gives, by) { const hs = gives.map(e => add({type: 'hand', ref: e.id, pid: e.pid, carId: e.carId, by: by || ''})); gives.forEach(e => { const p = person(e.pid); if (p && p.phone && !C().linked.has(e.id)) e.rcpt = false; }); commit(); return hs; }
 
@@ -1847,7 +1915,7 @@ VIEWS.mom = () => {
       <div class="tile r"><small>Money out</small><b class="r">${money(out)}</b><span>${all.length} ${all.length === 1 ? 'customer owes' : 'customers owe'}</span></div>
       <div class="tile g"><small>Came in this week</small><b class="g">${money(week)}</b></div>
       ${cs ? `<div class="tile"><small>${esc(Unit())}s left in the vehicle</small><b>${bagsNum(Math.max(0, cs.free))}</b><span>${bagsNum(cs.given)} given · ${bagsNum(cs.wait)} held</span></div>` : ''}
-      ${now.length ? `<div class="tile"><small>Collect now</small><b class="r">${money(sum(now, x => x.L.bal))}</b><span>${now.slice(0, 8).map(x => esc(x.p.name)).join(', ')}${now.length > 8 ? '…' : ''}</span></div>` : ''}
+      ${now.length ? `<div class="tile"><small>Take now</small><b class="r">${money(sum(now, x => x.L.bal))}</b><span>${now.slice(0, 8).map(x => esc(x.p.name)).join(', ')}${now.length > 8 ? '…' : ''}</span></div>` : ''}
     </div>`, cls: 'plain', dock: `<div class="bar"><button class="btn ink tall" data-act="back">Close</button></div>`};
 };
 
@@ -1867,14 +1935,14 @@ function settingsInputs() {
 const setInp = (k, lab, ph, type) => `<div class="field"><label for="s_${k}">${lab}</label><input id="s_${k}" data-set="${k}" type="${type || 'text'}" ${type === 'tel' ? 'inputmode="numeric"' : ''} value="${esc(S.settings[k])}" placeholder="${ph}" autocomplete="off"></div>`;
 VIEWS.setup = () => ({
   top: `<div class="hrow"><div class="title"><b>Set up your book</b><small>You can change all of this later in Settings</small></div></div>`,
-  mid: `<div class="setbox">${setInp('item', 'What do you hand out?', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Collect after how many days', '14', 'tel')}${setInp('seller', 'Your name (goes on receipts)', '')}${setInp('momo', 'MoMo number (goes on reminders)', '', 'tel')}</div>
+  mid: `<div class="setbox">${setInp('item', 'What do you hand out?', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}${setInp('seller', 'Your name (goes on receipts)', '')}${setInp('momo', 'MoMo number (goes on reminders)', '', 'tel')}</div>
     <div class="setlabel">Where do the ${esc(unit())}s go?</div>${townsBlock()}`,
   cls: 'plain', dock: `<div class="bar"><button class="btn ghost" data-act="demo">See an example</button><button class="btn ink" data-act="setupdone">Start</button></div>`, after: settingsInputs});
 VIEWS.settings = () => {
   const s = S.settings;
   const seg = (k, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(s[k]) === String(v) ? 'on' : ''}" data-act="setseg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
   return {top: `<div class="hrow"><div class="title"><b>Settings</b><small>Saved on this phone only</small></div></div>`,
-    mid: `<div class="setbox">${setInp('seller', 'Your name (goes on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (goes on reminders)', '055 000 0000', 'tel')}${setInp('item', 'What you hand out', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Collect after how many days', '14', 'tel')}</div>
+    mid: `<div class="setbox">${setInp('seller', 'Your name (goes on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (goes on reminders)', '055 000 0000', 'tel')}${setInp('item', 'What you hand out', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}</div>
       <div class="setlabel">Places</div>${townsBlock()}
       ${SMS_OK && !V.demo ? `<div class="setlabel">Receipts by SMS</div><div class="setbox">
         <div class="set"><span>Send receipts by themselves</span><button class="chip ${SMS.on ? 'on' : ''}" data-act="smstoggle" aria-pressed="${SMS.on}">${SMS.on ? 'On' : 'Off'}</button></div>
@@ -2079,13 +2147,15 @@ function act(a, d, el) {
   case 'method': V.pay.method = d.m; return paySheet();
   case 'pover': V.pay.over = d.v; V.pay.err = ''; return paySheet();
   case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.ex = String(Math.round(b)); V.pay.err = ''; V.pay.over = ''; return paySheet(); }
-  case 'paydone': { if (!savePay()) return; closeSheet(); render(); return payToast(); }
-  case 'paynext': { const P = V.pay; const nx = nextPayId(P.pid); if (paySum() > 0) { if (!savePay()) return; } render(); if (V.lastPay && V.lastPay.p.id === P.pid && paySum() > 0) payToast(); if (!nx) return closeSheet(); return openPay(nx, {ctx: 'collect'}); }
+  case 'paydone': { if (!savePay()) return; render(); return proofSheet(null); }
+  case 'paynext': { const P = V.pay; const nx = nextPayId(P.pid); if (paySum() > 0) { if (!savePay()) return; render(); return proofSheet(nx); } if (!nx) return closeSheet(); return openPay(nx, {ctx: 'collect'}); }
+  case 'pfdone': return proofDone();
+  case 'pfnext': { proofDone(); return d.id && person(d.id) ? openPay(d.id, {ctx: 'collect'}) : null; }
   case 'promise': V.pr = null; return promiseSheet(d.id);
   case 'pron': V.pr.on = d.k; return promiseSheet(V.pr.pid);
   case 'prhow': V.pr.how = d.h; return promiseSheet(V.pr.pid);
   case 'prsave': { const P = V.pr; const p = person(P.pid); add({type: 'promise', pid: P.pid, on: P.on, how: P.how}); closeSheet(); render();
-    return toast(`Promise saved: ${dayWord(P.on)}`, [p.phone ? {label: 'Send it to her', href: sendHref(p, msgPromise(p, P.on))} : null]); }
+    return toast(`Pay date: ${dayWord(P.on)}`, [p.phone ? {label: 'Send it to her', href: sendHref(p, msgPromise(p, P.on))} : null]); }
   case 'refused': { add({type: 'note', kind: 'refused', pid: V.pr.pid}); closeSheet(); render(); return toast('Refused'); }
   case 'remindall': { const ids = remindList(); const none = debtors().filter(x => !x.p.phone && x.st.sev >= 3 && inFilter(x.p)).map(x => x.p.name); V.queue = {kind: 'remind', ids, i: 0, none}; return queueStep(); }
   case 'remindcar': { const st = carStats(d.id); const owing = st.people.filter(id => ledger(id).loads.some(x => x.carId === d.id && x.left > 0.001)); V.queue = {kind: 'remind', ids: remindList(owing), i: 0, none: owing.filter(id => !person(id).phone).map(id => person(id).name)}; return queueStep(); }
@@ -2118,12 +2188,12 @@ function act(a, d, el) {
   case 'closecar': return openClose(d.id || givingCar().id);
   case 'clopt': V.cl.choice = d.k; return closeCarSheet();
   case 'cldo': return closeCar();
-  case 'reopen': { const car = carById(d.id); const open = givingCar(); if (open && open.id !== car.id) { closeSheet(); return toast('Close the open delivery first'); }
+  case 'reopen': { const car = carById(d.id); const open = givingCar(); if (open && open.id !== car.id) { closeSheet(); return toast('Close the open load first'); }
     (car.closeIds || []).forEach(id => undoEntry(id)); if (car.closeCarry) S.carry = Math.max(0, (Number(S.carry) || 0) - car.closeCarry);
     car.closeIds = []; car.closeCarry = 0; car.phase = 'giving'; commit(); closeSheet(); toast(`${carName(car)} is open again`); return toRoot('give'); }
   case 'price': { const car = carById(d.id); closeSheet(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Which price?</h3>${car.items.map(i => `<button class="btn ghost" style="justify-content:flex-start" data-act="priceitem" data-id="${car.id}" data-i="${i.id}">${kindImg(i, 'sm')} ${money(i.price)}</button>`).join('')}`); return act('priceitem', {id: car.id, i: car.items[0].id}); }
   case 'priceitem': { const car = carById(d.id); const it = car.items.find(i => i.id === d.i); closeSheet();
-    return openNum({title: `Price for one ${it.name ? it.name.toLowerCase() + ' ' : ''}${unit()}`, sub: 'From now on, for this delivery', mode: 'money', onSave: n => { if (!(n > 0)) return 'Type the price.'; it.price = n; S.settings.price = n; commit(); }}); }
+    return openNum({title: `Price for one ${it.name ? it.name.toLowerCase() + ' ' : ''}${unit()}`, sub: 'From now on, for this load', mode: 'money', onSave: n => { if (!(n > 0)) return 'Type the price.'; it.price = n; S.settings.price = n; commit(); }}); }
   case 'label': closeSheet(); return labelSheet(d.id);
   case 'lbchip': { const i = document.getElementById('lb_in'); if (i) i.value = d.l; return; }
   case 'lbsave': { const car = carById(d.id); car.label = (document.getElementById('lb_in').value || '').trim(); commit(); closeSheet(); return render(); }
@@ -2131,7 +2201,7 @@ function act(a, d, el) {
   case 'count': { const car = givingCar(); if (!car) return noCarSheet(); V.cc = null; return checkSheet(); }
   case 'ccminus': { const r = V.cc.rows[+d.i]; if (r.n > 0) r.n -= 1; return checkSheet(); }
   case 'ccplus': { V.cc.rows[+d.i].n += 1; return checkSheet(); }
-  case 'ccnum': { const i = +d.i; closeSheet(); return openNum({title: `How many ${unit()}s are left?`, sub: V.cc.rows[i].name || 'Count them, not the held ones', mode: 'count', onSave: n => { V.cc.rows[i].n = n; setTimeout(checkSheet, 30); }}); }
+  case 'ccnum': { const i = +d.i; closeSheet(); return openNum({title: `How many ${unit()}s are left?`, sub: V.cc.rows[i].name || 'Count them, not the kept ones', mode: 'count', onSave: n => { V.cc.rows[i].n = n; setTimeout(checkSheet, 30); }}); }
   case 'ccsave': return saveCheck();
   case 'gap': V.gn = null; return gapSheet(d.id);
   case 'gnminus': if (V.gn.n > 1) V.gn.n -= 1; return gapSheet(V.gn.id);
