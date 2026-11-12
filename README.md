@@ -1,39 +1,44 @@
 # Inkflow · StallBook
 
-StallBook is a credit book for a delivery business. A vehicle brings bags (onions, for example) to market women. Some pay cash, some take bags on credit and pay later, some ask you to hold bags for them. StallBook keeps track of the bags, the people, where to find them, and what they owe.
+StallBook is a credit book for a delivery business. A vehicle brings bags (onions, for example) to market women. Some pay cash, some take bags on credit and pay later, some ask you to keep bags for them. StallBook keeps track of the bags, the people, where to find them, and what they owe.
 
 The app is the `public/` folder: one page (`index.html`) plus its icons, font and offline file. It works without internet, and the book stays on the phone.
 
 ## How it works
 
-Three tabs at the bottom. Give and Collect never send you to another page; everything opens in a panel over the list.
+Three tabs at the bottom: **Give bags**, **Take money** and **Book**. Give bags and Take money never send you to another page; everything opens in a panel over the list. The words are plain English on purpose: short, two-word buttons, and pictures and numbers wherever they can stand in for a sentence.
 
-- **Give**: the open delivery. A card with the bags left, given and held, then one tab per place (Koko Shell, Market…) and **+** to add a place. Each tab lists only that place, top to bottom in the order you gave. Swipe left or right to move between places.
-  - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). Switch on **Hold for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She goes into the tab you are on.
+- **Give bags**: the open load. A card with the bags left, given and kept, then one tab per place (Koko Shell, Market…) and **+** to add a place. Each tab lists only that place, top to bottom in the order you gave. Swipe left or right to move between places; the list follows your finger.
+  - **Starting a load:** **New load** asks one thing at a time: where it is from, a photo of each kind of bag, how many, the price, then what the load cost.
+  - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). With several kinds, tap the photo of each kind she takes. Switch on **Keep for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She goes into the tab you are on.
   - **Cash sales:** the cash button counts a bag sold for cash, with no name.
-  - **Correcting a line:** tap the number in her row to change it. Tap her name to hand over held bags, release them, pick the right customer or change the place.
-- **Count check**: tap the big number on the card ("40 left") any time. It shows what the book says, you set what is really in the car with − and + (tap the number to type it), and save.
+  - **Correcting a line:** tap the number in her row to change it. Tap her name to hand over kept bags, release them, pick the right customer or change the place.
+- **Counting the car:** tap the big number on the card ("40 left") any time. It shows what the book says, you set what is really in the car with − and + (tap the number to type it), and save.
   - Same number: one tap. More than the book: the book is fixed. Fewer than the book: the missing bags show in the list as an amber line, **Who took these?**, in the place you are at. Tap it and pick who took them, or **Nobody. They are lost**. Naming turns them into a normal give, so the book stays right.
   - A later count that finds bags again gives them back to those no-name lines first.
-  - Every 10 minutes (or 5, or 15, or never: Settings › Count the car, every) the number glows amber and plays a soft sound until you count. It only asks while the Give screen is open and something was done in the last 3 hours.
-  - A delivery can't be closed while bags still have no name: name them or write them off as lost.
-- **Collect**: who owes, most urgent first, filtered by place.
-  - **Taking a payment:** tap a name and the money pad opens. Tap the cedi notes as she counts. **Done** shows her new balance in the list. **Next** saves and opens the next woman at that spot. **Not today** saves a promise.
+  - Every 10 minutes (or 5, or 15, or never: Settings › Count the car, every) the number glows amber and plays a soft sound until you count. It only asks while the Give bags screen is open and something was done in the last 3 hours.
+  - A load can't be closed while bags still have no name: name them or write them off as lost.
+- **Counter** (card menu ⌄ › Counter): a full screen that counts by taps, for when the boys carry bags. Choose **Give out** or **Count car**, the kind of bag (by photo), and how many each tap is (1, 2 or 3). Tap anywhere for each trip: the number grows and dots fill in rows of ten, each trip in its own shade. **−** takes off the last trip (hold it to start again). The lock hides everything but the tapping, so you can hand the phone over; hold to unlock. **Hold to finish**: Give out asks *Who took 7 bags?* and opens the give with that number; Count car fills in the car count. The count is kept if the app closes.
+- **Take money**: who owes, most urgent first, filtered by place. Tags say **Pay by 26 Nov**, **Pay today**, **2 days late**, **Pays Friday** (a pay date she gave) or **Missed pay date**.
+  - **Taking a payment:** tap a name and the money pad opens. Tap the cedi notes as she counts. **Done** turns the phone to her: the lines she cleared are struck through, a part-paid line gets **− 200** written on it, what is left is circled, and a PAID stamp lands. **Next ›** goes to the next woman at that spot. **Not today** saves a pay date.
   - **Overpayment:** if she pays more than she owes, you choose: keep it as credit, or record that you gave change.
-- **Book**: everyone, by place, and every delivery.
-  - **Her page:** where she sells now (tap to change it) and what she owes, then one list of everything she took and paid. Each line keeps the delivery and the place it happened at.
+- **Book**: everyone, by place, and every load.
+  - **Her page:** where she sells now (tap to change it) and what she owes, then one list of everything she took and paid. Each line keeps the load and the place it happened at.
 
 Nothing is ever overwritten. Corrections, handovers, releases and moves are new lines. There is no Undo button: to fix a mistake, tap the line and change it, or remove it (it stays in her book, crossed out). A cash sale entered by mistake is taken off by tapping the cash line.
 
-**Closing a delivery:** you can only close once no bags are held. Then choose what happened to what's left: kept for the next delivery, sent back, spoiled or lost, sold for cash, or the count was wrong.
+**Closing a load:** you can only close once no bags are kept for anyone. Then choose what happened to what's left: for the next load, sent back, spoiled or lost, sold for cash, or the count was wrong.
+
+**Speak out loud** (Settings, off at first): the phone says each give ("Ama, 3 bags. 35 left."), each cash sale and each payment ("Ama paid 1,000 cedis. 2,300 cedis left."), and "Count the bags." when it is time to count. It uses the phone's own voice and works offline.
 
 ## The look
 
-- **Colour has one job each.** Blue is the pen (what you write), red is debt and the notebook margin, green is money in, amber is waiting (held bags, no-name bags).
-- **The band at the top says the job:** blue for Give (with the page number, like a receipt book), green for Collect, black for Book. The phone's status bar takes the same colour.
+- **Colour has one job each.** Blue is the pen (what you write), red is debt and the notebook margin, green is money in, amber is waiting (kept bags, no-name bags).
+- **The band at the top says the job:** blue for Give bags (with the page number, like a receipt book), green for Take money, black for Book. The phone's status bar takes the same colour.
 - **Numbers are painted big** in Barlow Condensed (SIL Open Font License, `public/fonts/OFL-barlow.txt`). Words stay in Atkinson Hyperlegible.
 - **Places are index tabs** standing on the page.
-- **Every number pad is a calculator:** + − × with C and ⌫, all keys the same size. What you type shows small on top ("5 + 6 + 7 + 8") and the total shows big underneath; times goes before plus and minus. On the money pad the cedi notes add themselves to the sum.
+- **Every number pad is a calculator**, laid out like the iPhone's: 7 8 9 × / 4 5 6 − / 1 2 3 + / 00 0 ⌫ and the action key. What you type shows small on top ("5 + 6 + 7 + 8") and the total shows big underneath; times goes before plus and minus. Tap ⌫ to take one off, hold it to clear. On the money pad the cedi notes add themselves to the sum.
+- **Things move like paper:** big numbers roll to their new value, a new line writes itself in from left to right, a panel follows your finger when you pull it down by its top edge (let go early and it springs back), a new load comes in as a page turning, and report totals count up over a double rule. Turn on Reduce Motion on the phone and all of it stops.
 
 ## Every screen size
 
@@ -100,7 +105,24 @@ StallBook can send every receipt by itself, through [Arkesel](https://sms.arkese
 2. Copy your SMS API key from the Arkesel dashboard.
 3. In StallBook, open **Settings › Receipts by SMS**. Switch it on, paste the key and type the sender name. **Send a test** sends one to your MoMo number.
 
-After that, a customer with a phone number gets a receipt about 20 seconds after you give to her (held bags: when they are handed over) and after each payment. Without signal, receipts wait and go out when it comes back. Only lines saved after the switch is turned on are sent. The key stays on the phone: it is not in the book or in backup files, so a new phone needs it typed in again.
+After that, a customer with a phone number gets a receipt about 20 seconds after you give to her (kept bags: when they are handed over) and after each payment. Without signal, receipts wait and go out when it comes back. Only lines saved after the switch is turned on are sent. The key stays on the phone: it is not in the book or in backup files, so a new phone needs it typed in again.
+
+## Tests
+
+`tests/run.sh` runs every test in a real browser (headless Chromium) against the `public/` folder, then runs the main one again against the one-file build. It needs python3, Node.js, and Playwright installed globally (`npm install -g playwright && npx playwright install chromium`). Each test prints PASS or FAIL per check; pictures go to `tests/out/` (not saved in git).
+
+| Test | What it checks |
+|---|---|
+| `book.js` | A whole day: setup, a load, giving, keeping for her, payments with the proof screen, places, closing a load, backup |
+| `sms.js` | Receipts that send themselves |
+| `count-check.js` | Counting the car, no-name bags, the reminder |
+| `keypad.js` | The calculator pads |
+| `photos.js` | Photos of each kind of bag, giving by photo, backup and restore of photos |
+| `upgrade.js` | Books from older versions open and keep everything |
+| `motion.js` | Rolling numbers, ink, pull to close, swipe, page turn (with motion on) |
+| `voice.js` | Speak out loud |
+| `counter.js` | The Counter |
+| `screens.js` | Keyboard, turning the phone, and many screen sizes |
 
 ## Your data
 
