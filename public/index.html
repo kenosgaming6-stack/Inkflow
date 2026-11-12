@@ -118,6 +118,34 @@ a{color:inherit;text-decoration:none}
 .top.tabbed{padding-bottom:0}
 .top.tabbed + .mid{border-top:.125rem solid var(--text)}
 .mid.slide-l{animation:slidel .2s ease-out}
+/* the counter: the whole middle is one big button */
+.mid.ctmid{padding:0}
+.ctr{flex:1 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;width:100%;padding:1rem 0 1.25rem;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.ctr:active{background:var(--key)}
+.ctr:active .ctn{transform:scale(.96)}
+.ctn{font:800 8rem/1 var(--num);color:var(--ink);font-variant-numeric:tabular-nums}
+.ctr small{font-weight:700;color:var(--muted);font-size:1rem}
+.dots{display:grid;grid-template-columns:repeat(10,1fr);gap:.4rem;width:min(calc(100% - 2rem),20rem);margin-top:.75rem}
+.dots i{display:block;aspect-ratio:1;border-radius:50%;background:var(--ink)}
+.dots i.b{background:#8EA2E6}
+.mid.locked .ctr{background:var(--page)}
+.kpick{display:flex;gap:.5rem;overflow-x:auto;scrollbar-width:none;padding:.125rem 0}
+.kpick::-webkit-scrollbar{display:none}
+.kpick button{flex:none;border-radius:.875rem;padding:.15rem;border:.18rem solid transparent}
+.kpick button.on{border-color:var(--ink)}
+.ctrip{display:flex;align-items:center;gap:.5rem;font-weight:700;color:var(--muted)}
+.ctrip span{flex:1}
+.ctrip button{display:flex;align-items:center;justify-content:center;flex:none;width:3.25rem;height:3rem;border-radius:.875rem;background:var(--key);font:800 1.75rem/1 var(--num);color:var(--text)}
+.ctrip button.on{background:var(--ink);color:#fff}
+.holdbtn{position:relative;overflow:hidden}
+.holdbtn::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.32);transform:scaleX(0);transform-origin:left;pointer-events:none}
+.holdbtn.ghost::after,.sq.holdbtn::after{background:rgba(29,63,187,.16)}
+.holdbtn.holding::after{transform:scaleX(1);transition:transform var(--hold,.65s) linear}
+.ctwho{display:flex;flex-direction:column;max-height:42vh;overflow-y:auto;margin:0 -.875rem;border-top:.0625rem solid var(--line);scrollbar-width:none}
+.who1{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;padding:.875rem;border-bottom:.0625rem solid var(--line);text-align:left}
+.who1 b{font-size:1.25rem;color:var(--ink)}
+.who1 small{color:var(--muted)}
+.who1[hidden],#ctnew[hidden]{display:none}
 /* a new line is written in, left to right, like a pen */
 .row.flash.new .who,.row.flash.new .amt,.row.flash .amt small.ok{animation:write .5s cubic-bezier(.4,.1,.3,1)}
 @keyframes write{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
@@ -543,6 +571,8 @@ const IC = {
   eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   ok:'<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',
   clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  tally:'<path d="M6 5v14M10 5v14M14 5v14M18 5v14M3 15l18-6"/>',
   pin:'<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>'
 };
 const svg = (n, s) => `<svg class="i"${s ? ` style="width:${s / 16}rem;height:${s / 16}rem"` : ''} viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
@@ -986,6 +1016,7 @@ function sfx(k) {
   else if (k === 'coin') { tone(1568, 0, 0.09, 'triangle', 0.13); tone(2093, 0.05, 0.16, 'triangle', 0.09); }
   else if (k === 'thud') { tone(95, 0, 0.2, 'sine', 0.35); tone(62, 0.02, 0.22, 'sine', 0.25); }
   else if (k === 'key') tone(1500, 0, 0.025, 'sine', 0.035);
+  else if (k === 'tap') tone(880, 0, 0.06, 'triangle', 0.16);
   else if (k === 'pen') noise(0, 0.38, 0.5, 3000);
   else if (k === 'page') { noise(0, 0.28, 0.35, 1400); noise(0.08, 0.2, 0.25, 900); }
   else if (k === 'stamp') { tone(110, 0, 0.16, 'sine', 0.4); noise(0, 0.08, 0.4, 600); }
@@ -1361,6 +1392,7 @@ function openGive(pid, name) {
   const p = pid ? person(pid) : null;
   const loc = locById(S.lastLoc) ? S.lastLoc : (p && p.loc) || '';
   V.g = {pid: p ? p.id : null, name: name || '', phone: '', loc, bags: car.items.length > 1 ? 0 : p ? usualQty(p.id) : 1, itemId: car.items[0].id, carId: car.id, dupOk: false, hold: false, kinds: car.items.length > 1 ? {} : null};
+  if (V.pend) { const P = V.pend; V.pend = null; if (V.g.kinds) V.g.kinds = {[P.itemId]: P.bags}; V.g.bags = P.bags; }
   giveSheet();
 }
 function noCarSheet() {
@@ -1926,12 +1958,69 @@ VIEWS.report = f => {
     <div class="bar">${backSq()}${car.phase === 'giving' ? `<button class="btn ink" data-act="gotogive">${svg('bag')} Give ${esc(unit())}s</button>` : `<button class="btn ghost" data-act="remindcar" data-id="${car.id}" ${remN ? '' : 'disabled'}>${svg('bell')} Remind${remN ? ' ' + remN : ''}</button>`}</div>`;
   return {top, mid, cls: 'book', dock, anchor: 'top'};
 };
+/* ===== Counter: tap once for each trip; the phone keeps the count ===== */
+const CT_KEY = 'stallbook_counter';
+function ctLoad(car) {
+  if (V.ct && V.ct.carId === car.id) return V.ct;
+  let c = null; try { c = JSON.parse(lsGet(CT_KEY) || 'null'); } catch (e) {}
+  if (!c || c.carId !== car.id || Date.now() - (c.t || 0) > 12 * 3600000) c = {carId: car.id, mode: 'out', kind: car.items[0].id, trip: 2, taps: [], locked: false, t: Date.now()};
+  if (!car.items.some(i => i.id === c.kind)) c.kind = car.items[0].id;
+  return (V.ct = c);
+}
+function ctSave() { if (!V.ct) return; V.ct.t = Date.now(); lsSet(CT_KEY, JSON.stringify(V.ct)); }
+function ctClear() { V.ct = null; try { localStorage.removeItem(CT_KEY); } catch (e) {} }
+const ctTotal = () => V.ct ? sum(V.ct.taps, x => x) : 0;
+VIEWS.counter = () => {
+  const car = givingCar(); if (!car) { pop(); return null; }
+  const C = ctLoad(car); const total = ctTotal(); const multi = car.items.length > 1; const it = car.items.find(i => i.id === C.kind);
+  const dots = C.taps.map((n, i) => Array.from({length: n}, () => `<i class="${i % 2 ? 'b' : ''}"></i>`).join('')).join('');
+  const what = C.mode === 'out' ? 'Give out' : 'Count car';
+  const top = C.locked
+    ? `<div class="hrow"><div class="title"><b>${what}</b><small>${C.trip} each tap${multi && it ? ' · ' + esc(kindLabel(it)) : ''}</small></div>${multi && it ? kindImg(it, 'sm') : ''}</div>`
+    : `<div class="hrow">${backSq()}<div class="title"><b>Counter</b></div></div>
+    <div class="seg"><button class="${C.mode === 'out' ? 'on' : ''}" data-act="ctmode" data-m="out">Give out</button><button class="${C.mode === 'in' ? 'on' : ''}" data-act="ctmode" data-m="in">Count car</button></div>
+    ${multi ? `<div class="kpick">${car.items.map(i => `<button class="${i.id === C.kind ? 'on' : ''}" data-act="ctkind" data-i="${i.id}" aria-label="${esc(kindLabel(i))}">${kindImg(i, 'sm')}</button>`).join('')}</div>` : ''}
+    <div class="ctrip"><span>Each tap</span>${[1, 2, 3].map(n => `<button class="${C.trip === n ? 'on' : ''}" data-act="cttrip" data-n="${n}" aria-label="${n} ${esc(unit())}${n === 1 ? '' : 's'} each tap">${n}</button>`).join('')}</div>`;
+  const mid = `<button class="ctr" data-act="cttap" aria-label="Add ${C.trip}"><b class="ctn ${V.pulse ? 'pulse' : ''}">${bagsNum(total)}</b><small>${total ? (C.taps.length === 1 ? '1 tap' : C.taps.length + ' taps') : 'Tap anywhere for each trip'}</small>${dots ? `<span class="dots">${dots}</span>` : ''}</button>`;
+  const dock = C.locked
+    ? `<div class="bar"><button class="btn ghost holdbtn" data-hold="ctunlock" data-ms="900">${svg('lock')} Hold to unlock</button></div>`
+    : `<div class="bar"><button class="sq holdbtn" data-act="ctless" data-hold="ctclear" data-ms="700" aria-label="One trip less. Hold to start again." ${total ? '' : 'disabled'}><b style="font-size:2rem;line-height:1">−</b></button><button class="sq" data-act="ctlock" aria-label="Lock it, then hand the phone over">${svg('lock')}</button><button class="btn ink holdbtn" data-hold="ctdone" ${total ? '' : 'disabled'}>Hold to finish</button></div>`;
+  return {top, mid, cls: 'plain ctmid' + (C.locked ? ' locked' : ''), dock, anchor: 'top'};
+};
+function ctDone() {
+  const C = V.ct, car = givingCar(); const total = ctTotal(); if (!C || !car || !total) return;
+  sfx('stamp'); buzz(30);
+  if (C.mode === 'in') {
+    toRoot('give'); if (V.cc && V.cc.carId !== car.id) V.cc = null; checkSheet();
+    const r = V.cc.rows.find(x => x.id === C.kind) || V.cc.rows[0]; r.n = total; ctClear(); return checkSheet();
+  }
+  return ctWho();
+}
+/* after giving out: who took them? Names from this place first, then the most recent */
+function ctWho() {
+  const total = ctTotal(); const last = new Map();
+  S.entries.forEach(e => { if (e.type === 'give' && e.pid && live(e) && (!last.has(e.pid) || e.date > last.get(e.pid))) last.set(e.pid, e.date); });
+  const here = p => p.loc === S.lastLoc ? 1 : 0;
+  const list = S.people.slice().sort((a, b) => here(b) - here(a) || cmp(last.get(b.id) || '', last.get(a.id) || '')).slice(0, 40);
+  sheet(`<i class="grab"></i><h3>Who took ${bagsTxt(total)}?</h3>
+    <label class="find ink">${svg('search')}<input id="ctq" type="text" placeholder="Her name" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="Her name"></label>
+    <div class="ctwho">${list.map(p => `<button class="who1" data-act="ctpick" data-id="${p.id}" data-n="${esc(p.name.toLowerCase())}"><b>${esc(p.name)}</b>${p.loc ? `<small>${esc(locTxt(p.loc))}</small>` : ''}</button>`).join('')}</div>
+    <button class="btn ink" data-act="ctpick" data-new="1" id="ctnew" hidden>New: <b></b></button>`);
+  V.sheetKind = 'ctwho';
+  const q = document.getElementById('ctq'), nb = document.getElementById('ctnew');
+  q.addEventListener('input', () => {
+    const v = q.value.trim().toLowerCase(); let seen = false;
+    layer.querySelectorAll('.ctwho [data-n]').forEach(b => { b.hidden = !!v && !b.dataset.n.includes(v); if (!b.hidden) seen = true; });
+    nb.hidden = !v || seen; nb.querySelector('b').textContent = q.value.trim();
+  });
+}
 function carMenu(cid) {
   const car = carById(cid); const open = car.phase === 'giving';
   sheet(`<i class="grab"></i><h3>${esc(carName(car))}</h3>
     ${open ? `<button class="btn ghost" data-act="price" data-id="${cid}">Price · ${car.items.map(i => (i.name ? i.name + ' ' : '') + money(i.price)).join(', ')}</button>` : ''}
     <button class="btn ghost" data-act="label" data-id="${cid}">${car.label ? 'Rename: ' + esc(car.label) : 'Name this load'}</button>
     ${open ? `<button class="btn ghost" data-act="count">Count the car</button>` : ''}
+    ${open ? `<button class="btn ghost" data-act="counter">${svg('tally')} Counter</button>` : ''}
     <button class="btn ghost" data-act="addcost" data-id="${cid}">Add a cost</button>
     ${cur() && cur().v === 'report' ? '' : `<button class="btn ghost" data-act="report" data-id="${cid}">Load report</button>`}
     ${open ? `<button class="btn ink tall" data-act="closecar" data-id="${cid}">Close load</button>` : `<button class="btn ghost" data-act="reopen" data-id="${cid}">Reopen to give more</button>`}`);
@@ -2127,6 +2216,21 @@ function act(a, d, el) {
   case 'mom': return push({v: 'mom'});
   case 'report': closeSheet(); return push({v: 'report', cid: d.id});
   case 'carmenu': return carMenu(d.id);
+  case 'counter': { const car = givingCar(); if (!car) return noCarSheet(); ctLoad(car); return push({v: 'counter'}); }
+  case 'ctmode': V.ct.mode = d.m; ctSave(); return render();
+  case 'ctkind': if (V.ct.taps.length && V.ct.kind !== d.i) return toast('Finish this count first, or hold − to start again'); V.ct.kind = d.i; ctSave(); return render();
+  case 'cttrip': V.ct.trip = Number(d.n); ctSave(); return render();
+  case 'cttap': { V.ct.taps.push(V.ct.trip); ctSave(); sfx('tap'); buzz(12); V.pulse = true; render(); return say(String(ctTotal())); }
+  case 'ctless': { if (!V.ct.taps.length) return; V.ct.taps.pop(); ctSave(); sfx('clear'); return render(); }
+  case 'ctclear': V.ct.taps = []; ctSave(); sfx('clear'); return render();
+  case 'ctlock': V.ct.locked = true; ctSave(); sfx('key'); return render();
+  case 'ctunlock': V.ct.locked = false; ctSave(); return render();
+  case 'ctdone': return ctDone();
+  case 'ctpick': {
+    if (!V.ct) return closeSheet();
+    const name = d.new ? ((document.getElementById('ctq') || {}).value || '').trim() : ''; if (d.new && !name) return;
+    V.pend = {bags: ctTotal(), itemId: V.ct.kind}; ctClear(); toRoot('give'); return openGive(d.new ? null : d.id, name);
+  }
   case 'gotogive': return toRoot('give');
   case 'bseg': V.bseg = d.s; return render();
   case 'bsort': V.sort = V.sort === 'az' ? 'owes' : 'az'; return render();
@@ -2333,10 +2437,21 @@ document.addEventListener('pointerdown', e => {
   else if (k.dataset.act === 'key') sfx('key');
 });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => document.addEventListener(ev, () => clearTimeout(delHold)));
+let holdT = 0, holdFired = false;
+document.addEventListener('pointerdown', e => {
+  const h = e.target.closest && e.target.closest('[data-hold]'); if (!h || h.disabled) return;
+  holdFired = false; clearTimeout(holdT); const ms = Number(h.dataset.ms) || 650; h.style.setProperty('--hold', ms + 'ms'); h.classList.add('holding');
+  holdT = setTimeout(() => { h.classList.remove('holding'); holdFired = true; buzz(20); act(h.dataset.hold, Object.assign({}, h.dataset), h); }, ms);
+});
+['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, () => {
+  clearTimeout(holdT); document.querySelectorAll('.holding').forEach(x => x.classList.remove('holding'));
+  if (holdFired) setTimeout(() => { holdFired = false; }, 60);
+}));
 document.addEventListener('touchstart', () => {}, {passive: true}); /* lets iPhone show the pressed colour */
 document.addEventListener('click', e => {
   const t = e.target;
   if (delHeld && t.closest && t.closest('[data-k="del"]')) { delHeld = false; return; }
+  if (holdFired) { holdFired = false; return; } /* the click that ends a hold does nothing more */
   if (t.classList && t.classList.contains('ov')) { if (V.sheetKind === 'proof') return proofDone(); closeSheet(); return; }
   const b = t.closest('[data-act]'); if (!b) return;
   if (b.tagName !== 'A') e.preventDefault();
