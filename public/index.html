@@ -207,10 +207,19 @@ a{color:inherit;text-decoration:none}
 
 /* keypad and money */
 .kp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.4375rem}
-.key{min-height:3.375rem;border-radius:.75rem;background:var(--key);border-bottom:.22rem solid var(--key-edge);color:var(--key-text);font-size:1.875rem;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
-.key:active{transform:translateY(.1rem);border-bottom-width:.1rem}
-.key.op{background:var(--pen-wash);border-bottom-color:#B9C8F2;color:var(--ink)}
-.key.c{background:var(--owe-bg);border-bottom-color:#F1BDC1;color:var(--owe)}
+.kp{gap:.5rem .5rem}
+.key{min-height:3.375rem;border-radius:62.4375rem;background:var(--key);color:var(--key-text);font-size:2.125rem;display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:background-color .25s ease-out;-webkit-user-select:none;user-select:none}
+.key:active{background:#D5DAE6;transition:none;transform:none}
+.key.wide{grid-column:span 2}
+.key.op{background:var(--pen-wash);color:var(--ink);font-size:1.75rem}
+.key.op:active{background:#CBD8FB}
+.key.del{color:var(--muted)}
+.key.del.cleared{background:var(--owe-bg);color:var(--owe)}
+.key.ok{background:var(--ink);color:#FFFFFF;font:700 1.0625rem/1.1 'Atkinson Hyperlegible',system-ui,sans-serif;letter-spacing:0;text-align:center;padding:0 .25rem}
+.key.ok:active{background:#16308F}
+.key.ok.take{background:var(--paid)}
+.key.ok.take:active{background:#0D6339}
+.key.ok[disabled]{opacity:.4}
 .kp.pay .key{min-height:3.125rem}
 .notes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.3125rem}
 .note{min-height:2.625rem;border-radius:.5625rem;border:.09375rem dashed var(--paid);background:var(--paid-bg);color:var(--paid);font-weight:700;font-size:.9375rem;display:flex;align-items:center;justify-content:center}
@@ -898,6 +907,8 @@ function sfx(k) {
   else if (k === 'bag') { tone(165, 0, 0.11, 'sine', 0.25); tone(112, 0.03, 0.12, 'sine', 0.15); }
   else if (k === 'coin') { tone(1568, 0, 0.09, 'triangle', 0.13); tone(2093, 0.05, 0.16, 'triangle', 0.09); }
   else if (k === 'thud') { tone(95, 0, 0.2, 'sine', 0.35); tone(62, 0.02, 0.22, 'sine', 0.25); }
+  else if (k === 'key') tone(1500, 0, 0.025, 'sine', 0.035);
+  else if (k === 'clear') { tone(520, 0, 0.08, 'sine', 0.12); tone(330, 0.07, 0.12, 'sine', 0.1); }
   else if (k === 'ding') { tone(880, 0, 0.2, 'sine', 0.2); tone(660, 0.22, 0.34, 'sine', 0.18); }
   else if (k === 'win') { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.11, 0.28, 'triangle', 0.15)); }
 }
@@ -952,9 +963,13 @@ function hideToast() { if (toastNode) toastNode.remove(); toastNode = null; }
 
 /* ---------- shared pieces ---------- */
 /* every number pad is a small calculator: 5 + 6 + 7, or 3 × 650 + 2 × 700. Times goes before plus and minus. The total always shows. */
-function keypad(mode) {
+/* laid out like the iPhone calculator: digits on the left, the signs in one column, and the step you are on (Next, Done)
+   where the iPhone has =. Tap ⌫ to delete one; hold it to clear everything. Bag counts need no 00, so 0 is wide there. */
+function keypad(mode, ok) {
   const k = (v, l, cls, aria) => `<button class="key ${cls || ''}" data-act="key" data-k="${v}"${aria ? ` aria-label="${aria}"` : ''}>${l || v}</button>`;
-  return `<div class="kp ${mode === 'pay' ? 'pay' : ''}">${k('7')}${k('8')}${k('9')}${k('*', '×', 'op', 'Times')}${k('4')}${k('5')}${k('6')}${k('-', '−', 'op', 'Minus')}${k('1')}${k('2')}${k('3')}${k('+', '+', 'op', 'Plus')}${k('c', 'C', 'c', 'Clear')}${k('0')}${k('00')}${k('del', svg('del', 26), '', 'Delete one')}</div>`;
+  const okKey = ok ? `<button class="key ok ${ok.cls || ''}" data-act="${ok.act}"${ok.data || ''}>${ok.label}</button>` : '<span></span>';
+  const zero = mode === 'count' ? k('0', '0', 'wide') : k('00') + k('0');
+  return `<div class="kp ${mode === 'pay' ? 'pay' : ''}">${k('7')}${k('8')}${k('9')}${k('*', '×', 'op', 'Times')}${k('4')}${k('5')}${k('6')}${k('-', '−', 'op', 'Minus')}${k('1')}${k('2')}${k('3')}${k('+', '+', 'op', 'Plus')}${zero}${k('del', svg('del', 26), 'del', 'Delete one. Hold to clear all.')}${okKey}</div>`;
 }
 const OPS = '+-*';
 function exprAdd(s, k, max) {
@@ -1205,7 +1220,7 @@ function giveSheet() {
 }
 function qtySheet() {
   const Q = V.qk;
-  sheet(`<i class="grab"></i><h3>How many ${esc(unit())}s?</h3>${exprDisp(Q.v, false, esc(unit()) + 's')}${keypad('count')}<div class="bar"><button class="btn ghost" data-act="qtyback">Back</button><button class="btn ink" data-act="qtyuse">Use ${fmt(exprNum(Q.v))}</button></div>`);
+  sheet(`<i class="grab"></i><h3>How many ${esc(unit())}s?</h3>${exprDisp(Q.v, false, esc(unit()) + 's')}${keypad('count', {act: 'qtyuse', label: 'Use ' + fmt(exprNum(Q.v))})}<div class="bar"><button class="btn ghost" data-act="qtyback">Back</button></div>`);
   V.sheetKind = 'qty';
 }
 function saveGive(force) {
@@ -1457,9 +1472,9 @@ function paySheet() {
     ${over ? `<div class="over">What about the extra ${money(a - Math.max(0, L.bal))}?<div class="bar"><button class="chip ${P.over === 'credit' ? 'on' : ''}" data-act="pover" data-v="credit">Keep as credit</button><button class="chip ${P.over === 'change' ? 'on' : ''}" data-act="pover" data-v="change">Gave change</button></div></div>`
       : `<p class="clears">${a ? pv.map(x => x.cleared ? `Clears <b>${dmy(x.L.date)}</b>` : `${money(x.k)} off ${dmy(x.L.date)}`).join(', ') : '&nbsp;'}</p>`}
     <div class="seg mini2"><button class="${P.method === 'cash' ? 'on' : ''}" data-act="method" data-m="cash">Cash</button><button class="${P.method === 'momo' ? 'on' : ''}" data-act="method" data-m="momo">MoMo</button></div>
-    <div class="notes">${NOTES.map(n => `<button class="note" data-act="note" data-n="${n}">${n}</button>`).join('')}</div>${keypad('pay')}
+    <div class="notes">${NOTES.map(n => `<button class="note" data-act="note" data-n="${n}">${n}</button>`).join('')}</div>${keypad('pay', {act: 'paydone', label: 'Done', cls: 'take'})}
     ${P.err ? `<div class="err">${esc(P.err)}</div>` : ''}
-    <div class="bar">${L.bal > 0.001 ? `<button class="btn ghost" data-act="payall">All ${money(L.bal)}</button>` : `<button class="btn ghost" data-act="sheetclose">Close</button>`}<button class="btn take" data-act="paydone">Done</button>${next ? `<button class="btn ghost" style="flex:.7" data-act="paynext" aria-label="Save and open the next customer">Next ›</button>` : ''}</div>`, 'pay');
+    <div class="bar">${L.bal > 0.001 ? `<button class="btn ghost" data-act="payall">All ${money(L.bal)}</button>` : `<button class="btn ghost" data-act="sheetclose">Close</button>`}${next ? `<button class="btn ghost" style="flex:.7" data-act="paynext" aria-label="Save and open the next customer">Next ›</button>` : ''}</div>`, 'pay');
   V.sheetKind = 'pay';
 }
 function payKey(k) {
@@ -1648,7 +1663,7 @@ VIEWS.num = () => {
   return {top: `<div class="hrow"><div class="title"><b>${esc(N.title)}</b>${N.sub ? `<small>${esc(N.sub)}</small>` : ''}</div></div>`,
     mid: `${N.chips ? `<div class="chips wrap" style="justify-content:center">${N.chips.map(c => `<button class="chip ${N.chip === c ? 'on' : ''}" data-act="numchip" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
       ${exprDisp(N.value, N.mode !== 'count', N.mode === 'count' ? esc(unit()) + 's' : '')}<div class="err">${esc(N.err || '')}</div>`,
-    cls: 'center plain', dock: `${keypad(N.mode)}<div class="bar">${backSq()}<button class="btn ink" data-act="numsave">Save</button></div>`};
+    cls: 'center plain', dock: `${keypad(N.mode, {act: 'numsave', label: 'Save'})}<div class="bar">${backSq()}</div>`};
 };
 function openNum(o) { V.num = Object.assign({value: '', mode: 'money', err: ''}, o); push({v: 'num'}); }
 function editNum(s, k, mode) { return exprAdd(s, k, mode === 'count' ? 4 : 7); }
@@ -2067,8 +2082,19 @@ function act(a, d, el) {
   }
 }
 
+/* hold ⌫ to clear the whole sum */
+let delHold = 0, delHeld = false;
+document.addEventListener('pointerdown', e => {
+  const k = e.target.closest && e.target.closest('.key'); if (!k) return;
+  delHeld = false; clearTimeout(delHold);
+  if (k.dataset.k === 'del') delHold = setTimeout(() => { delHeld = true; k.classList.add('cleared'); sfx('clear'); act('key', {k: 'c'}); }, 550);
+  else if (k.dataset.act === 'key') sfx('key');
+});
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => document.addEventListener(ev, () => clearTimeout(delHold)));
+document.addEventListener('touchstart', () => {}, {passive: true}); /* lets iPhone show the pressed colour */
 document.addEventListener('click', e => {
   const t = e.target;
+  if (delHeld && t.closest && t.closest('[data-k="del"]')) { delHeld = false; return; }
   if (t.classList && t.classList.contains('ov')) { closeSheet(); return; }
   const b = t.closest('[data-act]'); if (!b) return;
   if (b.tagName !== 'A') e.preventDefault();
