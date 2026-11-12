@@ -233,6 +233,36 @@ a{color:inherit;text-decoration:none}
 .clears b{color:var(--paid)}
 .err{color:var(--owe);font-size:.875rem;min-height:1.1875rem;text-align:center}
 .q{font-size:1.625rem;font-weight:700;color:var(--ink);text-align:center;line-height:1.25}
+/* bag kinds: the photo is the button */
+.kimg{display:block;width:3rem;height:3rem;border-radius:.5rem;object-fit:cover;background:var(--key);border:.125rem solid var(--text);flex:none}
+.kimg.none{display:flex;align-items:center;justify-content:center;font:800 1.5rem/1 var(--num);color:var(--ink);background:var(--pen-wash)}
+.kimg.xs{width:1.375rem;height:1.375rem;border-width:.09375rem;border-radius:.3rem;font-size:.8125rem;display:inline-flex;vertical-align:middle}
+.kimg.sm{width:2.25rem;height:2.25rem;font-size:1.125rem}
+.kimg.big{width:100%;height:6.75rem;border:0;border-radius:0;font-size:2.75rem}
+.kimg.hero{width:12rem;height:9rem;border-radius:.875rem;font-size:4rem}
+.kstrip{display:flex;gap:.375rem;overflow-x:auto;scrollbar-width:none;margin:0 -.75rem;padding:0 .75rem}
+.kthumb{flex:none;border-radius:.625rem;padding:.125rem;border:.125rem solid transparent}
+.kthumb.on{border-color:var(--ink)}
+.camera{align-self:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;width:12rem;height:9rem;border-radius:.875rem;border:.1875rem dashed var(--ink);background:var(--pen-wash);color:var(--ink);font-weight:700}
+.camera .i{width:3rem;height:3rem}
+.photowrap{align-self:center;position:relative}
+.retake{position:absolute;right:.5rem;bottom:.5rem;width:2.75rem;height:2.75rem;border-radius:50%;background:#FFFFFF;border:.125rem solid var(--text);display:flex;align-items:center;justify-content:center;color:var(--text)}
+.kinds{display:flex;flex-direction:column;gap:.375rem;width:100%;max-width:22rem;align-self:center}
+.kindrow{display:flex;align-items:center;gap:.75rem;padding:.5rem .625rem;border-radius:.75rem;background:var(--key);text-align:left}
+.kindrow b{flex:1;font:800 1.625rem/1 var(--num);color:var(--text)}
+.kindrow span{font-weight:700;color:var(--muted)}
+.ktiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+.ktile{position:relative;border:.125rem solid var(--text);border-radius:.75rem;overflow:hidden;background:var(--paper)}
+.ktile.on{border-color:var(--ink);box-shadow:0 0 0 .1875rem var(--ink)}
+.ktile .kt{display:flex;flex-direction:column;width:100%;touch-action:manipulation}
+.kcap{display:flex;align-items:baseline;justify-content:space-between;gap:.25rem;padding:.25rem .5rem .3rem}
+.kcap b{font:800 1.75rem/1 var(--num);color:var(--text)}
+.kcap small{font-size:.75rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.kn{position:absolute;top:.375rem;right:.375rem;min-width:2.5rem;height:2.5rem;padding:0 .375rem;border-radius:.375rem;background:var(--ink);color:#FFFFFF;font:800 1.875rem/1 var(--num)}
+.kless{position:absolute;top:.375rem;left:.375rem;width:2.5rem;height:2.5rem;border-radius:50%;background:#FFFFFF;border:.125rem solid var(--text);font:800 1.875rem/1 var(--num);color:var(--text);display:flex;align-items:center;justify-content:center;padding-bottom:.125rem}
+.ktot{display:flex;align-items:baseline;justify-content:center;gap:.625rem}
+.ktot b{font:800 2.5rem/1 var(--num);color:var(--ink)}
+.ktot small{font-size:1rem;font-weight:700;color:var(--muted)}
 .qs{font-size:.9375rem;color:var(--muted);text-align:center}
 .seg{display:flex;gap:.25rem;padding:.25rem;border-radius:.875rem;background:var(--key)}
 .seg button{flex:1;min-height:2.75rem;border-radius:.6875rem;font-weight:700;font-size:.9375rem;color:var(--muted);text-align:center;padding:0 .375rem}
@@ -446,7 +476,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '6.0';
+const APP_VERSION = '7.0';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -457,6 +487,7 @@ const NOTES = [200, 100, 50, 20, 10, 5];
 const IC = {
   back:'<path d="M15 18l-6-6 6-6"/>', fwd:'<path d="M9 18l6-6-6-6"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>', plus:'<path d="M12 5v14M5 12h14"/>',
   down:'<path d="M6 9l6 6 6-6"/>', check:'<path d="M5 12l5 5 9-10"/>',
+  cam:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
   phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
   msg:'<path d="M4 5h16v11H9l-5 4z"/>',
   set:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
@@ -908,6 +939,7 @@ function sfx(k) {
   else if (k === 'coin') { tone(1568, 0, 0.09, 'triangle', 0.13); tone(2093, 0.05, 0.16, 'triangle', 0.09); }
   else if (k === 'thud') { tone(95, 0, 0.2, 'sine', 0.35); tone(62, 0.02, 0.22, 'sine', 0.25); }
   else if (k === 'key') tone(1500, 0, 0.025, 'sine', 0.035);
+  else if (k === 'shutter') { tone(2400, 0, 0.03, 'square', 0.04); tone(1200, 0.05, 0.05, 'square', 0.035); }
   else if (k === 'clear') { tone(520, 0, 0.08, 'sine', 0.12); tone(330, 0.07, 0.12, 'sine', 0.1); }
   else if (k === 'ding') { tone(880, 0, 0.2, 'sine', 0.2); tone(660, 0.22, 0.34, 'sine', 0.18); }
   else if (k === 'win') { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.11, 0.28, 'triangle', 0.15)); }
@@ -1062,6 +1094,38 @@ function band() {
   return `<div class="band">${svg('bag')}<b>Give</b>${pageNo ? `<span class="pageno">${pageNo}</span>` : ''}</div>`;
 }
 
+/* ===== Bag photos =====
+   Each kind of bag in a delivery has a photo, saved small on the phone (IndexedDB) and put in backup files.
+   Old deliveries keep their photos, so old debts still show what was taken. */
+const PH = {}; let phDB = null;
+function phOpen() {
+  return new Promise(res => {
+    try { const r = indexedDB.open('stallbook-photos', 1); r.onupgradeneeded = () => r.result.createObjectStore('p'); r.onsuccess = () => { phDB = r.result; res(phDB); }; r.onerror = () => res(null); }
+    catch (e) { res(null); }
+  });
+}
+function phLoadAll() {
+  return phOpen().then(db => db && new Promise(res => {
+    try { const rq = db.transaction('p', 'readonly').objectStore('p').openCursor(); rq.onsuccess = () => { const c = rq.result; if (c) { PH[c.key] = c.value; c.continue(); } else res(); }; rq.onerror = () => res(); }
+    catch (e) { res(); }
+  }));
+}
+function phPut(id, data) { PH[id] = data; try { if (phDB) phDB.transaction('p', 'readwrite').objectStore('p').put(data, id); } catch (e) {} }
+/* a photo from the camera, made small: 360 pixels on the long side, JPEG */
+function readPhoto(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => { const m = 360, sc = Math.min(1, m / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * sc)); c.height = Math.max(1, Math.round(img.height * sc)); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.72)); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('photo')); };
+    img.src = url;
+  });
+}
+const kindLabel = it => it.name || money(it.price);
+function kindImg(it, cls) {
+  const src = it && it.photo && PH[it.photo];
+  return src ? `<img class="kimg ${cls || ''}" src="${src}" alt="">` : `<span class="kimg none ${cls || ''}">${esc(it && it.name ? it.name.slice(0, 1) : '₵')}</span>`;
+}
+
 /* ===== Give ===== */
 function stockCard(car, st) {
   const pct = v => st.loaded > 0 ? Math.max(0, Math.min(100, v / st.loaded * 100)).toFixed(1) + '%' : '0%';
@@ -1071,7 +1135,7 @@ function stockCard(car, st) {
     <div class="dl"><span>${esc(carName(car))}</span>${pend ? `<button data-act="receipts" aria-label="${pend} receipts to send">${svg('msg', 16)}${pend}</button>` : ''}<button data-act="carmenu" data-id="${car.id}" aria-label="Delivery options">${svg('down', 18)}</button></div>
     <div class="info"><div class="sbar"><i class="g" style="width:${pct(st.given)}"></i><i class="h" style="width:${pct(st.wait + st.gap)}"></i></div>
       <div class="leg"><span>${bagsNum(st.given)} given</span>${st.wait ? `<span class="h">${bagsNum(st.wait)} held</span>` : ''}${st.gap ? `<span class="h">${bagsNum(st.gap)} no name</span>` : ''}<span>${bagsNum(st.loaded)} loaded</span></div>
-      ${st.items.length > 1 ? `<div class="leg">${st.items.map(i => `<span>${esc(i.name)} <b>${bagsNum(Math.max(0, i.free))}</b></span>`).join('')}</div>` : ''}</div></div>`;
+      ${st.items.length > 1 ? `<div class="leg">${st.items.map(i => `<span>${kindImg(i, 'xs')} <b>${bagsNum(Math.max(0, i.free))}</b></span>`).join('')}</div>` : ''}</div></div>`;
 }
 /* Give has one tab per place in this delivery, in the order you went there, plus the place you are at.
    There is no "All": a tab is one place. A line saved without a place goes under the customer's place;
@@ -1106,7 +1170,7 @@ function viewGive() {
     const p = person(e.pid) || {name: '?'};
     if (V.qe && V.qe.id === e.id) return `<div class="row editing"><button class="who" data-act="qcancel"><div class="name">${esc(p.name)}</div><div class="sub">${esc(locTxt(e.loc)) || '&nbsp;'}</div></button><div class="qstep"><button data-act="qminus" aria-label="One less">−</button><b>${bagsNum(V.qe.n)}</b><button data-act="qplus" aria-label="One more">+</button></div><button class="qok" data-act="qsave" aria-label="Save">${svg('check')}</button></div>`;
     const sub = [tabs.length ? '' : locTxt(e.loc), isHeld ? 'since ' + hm(e.date) : '', linked.has(e.id) ? 'paid cash' : ''].filter(Boolean).join(' · ');
-    return `<div class="row ${isHeld ? 'held' : ''} ${V.flash === e.id ? 'flash' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="entry" data-id="${e.id}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button>${isHeld ? '<span class="hpill">Held</span>' : ''}<button class="qbox" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${bagsNum(e.bags)}</button></div>`;
+    return `<div class="row ${isHeld ? 'held' : ''} ${V.flash === e.id ? 'flash' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="entry" data-id="${e.id}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button>${isHeld ? '<span class="hpill">Held</span>' : ''}${car.items.length > 1 ? kindImg(car.items.find(x => x.id === e.itemId), 'sm') : ''}<button class="qbox" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${bagsNum(e.bags)}</button></div>`;
   };
   let mid = '<div class="lines down">';
   if (!gives.length && !cashHere && !gapsHere.length) mid += `<div class="empty"><h2>Nobody yet</h2><p>Type a name below, or tap a face.</p></div>`;
@@ -1187,7 +1251,7 @@ function openGive(pid, name) {
   if (!car) return noCarSheet();
   const p = pid ? person(pid) : null;
   const loc = locById(S.lastLoc) ? S.lastLoc : (p && p.loc) || '';
-  V.g = {pid: p ? p.id : null, name: name || '', phone: '', loc, bags: p ? usualQty(p.id) : 1, itemId: car.items[0].id, carId: car.id, dupOk: false, hold: false};
+  V.g = {pid: p ? p.id : null, name: name || '', phone: '', loc, bags: car.items.length > 1 ? 0 : p ? usualQty(p.id) : 1, itemId: car.items[0].id, carId: car.id, dupOk: false, hold: false, kinds: car.items.length > 1 ? {} : null};
   giveSheet();
 }
 function noCarSheet() {
@@ -1210,11 +1274,12 @@ function giveSheet() {
     <div class="hrow"><span class="av lg">${esc(initials(p ? p.name : g.name))}</span><div class="title"><b>${esc(p ? p.name : g.name)}</b><small>${p ? esc(p.phone || 'No number yet') : 'New customer'}</small></div>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}<button class="ib" data-act="sheetclose" aria-label="Close">${svg('x')}</button></div>
     ${tags.length ? `<div class="tags l">${tags.join('')}</div>` : ''}
     ${p ? '' : `<div class="field"><label for="gph">Phone (optional)</label><input id="gph" type="tel" inputmode="tel" autocomplete="off" placeholder="024 000 0000" value="${esc(g.phone)}"></div>`}
-    ${car.items.length > 1 ? `<div class="seg">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); return `<button class="${i.id === item.id ? 'on' : ''}" data-act="gitem" data-i="${i.id}">${esc(i.name)}<br><small>${bagsNum(Math.max(0, I.free))} left</small></button>`; }).join('')}</div>` : ''}
-    <div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><button class="num" data-act="gqmore" aria-label="Type how many">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></button><button class="key" data-act="gplus" aria-label="One more">+</button></div>
-    ${S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="ghalf">± ½</button></div>` : ''}
+    ${g.kinds ? `<div class="ktiles">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); const n = g.kinds[i.id] || 0; return `<div class="ktile ${n ? 'on' : ''}"><button class="kt" data-act="gk" data-i="${i.id}" aria-label="One more at ${money(i.price)}">${kindImg(i, 'big')}<span class="kcap"><b>${fmt(i.price)}</b><small>${bagsNum(Math.max(0, I.free - n))} left</small></span></button>${n ? `<button class="kn" data-act="gkn" data-i="${i.id}" aria-label="Type how many">${bagsNum(n)}</button><button class="kless" data-act="gkless" data-i="${i.id}" aria-label="One less">−</button>` : ''}</div>`; }).join('')}</div>
+    <div class="ktot"><b>${money(sum(car.items, i => (g.kinds[i.id] || 0) * i.price))}</b><small>${bagsTxt(g.bags)}</small></div>`
+    : `<div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><button class="num" data-act="gqmore" aria-label="Type how many">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></button><button class="key" data-act="gplus" aria-label="One more">+</button></div>
+    ${S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="ghalf">± ½</button></div>` : ''}`}
     <div class="togs"><button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Hold for her</button></div>
-    <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave">${g.hold ? 'Hold' : 'Give'} ${bagsTxt(g.bags)}</button>`);
+    <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave" ${g.bags > 0 ? '' : 'disabled'}>${g.bags > 0 ? (g.hold ? 'Hold ' : 'Give ') + bagsTxt(g.bags) : 'Tap a photo'}</button>`);
   V.sheetKind = 'give';
   const ph = document.getElementById('gph'); if (ph) ph.addEventListener('input', e => { V.g.phone = e.target.value; });
 }
@@ -1227,6 +1292,15 @@ function saveGive(force) {
   if (Date.now() - (V.lastSave || 0) < 800) return;
   const g = V.g; const car = carById(g.carId); const st = carStats(car.id);
   const item = car.items.find(i => i.id === g.itemId) || car.items[0];
+  const parts = g.kinds ? car.items.filter(i => (g.kinds[i.id] || 0) > 0).map(i => ({item: i, bags: g.kinds[i.id]})) : [{item, bags: g.bags}];
+  if (!parts.length) return;
+  const short = parts.find(x => x.bags > (st.items.find(I => I.id === x.item.id) || {free: st.free}).free + 1e-9);
+  if (!force && g.kinds && short) {
+    const I = st.items.find(x => x.id === short.item.id);
+    V.sheetKind = 'over';
+    sheet(`<h3>${kindImg(short.item, 'sm')} Only ${bagsTxt(Math.max(0, I.free))} of these left</h3><p>Count the bags before you give more.</p><div class="bar"><button class="btn ghost" data-act="gback">Back</button><button class="btn danger" data-act="gforce">Give anyway</button></div>`);
+    return;
+  }
   if (!force && g.bags > st.free + 1e-9) {
     V.sheetKind = 'over';
     sheet(`<h3>Only ${bagsTxt(Math.max(0, st.free))} left</h3><p>${st.wait ? `${bagsTxt(st.wait)} are held for other customers.` : 'Count the vehicle before you give more.'}</p><div class="bar"><button class="btn ghost" data-act="gback">Back</button><button class="btn danger" data-act="gforce">Give anyway</button></div>`);
@@ -1248,7 +1322,8 @@ function saveGive(force) {
   }
   if (!p.loc && g.loc) p.loc = g.loc;
   if (g.loc) S.lastLoc = g.loc;
-  const e = add({type: 'give', pid: p.id, carId: car.id, itemId: item.id, bags: g.bags, price: item.price, amount: r2(g.bags * item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: !p.phone});
+  let e = null;
+  parts.forEach(x => { e = add({type: 'give', pid: p.id, carId: car.id, itemId: x.item.id, bags: x.bags, price: x.item.price, amount: r2(x.bags * x.item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: !p.phone}); });
   V.lastSave = Date.now();
   closeSheet(); sfx('bag'); buzz(15); V.pulse = true; V.flash = e.id; render();
 }
@@ -1266,7 +1341,7 @@ function checkSheet() {
   const msg = short ? `<span style="color:var(--warn)">${bagsTxt(short)} will show with no name.</span>` : more ? `${bagsTxt(more)} more than the book says.` : '';
   const stepper = (r, i) => one
     ? `<div class="step"><button class="key" data-act="ccminus" data-i="${i}" aria-label="One less">−</button><button class="num" data-act="ccnum" data-i="${i}" aria-label="Type the number">${bagsNum(r.n)}<small>${esc(unit())}${r.n === 1 ? '' : 's'}</small></button><button class="key" data-act="ccplus" data-i="${i}" aria-label="One more">+</button></div>`
-    : `<div class="hrow" style="gap:.5rem"><b style="flex:1;font-size:1.125rem;color:var(--ink)">${esc(r.name || 'Bags')}</b><button class="ib" data-act="ccminus" data-i="${i}" style="background:var(--key)" aria-label="One less">−</button><button class="ccn" data-act="ccnum" data-i="${i}" style="min-width:3rem;text-align:center;font-size:1.75rem;font-weight:700;color:var(--ink)">${bagsNum(r.n)}</button><button class="ib" data-act="ccplus" data-i="${i}" style="background:var(--key)" aria-label="One more">+</button></div>`;
+    : `<div class="hrow" style="gap:.5rem">${kindImg(car.items.find(x => x.id === r.id), 'sm')}<b style="flex:1;font-size:1.125rem;color:var(--ink)">${esc(r.name || money((car.items.find(x => x.id === r.id) || {}).price || 0))}</b><button class="ib" data-act="ccminus" data-i="${i}" style="background:var(--key)" aria-label="One less">−</button><button class="ccn" data-act="ccnum" data-i="${i}" style="min-width:3rem;text-align:center;font-size:1.75rem;font-weight:700;color:var(--ink)">${bagsNum(r.n)}</button><button class="ib" data-act="ccplus" data-i="${i}" style="background:var(--key)" aria-label="One more">+</button></div>`;
   const total = sum(rows, r => r.n), same = !short && !more;
   sheet(`<i class="grab"></i><h3>How many ${one ? '' : esc(unit()) + 's '}left in the car?</h3>
     ${rows.map(stepper).join('')}
@@ -1565,6 +1640,7 @@ VIEWS.person = f => {
     if (e.type === 'give') {
       const car = carById(e.carId); const ld = L.loads.find(x => x.id === e.id); const at = givenAt(e); const hand = c.hand.get(e.id); const old = e.fixes ? c.byId.get(e.fixes) : null;
       t = bagsTxt(e.bags) + (car ? ' · ' + (car.label || 'delivery ' + dmy(car.date)) : '');
+      if (car && car.items.length > 1) { const it = car.items.find(x => x.id === e.itemId); if (it) mk = mk || kindImg(it, 'xs'); }
       sub = [locTxt(e.loc), !at && !gone ? 'held since ' + hm(e.date) : '', hand ? 'handed over ' + hm(hand.date) + (hand.by ? ' to ' + hand.by : '') : '', e.by ? 'to ' + e.by : '', old ? 'corrected from ' + bagsNum(old.bags) : '', c.linked.has(e.id) ? 'paid cash' : '', gone ? (kind === 'fix' ? 'corrected' : kind === 'release' ? 'released' : 'removed') : ''];
       if (gone) right = '';
       else if (!at) { mk = `<span class="mk w">${svg('clock', 16)}</span>`; right = '<span class="tag w">Held</span>'; }
@@ -1621,40 +1697,55 @@ VIEWS.show = f => {
 };
 
 /* ===== New delivery ===== */
-function startWizard() { V.w = {s: 0, same: true, sub: 0, items: [], si: 0, tmp: '', err: '', label: ''}; push({v: 'newcar'}); }
+function startWizard() { V.w = {s: 'from', items: [], si: 0, tmp: '', err: '', label: ''}; push({v: 'newcar'}); }
+const newKind = () => ({id: uid(), name: '', count: 0, price: 0, photo: ''});
 VIEWS.newcar = () => {
-  const W = V.w; const u = unit();
-  const pad = (v, lab) => `<div class="disp"><div class="v">${v}${lab ? ` <span style="font-size:1.25rem">${lab}</span>` : ''}</div></div>`;
-  const step = n => `<div class="hrow"><div class="title"><b>New delivery</b><small>Step ${n} of 3</small></div></div>`;
-  const shell = (n, q, sub, body, dock) => ({top: step(n), mid: `<div class="q">${q}</div>${sub ? `<div class="qs">${sub}</div>` : ''}${body || ''}<div class="err">${esc(W.err || '')}</div>`, cls: 'center plain', dock});
-  if (W.s === 0) {
+  const W = V.w; const u = unit(); const it = W.items[W.si];
+  const strip = W.items.length && W.s !== 'from' ? `<div class="kstrip">${W.items.map((x, i) => `<button class="kthumb ${i === W.si && !['more', 'cost'].includes(W.s) ? 'on' : ''}" data-act="wedit" data-i="${i}" aria-label="Kind ${i + 1}">${kindImg(x, 'sm')}</button>`).join('')}</div>` : '';
+  const view = (small, q, sub, body, dock, after) => ({top: `<div class="hrow"><div class="title"><b>New delivery</b><small>${small}</small></div></div>${strip}`,
+    mid: `<div class="q">${q}</div>${sub ? `<div class="qs">${sub}</div>` : ''}${body || ''}<div class="err">${esc(W.err || '')}</div>`, cls: 'center plain', dock, after});
+  const kn = `Kind ${W.si + 1}`;
+  if (W.s === 'from') {
     const labels = [...new Set(carsNewest().map(c => c.label).filter(Boolean))].slice(0, 4);
-    return Object.assign(shell(1, `All ${esc(u)}s the same?`, '', `<div class="field" style="text-align:left"><label for="w_label">Name this delivery (optional)</label><input id="w_label" value="${esc(W.label)}" autocomplete="off" placeholder="Where it came from, or the vehicle"></div>${labels.length ? `<div class="chips wrap" style="justify-content:center">${labels.map(l => `<button class="chip ${W.label === l ? 'on' : ''}" data-act="wlabel" data-l="${esc(l)}">${esc(l)}</button>`).join('')}</div>` : ''}`,
-      `<button class="btn ink tall" data-act="wsame">Yes, one kind</button><button class="btn ghost tall" data-act="wdiff">No, different sizes</button><div class="bar">${backSq('wback')}</div>`),
-      {after: () => { const i = document.getElementById('w_label'); if (i) i.addEventListener('input', () => { V.w.label = i.value; }); }});
+    return view('Where is it from?', 'Where is this load from?', 'You can skip this.', `<div class="field" style="text-align:left"><input id="w_label" value="${esc(W.label)}" autocomplete="off" autocapitalize="words" placeholder="Abidjan, Techiman, the truck…" aria-label="Where the load is from"></div>${labels.length ? `<div class="chips wrap" style="justify-content:center">${labels.map(l => `<button class="chip ${W.label === l ? 'on' : ''}" data-act="wlabel" data-l="${esc(l)}">${esc(l)}</button>`).join('')}</div>` : ''}`,
+      `<div class="bar">${backSq('wback')}<button class="btn ink tall" data-act="wfrom">Next</button></div>`,
+      () => { const i = document.getElementById('w_label'); if (i) i.addEventListener('input', () => { V.w.label = i.value; }); });
   }
-  if (W.s === 1 && W.same) {
-    if (W.sub === 0) return shell(2, `How many ${esc(u)}s?`, S.carry ? `${bagsNum(S.carry)} kept from the last delivery are included` : '', exprDisp(W.tmp, false, esc(u) + 's'), `${keypad('count')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
-    return shell(2, `Price for one ${esc(u)}?`, '', exprDisp(W.tmp, true), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wlast">Same as last<br><small>${money(S.settings.price)}</small></button><button class="btn ink" data-act="wnext">Next</button></div>`);
+  if (W.s === 'photo') {
+    const src = it.photo && PH[it.photo];
+    const body = src ? `<div class="photowrap">${kindImg(it, 'hero')}<button class="retake" data-act="wcam" aria-label="Take the photo again">${svg('cam', 24)}</button></div>`
+      : `<button class="camera" data-act="wcam">${svg('cam', 48)}<span>Take a photo</span></button>`;
+    return view(kn, src ? 'Is this the right bag?' : 'Take a photo of one kind of bag', src ? '' : 'The photo becomes its button when you give.', body + `<input type="file" id="camin" accept="image/*" capture="environment" hidden>`,
+      `<div class="bar">${backSq('wback')}${src ? `${W.items.length > 1 ? `<button class="btn ghost redtext" data-act="wdel">Remove</button>` : ''}<button class="btn ink tall" data-act="wphoto">Yes, next</button>` : `<button class="btn ghost" data-act="wphoto">No photo</button>`}</div>`,
+      () => { const c = document.getElementById('camin'); if (c) c.addEventListener('change', onCamera); });
   }
-  if (W.s === 1) {
-    const it = W.items[W.si];
-    if (W.sub === 0) return shell(2, `Size ${W.si + 1}: what do you call it?`, '', '', `<div class="chips wrap" style="justify-content:center">${['Big', 'Medium', 'Small', 'Mini'].filter(n => !W.items.some((x, i) => i !== W.si && x.name === n)).map(n => `<button class="btn ghost tall" style="flex:1 1 40%" data-act="wname" data-n="${n}">${n}</button>`).join('')}</div><div class="bar">${backSq('wback')}</div>`);
-    if (W.sub === 1) return shell(2, `How many ${esc(it.name)}?`, '', exprDisp(W.tmp, false, esc(u) + 's'), `${keypad('count')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
-    if (W.sub === 2) return shell(2, `${esc(it.name)}: price for one?`, '', exprDisp(W.tmp, true), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ink" data-act="wnext">Next</button></div>`);
-    return shell(2, 'Another size?', W.items.map(i => `${esc(i.name)}: ${bagsNum(i.count)} at ${money(i.price)}`).join('<br>'), '', `<button class="btn ghost tall" data-act="wmore">Yes, add a size</button><button class="btn ink tall" data-act="wdone">No, that's all</button><div class="bar">${backSq('wback')}</div>`);
+  if (W.s === 'count') return view(kn, `How many of these ${esc(u)}s?`, W.si === 0 && S.carry ? `${bagsNum(S.carry)} kept from the last delivery are counted in` : '', `<div class="photowrap">${kindImg(it, 'sm')}</div>${exprDisp(W.tmp, false, esc(u) + 's')}`,
+    `${keypad('count', {act: 'wnext', label: 'Next'})}<div class="bar">${backSq('wback')}</div>`);
+  if (W.s === 'price') return view(kn, `Price for one ${esc(u)}?`, '', `<div class="photowrap">${kindImg(it, 'sm')}</div>${exprDisp(W.tmp, true)}`,
+    `${keypad('money', {act: 'wnext', label: 'Next'})}<div class="bar">${backSq('wback')}${Number(S.settings.price) ? `<button class="btn ghost" data-act="wlast">Same as last · ${money(S.settings.price)}</button>` : ''}</div>`);
+  if (W.s === 'more') {
+    const total = sum(W.items, x => x.count);
+    return view(`${W.items.length} ${W.items.length === 1 ? 'kind' : 'kinds'} · ${bagsTxt(total)}`, `Another kind of ${esc(u)}?`, 'Tap one to change it.',
+      `<div class="kinds">${W.items.map((x, i) => `<button class="kindrow" data-act="wedit" data-i="${i}">${kindImg(x, 'sm')}<b>${bagsNum(x.count)}</b><span>at ${money(x.price)}</span></button>`).join('')}</div>`,
+      `<div class="bar">${backSq('wback')}<button class="btn ghost tall" data-act="wmore">${svg('plus', 20)} Another kind</button><button class="btn ink tall" data-act="wdone">That's all</button></div>`);
   }
-  const total = sum(W.items, i => i.count);
-  return shell(3, 'What did the load cost you?', `${bagsTxt(total)}. Put the ${esc(S.settings.item || 'goods')}, transport and loading together. You can skip this.`, exprDisp(W.tmp, true), `${keypad('money')}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wfinish" data-skip="1">Skip</button><button class="btn ink" data-act="wfinish">${svg('truck')} Start</button></div>`);
+  const total = sum(W.items, x => x.count);
+  return view('Last step', 'What did the load cost you?', `${bagsTxt(total)}. Put the ${esc(S.settings.item || 'goods')}, transport and loading together. You can skip this.`, exprDisp(W.tmp, true),
+    `${keypad('money', {act: 'wfinish', label: 'Start'})}<div class="bar">${backSq('wback')}<button class="btn ghost" data-act="wfinish" data-skip="1">Skip</button></div>`);
 };
+function onCamera(e) {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const W = V.w; const it = W && W.items[W.si]; if (!it) return;
+  readPhoto(f).then(data => { const id = uid(); phPut(id, data); it.photo = id; W.err = ''; sfx('shutter'); render(); }, () => { W.err = 'That photo did not work. Try again.'; render(); });
+}
 function wizBack() {
   const W = V.w; W.err = ''; W.tmp = '';
-  if (W.s === 0) return pop();
-  if (W.s === 2) { W.s = 1; W.sub = W.same ? 1 : 3; return render(); }
-  if (W.same) { if (W.sub === 1) { W.sub = 0; W.tmp = String(W.items[0].count || ''); return render(); } W.s = 0; return render(); }
-  if (W.sub > 0) { W.sub--; return render(); }
-  if (W.si > 0) { W.items.pop(); W.si--; W.sub = 3; return render(); }
-  W.s = 0; return render();
+  if (W.s === 'from') return pop();
+  if (W.s === 'photo') { const it = W.items[W.si]; if (!it.count && !it.price) { W.items.splice(W.si, 1); W.si = Math.max(0, W.items.length - 1); } W.s = W.items.length ? 'more' : 'from'; return render(); }
+  if (W.s === 'count') { W.s = 'photo'; return render(); }
+  if (W.s === 'price') { W.s = 'count'; W.tmp = String(W.items[W.si].count || ''); return render(); }
+  if (W.s === 'more') { W.si = W.items.length - 1; W.s = 'price'; W.tmp = String(W.items[W.si].price || ''); return render(); }
+  W.s = 'more'; return render();
 }
 
 /* generic number entry */
@@ -1812,6 +1903,7 @@ function onRestoreFile(e) {
       const d = JSON.parse(r.result); const data = d.stallbook || d;
       if (!data || !Array.isArray(data.people) || !Array.isArray(data.entries)) throw new Error('bad');
       V.restoreData = data.v >= 2 ? normalize(data) : normalize(fromV1(data));
+      V.restorePhotos = d.photos && typeof d.photos === 'object' ? d.photos : null;
       const n = V.restoreData.people.length;
       sheet(`<h3>Restore this backup?</h3><p>${n} ${n === 1 ? 'name' : 'names'}${d.savedAt ? ', saved ' + dmy(d.savedAt) : ''}. It replaces the book on this phone.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Cancel</button><button class="btn ink" data-act="restoreyes">Restore</button></div>`);
     } catch (x) { sheet(`<h3>That is not a StallBook backup</h3><p>Pick the file named StallBook-backup.</p><button class="btn ghost" data-act="sheetclose">Close</button>`); }
@@ -1820,7 +1912,8 @@ function onRestoreFile(e) {
 }
 function doBackup() {
   const d = new Date(); const name = `StallBook-backup-${dayKey(d)}.json`;
-  const json = JSON.stringify({stallbook: S, savedAt: d.toISOString(), version: 3});
+  const photos = {}; S.cars.forEach(c => c.items.forEach(i => { if (i.photo && PH[i.photo]) photos[i.photo] = PH[i.photo]; }));
+  const json = JSON.stringify({stallbook: S, savedAt: d.toISOString(), version: 3, photos});
   const done = () => { S.lastBackup = nowIso(); save(); render(); toast('Backup ready. Keep it in WhatsApp.'); };
   try { const file = new File([json], name, {type: 'application/json'}); if (navigator.canShare && navigator.canShare({files: [file]})) { navigator.share({files: [file], title: 'StallBook backup', text: 'StallBook backup, ' + dmy(d)}).then(done).catch(() => {}); return; } } catch (x) {}
   try { const url = URL.createObjectURL(new Blob([json], {type: 'application/json'})); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); done(); } catch (x) { toast('Backup did not work on this phone'); }
@@ -1909,10 +2002,13 @@ function act(a, d, el) {
   case 'gplus': V.g.bags += 1; return giveSheet();
   case 'gqmore': V.qk = {v: ''}; return qtySheet();
   case 'qtyback': return giveSheet();
-  case 'qtyuse': { const n = Math.round(exprNum(V.qk.v)); if (n > 0) V.g.bags = n; return giveSheet(); }
+  case 'qtyuse': { const n = Math.round(exprNum(V.qk.v)); if (V.qk.kind && V.g.kinds) { V.g.kinds[V.qk.kind] = n; V.g.bags = sum(Object.values(V.g.kinds), x => x); V.qk = null; return giveSheet(); } if (n > 0) V.g.bags = n; return giveSheet(); }
   case 'ghold': V.g.hold = !V.g.hold; return giveSheet();
   case 'ghalf': V.g.bags = Math.abs(V.g.bags % 1 - 0.5) < 0.01 ? V.g.bags - 0.5 : V.g.bags + 0.5; if (V.g.bags < 0.5) V.g.bags = 0.5; return giveSheet();
   case 'gitem': V.g.itemId = d.i; return giveSheet();
+  case 'gk': { const g = V.g; g.kinds[d.i] = (g.kinds[d.i] || 0) + 1; g.bags = sum(Object.values(g.kinds), x => x); sfx('key'); return giveSheet(); }
+  case 'gkless': { const g = V.g; g.kinds[d.i] = Math.max(0, (g.kinds[d.i] || 0) - 1); g.bags = sum(Object.values(g.kinds), x => x); return giveSheet(); }
+  case 'gkn': V.qk = {v: '', kind: d.i}; return qtySheet();
   case 'here': return locSheet({mode: 'here', sel: S.lastLoc});
   case 'gtab': { const car = givingCar(); const tabs = car ? giveTabs(car) : []; const from = tabs.indexOf(giveTab(tabs)), to = tabs.indexOf(d.id); if (to < 0 || to === from) return; V.slide = to > from ? 'l' : 'r'; S.lastLoc = d.id; save(); return render(); }
   case 'gsave': return saveGive(false);
@@ -1920,7 +2016,7 @@ function act(a, d, el) {
   case 'gback': return giveSheet();
   case 'dupyes': V.g.pid = d.id; return saveGive(!!V.dupForce);
   case 'dupno': V.g.dupOk = true; return saveGive(!!V.dupForce);
-  case 'cash': { const car = givingCar(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Sold for cash</h3><p>Which one?</p>${car.items.map(i => `<button class="btn ghost" data-act="cashitem" data-i="${i.id}">${esc(i.name)}</button>`).join('')}<button class="btn ghost" data-act="sheetclose">Cancel</button>`); return act('cashitem', {i: car.items[0].id}); }
+  case 'cash': { const car = givingCar(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Sold for cash</h3><p>Which one?</p>${car.items.map(i => `<button class="btn ghost" style="justify-content:flex-start" data-act="cashitem" data-i="${i.id}">${kindImg(i, 'sm')} ${esc(kindLabel(i))}</button>`).join('')}<button class="btn ghost" data-act="sheetclose">Cancel</button>`); return act('cashitem', {i: car.items[0].id}); }
   case 'cashitem': { const car = givingCar(); const it = car.items.find(i => i.id === d.i); closeSheet(); if (carStats(car.id).free < 1) return toast('No ' + unit() + 's left in the vehicle');
     const e = add({type: 'cash', pid: null, carId: car.id, itemId: it.id, bags: 1, price: it.price, amount: it.price, loc: locById(S.lastLoc) ? S.lastLoc : ''}); sfx('coin'); buzz(15); V.pulse = true; render();
     return; }
@@ -2004,7 +2100,7 @@ function act(a, d, el) {
     if (V.sheetKind === 'qty') { V.qk.v = editNum(V.qk.v, d.k, 'count'); return qtySheet(); }
     const f = cur(); if (!f) return;
     if (f.v === 'num') { V.num.value = editNum(V.num.value, d.k, V.num.mode); V.num.err = ''; return render(); }
-    if (f.v === 'newcar') { const W = V.w; const isMoney = W.s === 2 || (W.s === 1 && (W.same ? W.sub === 1 : W.sub === 2)); W.tmp = editNum(W.tmp, d.k, isMoney ? 'money' : 'count'); W.err = ''; return render(); }
+    if (f.v === 'newcar') { const W = V.w; const isMoney = W.s === 'price' || W.s === 'cost'; W.tmp = editNum(W.tmp, d.k, isMoney ? 'money' : 'count'); W.err = ''; return render(); }
     return; }
   case 'numchip': V.num.chip = d.c; return render();
   case 'numsave': { const N = V.num; const err = N.onSave(exprNum(N.value), N.chip); if (err) { N.err = err; return render(); } return pop(); }
@@ -2025,7 +2121,7 @@ function act(a, d, el) {
   case 'reopen': { const car = carById(d.id); const open = givingCar(); if (open && open.id !== car.id) { closeSheet(); return toast('Close the open delivery first'); }
     (car.closeIds || []).forEach(id => undoEntry(id)); if (car.closeCarry) S.carry = Math.max(0, (Number(S.carry) || 0) - car.closeCarry);
     car.closeIds = []; car.closeCarry = 0; car.phase = 'giving'; commit(); closeSheet(); toast(`${carName(car)} is open again`); return toRoot('give'); }
-  case 'price': { const car = carById(d.id); closeSheet(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Which price?</h3>${car.items.map(i => `<button class="btn ghost" data-act="priceitem" data-id="${car.id}" data-i="${i.id}">${esc(i.name)} · ${money(i.price)}</button>`).join('')}`); return act('priceitem', {id: car.id, i: car.items[0].id}); }
+  case 'price': { const car = carById(d.id); closeSheet(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Which price?</h3>${car.items.map(i => `<button class="btn ghost" style="justify-content:flex-start" data-act="priceitem" data-id="${car.id}" data-i="${i.id}">${kindImg(i, 'sm')} ${money(i.price)}</button>`).join('')}`); return act('priceitem', {id: car.id, i: car.items[0].id}); }
   case 'priceitem': { const car = carById(d.id); const it = car.items.find(i => i.id === d.i); closeSheet();
     return openNum({title: `Price for one ${it.name ? it.name.toLowerCase() + ' ' : ''}${unit()}`, sub: 'From now on, for this delivery', mode: 'money', onSave: n => { if (!(n > 0)) return 'Type the price.'; it.price = n; S.settings.price = n; commit(); }}); }
   case 'label': closeSheet(); return labelSheet(d.id);
@@ -2045,18 +2141,22 @@ function act(a, d, el) {
   case 'gaplostall': { gapsOn(d.id).forEach(g => gapLose(g, g.bags)); commit(); if (V.sheetKind === 'close') { closeCarSheet(); render(); return; } closeSheet(); return render(); }
   case 'addcost': { const car = carById(d.id); closeSheet(); return openNum({title: 'Add a cost', sub: carName(car), mode: 'money', chips: ['Load', 'Transport', 'Loading', 'Market toll', 'Other'], chip: (car.costs || []).length ? 'Transport' : 'Load', onSave: (n, chip) => { if (!(n > 0)) return 'Type the amount.'; car.costs = car.costs || []; car.costs.push({id: uid(), name: chip || 'Other', amount: n}); commit(); }}); }
   case 'wback': return wizBack();
-  case 'wsame': Object.assign(V.w, {same: true, s: 1, sub: 0, items: [{id: uid(), name: '', count: 0, price: 0}], si: 0, tmp: S.carry ? String(S.carry) : '', err: ''}); return render();
-  case 'wdiff': Object.assign(V.w, {same: false, s: 1, sub: 0, items: [{id: uid(), name: '', count: 0, price: 0}], si: 0, tmp: '', err: ''}); return render();
-  case 'wname': V.w.items[V.w.si].name = d.n; V.w.sub = 1; V.w.tmp = ''; return render();
-  case 'wmore': V.w.items.push({id: uid(), name: '', count: 0, price: 0}); V.w.si = V.w.items.length - 1; V.w.sub = 0; V.w.tmp = ''; return render();
-  case 'wdone': V.w.s = 2; V.w.tmp = ''; return render();
-  case 'wlast': V.w.items[0].price = Number(S.settings.price) || 0; V.w.s = 2; V.w.tmp = ''; return render();
+  case 'wlabel': V.w.label = d.l; return render();
+  case 'wfrom': { const W = V.w; if (!W.items.length) W.items.push(newKind()); W.si = 0; W.s = 'photo'; return render(); }
+  case 'wcam': { const c = document.getElementById('camin'); if (c) c.click(); return; }
+  case 'wphoto': { const W = V.w; const it = W.items[W.si]; W.s = 'count'; W.tmp = it.count ? String(it.count) : W.si === 0 && S.carry ? String(S.carry) : ''; W.err = ''; return render(); }
+  case 'wdel': { const W = V.w; W.items.splice(W.si, 1); W.si = 0; W.s = 'more'; return render(); }
+  case 'wedit': { const W = V.w; W.si = +d.i; W.s = 'photo'; W.err = ''; return render(); }
+  case 'wmore': { const W = V.w; W.items.push(newKind()); W.si = W.items.length - 1; W.s = 'photo'; W.tmp = ''; return render(); }
+  case 'wdone': V.w.s = 'cost'; V.w.tmp = ''; return render();
+  case 'wlast': { const W = V.w; W.items[W.si].price = Number(S.settings.price) || 0; W.s = 'more'; W.tmp = ''; return render(); }
   case 'wnext': { const W = V.w; const n = exprNum(W.tmp); const it = W.items[W.si]; W.err = '';
-    if ((W.sub === 0 && W.same) || (W.sub === 1 && !W.same)) { if (!(n > 0)) { W.err = 'Type how many.'; return render(); } it.count = n; W.sub = W.same ? 1 : 2; W.tmp = ''; return render(); }
+    if (W.s === 'count') { if (!(n > 0)) { W.err = 'Type how many.'; return render(); } it.count = n; W.s = 'price'; W.tmp = it.price ? String(it.price) : ''; return render(); }
     if (!(n > 0)) { W.err = 'Type the price.'; return render(); }
-    it.price = n; W.tmp = ''; if (W.same) W.s = 2; else W.sub = 3; return render(); }
+    it.price = n; W.tmp = ''; W.s = 'more'; return render(); }
   case 'wfinish': { const W = V.w; const cost = d.skip ? 0 : exprNum(W.tmp);
-    const car = {id: uid(), date: nowIso(), label: (W.label || '').trim(), items: W.items.map(i => ({id: i.id, name: W.same ? '' : i.name, count: i.count, price: i.price})), costs: cost ? [{id: uid(), name: 'Load', amount: cost}] : [], phase: 'giving'};
+    if (!W.items.length || W.items.some(i => !(i.count > 0) || !(i.price > 0))) { W.s = 'more'; W.err = 'Every kind needs a number and a price.'; return render(); }
+    const car = {id: uid(), date: nowIso(), label: (W.label || '').trim(), items: W.items.map(i => ({id: i.id, name: i.name || '', count: i.count, price: i.price, photo: i.photo || ''})), costs: cost ? [{id: uid(), name: 'Load', amount: cost}] : [], phase: 'giving'};
     S.cars.push(car); S.carry = 0; S.settings.price = car.items[0].price; commit(); V.w = null; return toRoot('give'); }
 
   /* settings, backup */
@@ -2070,7 +2170,7 @@ function act(a, d, el) {
   case 'backupsheet': return backupSheet();
   case 'backup': closeSheet(); return doBackup();
   case 'restore': { const rf = document.getElementById('restorefile'); if (rf) rf.click(); return; }
-  case 'restoreyes': { if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; } closeSheet(); toast('Your book is back'); return toRoot('give'); }
+  case 'restoreyes': { if (V.restorePhotos) { Object.keys(V.restorePhotos).forEach(id => { if (/^data:image\//.test(V.restorePhotos[id])) phPut(id, V.restorePhotos[id]); }); V.restorePhotos = null; } if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; } closeSheet(); toast('Your book is back'); return toRoot('give'); }
   case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be reversed. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
   case 'wipeyes': S = blank(); commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
   case 'reload': location.reload(); return;
@@ -2137,6 +2237,7 @@ try { history.replaceState({root: 1}, ''); history.pushState({g: 1}, ''); } catc
 if (!S.setup && !S.people.length && !S.cars.length) { V.stack = [{v: 'setup'}]; try { history.pushState({d: 1}, ''); } catch (e) {} }
 render();
 smsSoon(4000);
+phLoadAll().then(() => { if (Object.keys(PH).length) render(); });
 /* ask the phone not to clear the book when it runs low on space */
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 /* in Safari, explain once how to put the app on the Home Screen, where the book lives */
