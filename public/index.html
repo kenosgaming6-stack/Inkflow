@@ -586,7 +586,7 @@ function similar(a, b) {
 
 /* ---------- storage ---------- */
 function blank() {
-  return {v: 4, settings: {seller: '', momo: '', item: 'Onions', unit: 'bag', price: 650, cycle: 14, sound: true, hand: 'right', via: 'sms', half: false, checkMins: 10},
+  return {v: 4, settings: {seller: '', momo: '', item: 'Onions', unit: 'bag', price: 650, cycle: 14, sound: true, voice: false, hand: 'right', via: 'sms', half: false, checkMins: 10},
     locs: [], people: [], cars: [], entries: [], carry: 0, lastBackup: null, changedAt: null, lastLoc: '', setup: false};
 }
 /* Brings any older book up to v4. Safe to run on every load. */
@@ -1040,6 +1040,18 @@ function pullEnd() {
 }
 layer.addEventListener('touchend', pullEnd, {passive: true});
 layer.addEventListener('touchcancel', pullEnd, {passive: true});
+/* the phone says it out loud when Speak is on: "Ama, 2 bags. 35 left." Off by default. */
+function say(text) {
+  if (!S.settings.voice || V.demo || !('speechSynthesis' in window)) return;
+  try {
+    const ss = window.speechSynthesis; ss.cancel();
+    const u = new SpeechSynthesisUtterance(String(text).replace(/(\d)½/g, '$1 and a half').replace(/½/g, 'half'));
+    const vs = ss.getVoices ? ss.getVoices() : [];
+    const v = vs.find(x => /en[-_](GH|NG)/i.test(x.lang)) || vs.find(x => /en[-_]GB/i.test(x.lang)) || vs.find(x => /^en/i.test(x.lang));
+    if (v) u.voice = v; u.lang = v ? v.lang : 'en-GB'; u.rate = 0.95; ss.speak(u);
+  } catch (e) {}
+}
+const cedis = n => fmt(n) + ' cedis';
 function closeSheet() { const o = layer.querySelector('.ov'); if (o) o.remove(); V.sheetKind = null; }
 let toastT = null, toastNode = null;
 function toast(msg, actions) {
@@ -1423,6 +1435,7 @@ function saveGive(force) {
   parts.forEach(x => { e = add({type: 'give', pid: p.id, carId: car.id, itemId: x.item.id, bags: x.bags, price: x.item.price, amount: r2(x.bags * x.item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: !p.phone}); });
   V.lastSave = Date.now();
   closeSheet(); sfx('bag'); buzz(15); V.pulse = true; V.flash = e.id; render();
+  say(`${p.name}, ${bagsTxt(sum(parts, x => x.bags))}${g.hold ? ' kept' : ''}. ${bagsNum(Math.max(0, carStats(car.id).free))} left.`);
 }
 
 /* ===== Count check: look at the stack, say how many are really left =====
@@ -1522,7 +1535,7 @@ function remindTick() {
   if (!car || !checkDue()) { if (V.ask) { V.ask = false; paintAsk(); } return; }
   if (cur() || V.tab !== 'give' || layer.querySelector('.ov')) return;
   const first = !V.ask; V.ask = true; paintAsk();
-  if (first || Date.now() - askDing > 3 * 60000) { askDing = Date.now(); sfx('ding'); }
+  if (first || Date.now() - askDing > 3 * 60000) { askDing = Date.now(); sfx('ding'); say('Count the bags.'); }
 }
 setInterval(remindTick, 15000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(remindTick, 400); });
@@ -1692,6 +1705,7 @@ function proofSheet(nextId) {
     <div class="pf-left">${left}</div>${extra ? `<p class="pf-extra">${extra}</p>` : ''}</div>
     <div class="bar">${rcpt}${nextId ? `<button class="btn ghost" data-act="pfnext" data-id="${nextId}">Next ›</button>` : ''}<button class="btn take tall" data-act="pfdone">Done</button></div>`);
   V.sheetKind = 'proof';
+  say(`${p.name} paid ${cedis(amount)}. ${bal > 0.001 ? cedis(bal) + ' left.' : 'All paid.'}`);
   /* the sounds follow the pen (only while this proof is still open) */
   const live = layer.querySelector('.proof');
   marks.forEach(([d, k]) => { if (k) setTimeout(() => { if (live.isConnected) sfx(k); }, d * 1000); });
@@ -2009,6 +2023,7 @@ VIEWS.settings = () => {
       <div class="setlabel">Messages go by</div><div class="setbox">${seg('via', [['sms', 'SMS'], ['wa', 'WhatsApp']])}</div>
       <div class="setlabel">Hand that holds the phone</div><div class="setbox">${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div>
       <div class="set"><span>Half ${esc(unit())}s</span><button class="chip ${s.half !== false ? 'on' : ''}" data-act="togglehalf" aria-pressed="${s.half !== false}">${s.half !== false ? 'On' : 'Off'}</button></div>
+      <div class="set"><span>Speak out loud</span><button class="chip ${s.voice ? 'on' : ''}" data-act="togglevoice" aria-pressed="${!!s.voice}">${s.voice ? 'On' : 'Off'}</button></div>
       <div class="set"><span>Sounds and buzz</span><button class="chip ${s.sound !== false ? 'on' : ''}" data-act="togglesound" aria-pressed="${s.sound !== false}">${s.sound !== false ? 'On' : 'Off'}</button></div>
       ${V.demo ? '' : `<div class="setlabel">Backup</div><div class="setbox"><p class="small">${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) : 'No backup yet.'} If this phone is lost, the backup file brings the book back.</p>
       <button class="btn ink" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" hidden></div>`}
@@ -2142,6 +2157,7 @@ function act(a, d, el) {
   case 'cash': { const car = givingCar(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Sold for cash</h3><p>Which one?</p>${car.items.map(i => `<button class="btn ghost" style="justify-content:flex-start" data-act="cashitem" data-i="${i.id}">${kindImg(i, 'sm')} ${esc(kindLabel(i))}</button>`).join('')}<button class="btn ghost" data-act="sheetclose">Cancel</button>`); return act('cashitem', {i: car.items[0].id}); }
   case 'cashitem': { const car = givingCar(); const it = car.items.find(i => i.id === d.i); closeSheet(); if (carStats(car.id).free < 1) return toast('No ' + unit() + 's left in the vehicle');
     const e = add({type: 'cash', pid: null, carId: car.id, itemId: it.id, bags: 1, price: it.price, amount: it.price, loc: locById(S.lastLoc) ? S.lastLoc : ''}); sfx('coin'); buzz(15); V.pulse = true; render();
+    say(`Sold one for ${cedis(it.price)}. ${bagsNum(Math.max(0, carStats(car.id).free))} left.`);
     return; }
   case 'rcpt': markReceipts(d.id); hideToast(); return render();
   case 'receipts': { const car = givingCar(); const m = pendingReceipts(car ? car.id : null); V.queue = {kind: 'rcpt', ids: [...m.keys()], i: 0, carId: car ? car.id : null}; return queueStep(); }
@@ -2289,6 +2305,7 @@ function act(a, d, el) {
   case 'smstoggle': SMS.on = !SMS.on; if (SMS.on) { SMS.since = nowIso(); SMS.err = ''; SMS.cors = null; } smsSave(); render(); if (SMS.on) smsSoon(1000); return;
   case 'smstest': { if (!SMS.key || !SMS.from) return toast('Add the key and the sender name first'); const sent = smsSend(S.settings.momo, `StallBook test. Receipts will come from ${SMS.from}.`);
     toast('Sending a test…'); sent.then(r => { const el = document.getElementById('sms_status'); toast(r === 'ok' ? 'Test sent. Check your phone.' : r.err ? 'Not sent: ' + r.err : 'No signal. Try again.'); if (el) el.textContent = smsStatus(); }); return; }
+  case 'togglevoice': S.settings.voice = !S.settings.voice; commit(); say('Speak is on.'); return render();
   case 'togglesound': S.settings.sound = S.settings.sound === false; commit(); if (S.settings.sound) sfx('cash'); return render();
   case 'togglehalf': S.settings.half = S.settings.half === false; commit(); return render();
   case 'setupdone': S.setup = true; commit(); return toRoot('give');
