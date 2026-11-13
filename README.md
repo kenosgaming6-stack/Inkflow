@@ -10,7 +10,7 @@ Three tabs at the bottom: **Give bags**, **Take money** and **Book**. Give bags 
 
 - **Give bags**: the open load. A card with the bags left, given and kept, then one tab per place (Koko Shell, Market…) and **+** to add a place. Each tab lists only that place, top to bottom in the order you gave. Swipe left or right to move between places; the list follows your finger.
   - **Starting a load:** **New load** asks one thing at a time: where it is from, a photo of each kind of bag, how many, the price, then what the load cost.
-  - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). With several kinds, tap the photo of each kind she takes. Switch on **Keep for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She goes into the tab you are on.
+  - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). With several kinds, tap the photo of each kind she takes; she gets one line with each kind's photo and count side by side (more kinds wrap inside the line). Tap a photo on her line to change that kind's count, or her name to pick which kind to open. Switch on **Keep for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She goes into the tab you are on.
   - **Cash sales:** the cash button counts a bag sold for cash, with no name.
   - **Correcting a line:** tap the number in her row to change it. Tap her name to hand over kept bags, release them, pick the right customer or change the place.
 - **Counting the car:** tap the big number on the card ("40 left") any time. It shows what the book says, you set what is really in the car with − and + (tap the number to type it), and save.
@@ -122,6 +122,7 @@ After that, a customer with a phone number gets a receipt about 20 seconds after
 | `motion.js` | Rolling numbers, ink, pull to close, swipe, page turn (with motion on) |
 | `voice.js` | Speak out loud |
 | `counter.js` | The Counter |
+| `one-line.js` | Several kinds given together make one line |
 | `screens.js` | Keyboard, turning the phone, and many screen sizes |
 
 ## Your data

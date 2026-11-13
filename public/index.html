@@ -454,6 +454,12 @@ a{color:inherit;text-decoration:none}
 .mini{padding:.4375rem .75rem;border-radius:.5625rem;background:var(--paper);color:var(--ink);font-size:.875rem;font-weight:700;display:inline-flex;align-items:center;gap:.3125rem}
 .qbox{flex:none;min-width:3rem;height:2.875rem;padding:0 .625rem;border-radius:.75rem;border:.125rem solid var(--text);background:var(--paper);font-size:1.75rem;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
 .row.editing{background:var(--key)}
+/* one line, several kinds: the name keeps at least 6.5rem; the kinds wrap and the line grows taller */
+.row.multi .who{flex:1 1 6.5rem;min-width:6.5rem}
+.kchips{flex:0 1 auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.375rem;max-width:64%}
+.kc{flex:none;display:flex;align-items:center;gap:.3rem;height:2.875rem;padding:0 .5rem 0 .25rem;border-radius:.75rem;border:.125rem solid var(--text);background:var(--paper)}
+.kc .kimg.sm{width:2.125rem;height:2.125rem;border-width:.09375rem}
+.kc b{font:800 1.75rem/1 var(--num);color:var(--ink);min-width:1.1rem;text-align:center;font-variant-numeric:tabular-nums}
 .qstep{display:flex;align-items:center;gap:.375rem}
 .qstep button{width:2.875rem;height:2.875rem;border-radius:50%;background:var(--paper);border:.09375rem solid var(--line);font-size:1.5rem;font-weight:700;color:var(--ink);display:flex;align-items:center;justify-content:center}
 .qstep b{min-width:2.125rem;text-align:center;font-size:1.375rem;color:var(--ink)}
@@ -541,7 +547,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '7.0';
+const APP_VERSION = '7.1';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -1299,12 +1305,30 @@ function viewGive() {
     const p = person(e.pid) || {name: '?'};
     if (V.qe && V.qe.id === e.id) return `<div class="row editing"><button class="who" data-act="qcancel"><div class="name">${esc(p.name)}</div><div class="sub">${esc(locTxt(e.loc)) || '&nbsp;'}</div></button><div class="qstep"><button data-act="qminus" aria-label="One less">−</button><b>${bagsNum(V.qe.n)}</b><button data-act="qplus" aria-label="One more">+</button></div><button class="qok" data-act="qsave" aria-label="Save">${svg('check')}</button></div>`;
     const sub = [tabs.length ? '' : locTxt(e.loc), isHeld ? 'since ' + hm(e.date) : '', linked.has(e.id) ? 'paid cash' : ''].filter(Boolean).join(' · ');
-    return `<div class="row ${isHeld ? 'held' : ''} ${V.flash === e.id ? 'flash new' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="entry" data-id="${e.id}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button>${isHeld ? '<span class="hpill">Kept</span>' : ''}${car.items.length > 1 ? kindImg(car.items.find(x => x.id === e.itemId), 'sm') : ''}<button class="qbox" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${bagsNum(e.bags)}</button></div>`;
+    return `<div class="row ${isHeld ? 'held' : ''} ${V.flash === e.id ? 'flash new' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="entry" data-id="${e.id}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button>${isHeld ? '<span class="hpill">Kept</span>' : ''}${car.items.length > 1 ? `<div class="kchips"><button class="kc" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${kindImg(car.items.find(x => x.id === e.itemId) || car.items[0], 'sm')}<b>${bagsNum(e.bags)}</b></button></div>` : `<button class="qbox" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${bagsNum(e.bags)}</button>`}</div>`;
   };
   let mid = '<div class="lines down">';
   if (!gives.length && !cashHere && !gapsHere.length) mid += `<div class="empty"><h2>Nobody yet</h2><p>Type a name below, or tap a face.</p></div>`;
   if (held.length) mid += `<div class="sect w"><span>${svg('clock', 16)} Kept for her · ${bagsTxt(sum(held, e => e.bags))}</span><button class="mini" data-act="handall" data-id="${car.id}" data-loc="${tabs.length ? tab : '*'}">Hand over all</button></div>`;
-  mid += inOrder.map(e => row(e, e.type === 'give' && !givenAt(e))).join('');
+  /* kinds given together (same group id; for older books, the same woman within 2 seconds) make one line */
+  const groups = [], byGrp = new Map();
+  inOrder.forEach(e => {
+    if (e.type !== 'give') return groups.push([e]);
+    const hold = !givenAt(e), k = e.grp ? e.grp + (hold ? ':kept' : '') : '';
+    if (k && byGrp.has(k)) return byGrp.get(k).push(e);
+    const last = groups[groups.length - 1], l = last && last[last.length - 1];
+    if (!k && l && l.type === 'give' && !l.grp && l.pid === e.pid && !givenAt(l) === hold && !last.some(x => x.itemId === e.itemId) && Math.abs(Date.parse(e.date) - Date.parse(l.date)) < 2000) return last.push(e);
+    const g = [e]; groups.push(g); if (k) byGrp.set(k, g);
+  });
+  const itemOf = e => car.items.find(x => x.id === e.itemId) || car.items[0];
+  const multiRow = (g, isHeld) => {
+    const e0 = g[0], p = person(e0.pid) || {name: '?'}; const q = V.qe && g.find(x => x.id === V.qe.id);
+    if (q) return `<div class="row editing"><button class="who" data-act="qcancel"><div class="name">${esc(p.name)}</div><div class="sub">${esc(kindLabel(itemOf(q)))}</div></button>${kindImg(itemOf(q), 'sm')}<div class="qstep"><button data-act="qminus" aria-label="One less">−</button><b>${bagsNum(V.qe.n)}</b><button data-act="qplus" aria-label="One more">+</button></div><button class="qok" data-act="qsave" aria-label="Save">${svg('check')}</button></div>`;
+    const sub = [tabs.length ? '' : locTxt(e0.loc), isHeld ? 'kept since ' + hm(e0.date) : '', g.some(x => linked.has(x.id)) ? 'paid cash' : ''].filter(Boolean).join(' · ');
+    const chips = g.map(x => `<button class="kc" data-act="qedit" data-id="${x.id}" aria-label="Change ${bagsTxt(x.bags)} of ${esc(kindLabel(itemOf(x)))}">${kindImg(itemOf(x), 'sm')}<b>${bagsNum(x.bags)}</b></button>`).join('');
+    return `<div class="row multi ${isHeld ? 'held' : ''} ${g.some(x => x.id === V.flash) ? 'flash new' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="egroup" data-ids="${g.map(x => x.id).join(',')}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button><div class="kchips">${chips}</div></div>`;
+  };
+  mid += groups.map(g => g.length > 1 ? multiRow(g, !givenAt(g[0])) : row(g[0], g[0].type === 'give' && !givenAt(g[0]))).join('');
   if (cashHere) mid += `<button class="row cashline" style="min-height:2.75rem" data-act="cashfix" data-loc="${tabs.length ? tab : '*'}"><div class="who"><div class="sub" style="color:var(--paid)">${svg('cash', 18)} ${bagsTxt(cashHere)}</div></div></button>`;
   mid += '</div>';
   const bagsAt = id => sum(S.entries.filter(e => (e.type === 'give' || e.type === 'cash' || e.type === 'gap') && e.carId === car.id && live(e) && locKey(e) === id), e => e.bags);
@@ -1463,8 +1487,8 @@ function saveGive(force) {
   }
   if (!p.loc && g.loc) p.loc = g.loc;
   if (g.loc) S.lastLoc = g.loc;
-  let e = null;
-  parts.forEach(x => { e = add({type: 'give', pid: p.id, carId: car.id, itemId: x.item.id, bags: x.bags, price: x.item.price, amount: r2(x.bags * x.item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: !p.phone}); });
+  let e = null; const grp = parts.length > 1 ? uid() : '';
+  parts.forEach(x => { e = add(Object.assign({type: 'give', pid: p.id, carId: car.id, itemId: x.item.id, bags: x.bags, price: x.item.price, amount: r2(x.bags * x.item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: !p.phone}, grp ? {grp} : {})); });
   V.lastSave = Date.now();
   closeSheet(); sfx('bag'); buzz(15); V.pulse = true; V.flash = e.id; render();
   say(`${p.name}, ${bagsTxt(sum(parts, x => x.bags))}${g.hold ? ' kept' : ''}. ${bagsNum(Math.max(0, carStats(car.id).free))} left.`);
@@ -2275,6 +2299,11 @@ function act(a, d, el) {
 
   /* one line */
   case 'entry': V.es = null; return entrySheet(d.id);
+  case 'egroup': {
+    const es = d.ids.split(',').map(byId).filter(Boolean); if (!es.length) return; if (es.length === 1) { V.es = null; return entrySheet(es[0].id); }
+    const p = person(es[0].pid), car = carById(es[0].carId);
+    return sheet(`<i class="grab"></i><h3>${esc(p ? p.name : '?')}</h3><p>Which bag?</p>${es.map(x => { const it = car.items.find(i => i.id === x.itemId) || car.items[0]; return `<button class="btn ghost" style="justify-content:flex-start" data-act="entry" data-id="${x.id}">${kindImg(it, 'sm')} ${bagsTxt(x.bags)} · ${esc(kindLabel(it))}</button>`; }).join('')}<button class="btn ghost" data-act="sheetclose">Cancel</button>`);
+  }
   case 'esminus': if (V.es.n >= 1.5) V.es.n -= 1; return entrySheet(V.es.id);
   case 'esplus': V.es.n = Math.min(999, V.es.n + 1); return entrySheet(V.es.id);
   case 'eshalf': { const n = V.es.n; V.es.n = Math.abs(n % 1 - 0.5) < 0.01 ? n - 0.5 : n + 0.5; if (V.es.n < 0.5) V.es.n = 0.5; return entrySheet(V.es.id); }
