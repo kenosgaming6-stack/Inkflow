@@ -33,7 +33,8 @@ Nothing is ever overwritten. Corrections, handovers, releases and moves are new 
 
 ## The look
 
-- **Colour has one job each.** Blue is the pen (what you write), red is debt and the notebook margin, green is money in, amber is waiting (kept bags, no-name bags).
+- **Colour has one job each.** Blue is the pen (what you write), red is debt and the notebook margin, green is money in, amber is waiting and counting (kept bags, no-name bags, the Counter), violet is a pay date she gave.
+- **Find things by colour, not by reading.** Each place keeps its own colour everywhere: a stripe on its tab, a dot before its name in every list, its chip. Each woman has her own avatar colour, taken from her name, so it is the same on every screen. A kind of bag with no photo takes the colour in its name ("Red net" is red, "Yellow sack" yellow), or a colour of its own. Late, missed and refused are solid red. The card menu shows each action with a coloured icon: counting amber, price green, costs red, report blue.
 - **The band at the top says the job:** blue for Give bags (with the page number, like a receipt book), green for Take money, black for Book. The phone's status bar takes the same colour.
 - **Numbers are painted big** in Barlow Condensed (SIL Open Font License, `public/fonts/OFL-barlow.txt`). Words stay in Atkinson Hyperlegible.
 - **Places are index tabs** standing on the page.
@@ -123,6 +124,7 @@ After that, a customer with a phone number gets a receipt about 20 seconds after
 | `voice.js` | Speak out loud |
 | `counter.js` | The Counter |
 | `one-line.js` | Several kinds given together make one line |
+| `colors.js` | Place, woman and kind colours, tags, the card menu |
 | `screens.js` | Keyboard, turning the phone, and many screen sizes |
 
 ## Your data
