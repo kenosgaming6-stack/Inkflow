@@ -42,6 +42,13 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%;font-size:calc(16px
 html.kb #shell{bottom:auto;top:var(--app-top,0px);height:var(--app-h)}
 /* the band at the top says which job you are doing: blue is Give, green is Collect, black is Book. The status bar takes the same colour. */
 html[data-mode="collect"]{--bar:#12804A}html[data-mode="book"]{--bar:#14161C}
+/* each job has its own world, so you feel where you are before you read: blue paper for Give bags, green paper and
+   green ink for Take money, cream ledger paper and dark ink for Book. Panels (sheets) stay white so they stand out. */
+html[data-mode="give"]{--paper:#F5F8FF;--page:#F5F8FF;--key:#E5ECFD;--line:#D3DDF4}
+html[data-mode="collect"]{--paper:#F2FAF5;--page:#F2FAF5;--key:#DCF0E3;--line:#C8E4D3;--rule:#BCDDC9;--ink:#0A5C35;--pen-wash:#DCF0E3}
+html[data-mode="book"]{--paper:#FBF7EE;--page:#FBF7EE;--key:#F0E8D7;--line:#E2D7C0;--rule:#E3D6BB;--ink:#262A33;--pen-wash:#F0E8D7}
+/* on Give bags the place you are at tints the top of its page, and its tab, so each place feels like its own page */
+.mid.book.pw{background:linear-gradient(to right,transparent 1.6875rem,var(--margin) 1.6875rem,var(--margin) 1.8125rem,transparent 1.8125rem),linear-gradient(var(--pw),var(--paper) 11rem) var(--paper)}
 .band{flex:none;height:2.75rem;display:flex;align-items:center;gap:.5rem;padding:0 .75rem;background:var(--bar);color:#FFFFFF}
 .band .i{width:1.375rem;height:1.375rem}
 .band b{flex:1;min-width:0;font:800 1.5rem/1 var(--num);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -457,7 +464,7 @@ a{color:inherit;text-decoration:none}
 .ptabs .chip.on[style]{color:var(--pc)}
 .chip.on[style]{background:var(--pc);border-color:var(--pc)}
 .chip.on[style] .pdot{background:#fff}
-.ptabs .chip.on[style]{background:var(--paper);border-color:var(--text)}
+.ptabs .chip.on[style]{background:linear-gradient(var(--pw,transparent),var(--pw,transparent)),var(--paper);border-color:var(--text)}
 .ptabs .chip.on[style] .pdot{background:var(--pc)}
 .locchip[style]>svg:first-child{color:var(--pc)}
 .tag.rr{background:var(--owe);color:#fff}
@@ -558,7 +565,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '7.2';
+const APP_VERSION = '7.3';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -789,6 +796,7 @@ const locById = id => S.locs.find(l => l.id === id) || null;
 function nextLocC() { const used = PAL.map((_, i) => S.locs.filter(l => l.c === i).length); return used.indexOf(Math.min(...used)); }
 function locC(id) { const l = locById(id); return l ? (l.c >= 0 ? l.c : Math.max(0, S.locs.indexOf(l))) % PAL.length : -1; }
 const pc = id => { const i = locC(id); return i < 0 ? 'var(--faint)' : PAL[i]; };
+const tint = (hex, a) => { const n = parseInt(String(hex).slice(1), 16); return /^#[0-9A-F]{6}$/i.test(hex) ? `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})` : 'transparent'; };
 const pdot = id => id && locById(id) ? `<i class="pdot" style="--pc:${pc(id)}"></i>` : '';
 const townC = t => { const l = S.locs.find(x => x.town === t && !x.spot) || S.locs.find(x => x.town === t); return l ? pc(l.id) : 'var(--ink)'; };
 /* a woman's colour comes from her name, so it is the same on every screen and never changes */
@@ -1239,7 +1247,7 @@ function render() {
   if (!f) document.documentElement.dataset.mode = V.tab;
   app.innerHTML = (V.demo ? `<div class="demobar"><span>Example book. Not real.</span><button data-act="leavedemo">Leave</button></div>` : '')
     + (o.tabs ? band() : '')
-    + `<header class="top ${o.topCls || ''}">${o.top}</header><main class="mid ${o.cls || ''}${same ? '' : ' enter'}" id="mid">${o.mid}</main>`
+    + `<header class="top ${o.topCls || ''}">${o.top}</header><main class="mid ${o.cls || ''}${same ? '' : ' enter'}" id="mid"${o.midStyle ? ` style="${o.midStyle}"` : ''}>${o.mid}</main>`
     + (o.dock ? `<footer class="dock${o.tabs ? '' : ' last'}">${o.dock}</footer>` : '') + (o.tabs ? tabBar() : '');
   const m = document.getElementById('mid');
   if (o.anchor === 'bottom') m.scrollTop = (!same || wasBottom) ? m.scrollHeight : keepTop;
@@ -1364,14 +1372,15 @@ function viewGive() {
   if (cashHere) mid += `<button class="row cashline" style="min-height:2.75rem" data-act="cashfix" data-loc="${tabs.length ? tab : '*'}"><div class="who"><div class="sub" style="color:var(--paid)">${svg('cash', 18)} ${bagsTxt(cashHere)}</div></div></button>`;
   mid += '</div>';
   const bagsAt = id => sum(S.entries.filter(e => (e.type === 'give' || e.type === 'cash' || e.type === 'gap') && e.carId === car.id && live(e) && locKey(e) === id), e => e.bags);
-  const tabRow = `<div class="ptabs">${tabs.length ? `<div class="chips">${tabs.map(id => `<button class="chip ${id === tab ? 'on' : ''}" data-act="gtab" data-id="${id}"${id ? ` style="--pc:${pc(id)}"` : ''}>${id ? pdot(id) + esc(locTxt(id)) : 'No place'}<em>${bagsNum(bagsAt(id))}</em></button>`).join('')}</div>` : ''}<button class="chip dash" data-act="here" aria-label="Add a place">${tabs.length ? svg('plus', 18) : svg('plus', 18) + ' Place'}</button></div>`;
+  const tabRow = `<div class="ptabs">${tabs.length ? `<div class="chips">${tabs.map(id => `<button class="chip ${id === tab ? 'on' : ''}" data-act="gtab" data-id="${id}"${id ? ` style="--pc:${pc(id)};--pw:${tint(pc(id), 0.13)}"` : ''}>${id ? pdot(id) + esc(locTxt(id)) : 'No place'}<em>${bagsNum(bagsAt(id))}</em></button>`).join('')}</div>` : ''}<button class="chip dash" data-act="here" aria-label="Add a place">${tabs.length ? svg('plus', 18) : svg('plus', 18) + ' Place'}</button></div>`;
   const top = stockCard(car, st) + tabRow + (st.free <= 0 && st.wait <= 0 && !st.gap ? `<button class="emptybar" data-act="closecar" data-id="${car.id}">${svg('ok', 20)}<span>Car empty</span><b>Close load ›</b></button>` : '');
   const recent = recentFaces(car.id);
   const dock = `${recent.length ? `<div class="faces">${recent.map(p => `<button class="face" data-act="give" data-id="${p.id}"><span class="av" style="${avc(p.name)}">${esc(initials(p.name))}</span>${esc(shortName(p.name))}</button>`).join('')}</div>` : ''}
     <div class="bar"><button class="sq cash" data-act="cash" aria-label="Sold one for cash">${svg('cash', 28)}</button>
     <label class="find ink">${svg('search')}<input id="gq" type="text" placeholder="Who's taking?" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" enterkeyhint="go" aria-label="Who is taking ${esc(unit())}s? Type her name" value="${esc(V.gq)}"></label></div>`;
   const slide = V.slide; V.slide = null;
-  return {top, topCls: 'tabbed', mid, cls: 'book' + (slide ? ' slide-' + slide : ''), dock, tabs: true, anchor: 'top', after: () => {
+  const wash = tab && locById(tab) ? tint(pc(tab), 0.13) : '';
+  return {top, topCls: 'tabbed', mid, cls: 'book' + (wash ? ' pw' : '') + (slide ? ' slide-' + slide : ''), midStyle: wash ? `--pw:${wash}` : '', dock, tabs: true, anchor: 'top', after: () => {
     attachFind();
     /* bring the new line and the open tab into view, moving only their own lists */
     const m0 = document.getElementById('mid'), f = m0.querySelector('.flash');

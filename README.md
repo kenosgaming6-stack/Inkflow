@@ -36,6 +36,7 @@ Nothing is ever overwritten. Corrections, handovers, releases and moves are new 
 - **Colour has one job each.** Blue is the pen (what you write), red is debt and the notebook margin, green is money in, amber is waiting and counting (kept bags, no-name bags, the Counter), violet is a pay date she gave.
 - **Find things by colour, not by reading.** Each place keeps its own colour everywhere: a stripe on its tab, a dot before its name in every list, its chip. Each woman has her own avatar colour, taken from her name, so it is the same on every screen. A kind of bag with no photo takes the colour in its name ("Red net" is red, "Yellow sack" yellow), or a colour of its own. Late, missed and refused are solid red. The card menu shows each action with a coloured icon: counting amber, price green, costs red, report blue.
 - **The band at the top says the job:** blue for Give bags (with the page number, like a receipt book), green for Take money, black for Book. The phone's status bar takes the same colour.
+- **Each job has its own world, felt before it is read:** Give bags is on blue paper, Take money on green paper with green ink and green keys, Book on cream ledger paper with dark ink. Panels stay white so they stand out. On Give bags, the place you are at tints the top of its page and its tab, so each place feels like its own page.
 - **Numbers are painted big** in Barlow Condensed (SIL Open Font License, `public/fonts/OFL-barlow.txt`). Words stay in Atkinson Hyperlegible.
 - **Places are index tabs** standing on the page.
 - **Every number pad is a calculator**, laid out like the iPhone's: 7 8 9 × / 4 5 6 − / 1 2 3 + / 00 0 ⌫ and the action key. What you type shows small on top ("5 + 6 + 7 + 8") and the total shows big underneath; times goes before plus and minus. Tap ⌫ to take one off, hold it to clear. On the money pad the cedi notes add themselves to the sum.
@@ -125,6 +126,7 @@ After that, a customer with a phone number gets a receipt about 20 seconds after
 | `counter.js` | The Counter |
 | `one-line.js` | Several kinds given together make one line |
 | `colors.js` | Place, woman and kind colours, tags, the card menu |
+| `vibes.js` | Each tab's own paper and ink; places tint their page |
 | `screens.js` | Keyboard, turning the phone, and many screen sizes |
 
 ## Your data

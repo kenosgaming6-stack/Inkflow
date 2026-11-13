@@ -16,6 +16,6 @@ run() { # name, then the command
   printf '%-12s ' "$1"; shift
   if out=$("$@" 2>&1); then echo "passed"; else echo "FAILED"; echo "$out" | grep -E 'FAIL|CRASH' | sed 's/^/    /'; fail=1; fi
 }
-for t in book sms count-check keypad photos upgrade motion voice counter one-line colors screens; do run "$t" node "tests/$t.js"; done
+for t in book sms count-check keypad photos upgrade motion voice counter one-line colors vibes screens; do run "$t" node "tests/$t.js"; done
 run one-file env URL=http://127.0.0.1:8767/ node tests/book.js
 exit $fail
