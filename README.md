@@ -6,8 +6,12 @@ The app is the `public/` folder: one page (`index.html`) plus its icons, font an
 
 ## How it works
 
-Three tabs at the bottom: **Give bags**, **Take money** and **Book**. Give bags and Take money never send you to another page; everything opens in a panel over the list. The words are plain English on purpose: short, two-word buttons, and pictures and numbers wherever they can stand in for a sentence.
+Three tabs at the bottom: **Give bags**, **Take money** and **Book**, and a fourth, **Buy bags**, for those who buy the goods themselves. Give bags and Take money never send you to another page; everything opens in a panel over the list. The words are plain English on purpose: short, two-word buttons, and pictures and numbers wherever they can stand in for a sentence.
 
+- **Buy bags** (only if you buy the goods yourself: Settings › Buying trips; off at first): the first tab, on warm clay paper.
+  - **Start buying** asks where you are buying (Abidjan…). Each time you buy, tap **Bought**: the photo of that kind (or a new photo for a new kind), how many, and what you paid for one. Each buy is a line; tap a line to change or remove it.
+  - The card shows bags bought, money spent, each kind with its photo, and, if you put in the money you came with, what is left.
+  - **Done buying** (card menu ⌄) puts the trip **On the way**. When the car arrives, **Car is here** (on Buy bags, or on Give bags when no load is open) turns the trip into a new load with the kinds, photos and counts filled in: you only type the selling price of each kind (it shows what you paid), and the load cost starts with what you paid for the goods (add the driver with +).
 - **Give bags**: the open load. A card with the bags left, given and kept, then one tab per place (Koko Shell, Market…) and **+** to add a place. Each tab lists only that place, top to bottom in the order you gave. Swipe left or right to move between places; the list follows your finger.
   - **Starting a load:** **New load** asks one thing at a time: where it is from, a photo of each kind of bag, how many, the price, then what the load cost.
   - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). With several kinds, tap the photo of each kind she takes; she gets one line with each kind's photo and count side by side (more kinds wrap inside the line). Tap a photo on her line to change that kind's count, or her name to pick which kind to open. Switch on **Keep for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She goes into the tab you are on.
@@ -115,6 +119,7 @@ After that, a customer with a phone number gets a receipt about 20 seconds after
 
 | Test | What it checks |
 |---|---|
+| `buy.js` | Buy bags: a buying trip from the first buy to Car is here |
 | `book.js` | A whole day: setup, a load, giving, keeping for her, payments with the proof screen, places, closing a load, backup |
 | `sms.js` | Receipts that send themselves |
 | `count-check.js` | Counting the car, no-name bags, the reminder |
