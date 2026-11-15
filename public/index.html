@@ -73,6 +73,7 @@ button,a,.row,.tab,.chip,.key,.face{-webkit-user-select:none;user-select:none;-w
 #layer{position:absolute;inset:0;pointer-events:none;z-index:30}
 #layer>*{pointer-events:auto}
 #layer>.savedpop{pointer-events:none}
+#layer>.hint{pointer-events:none}
 button,input{font:inherit;color:inherit}
 button{border:0;background:none;cursor:pointer;padding:0;text-align:inherit}
 a{color:inherit;text-decoration:none}
@@ -129,6 +130,15 @@ a{color:inherit;text-decoration:none}
 .tab.pop svg{animation:tabpop .34s cubic-bezier(.3,1.6,.5,1)}
 @keyframes tabpop{0%{transform:scale(.7)}100%{transform:scale(1)}}
 /* the big check on every save */
+/* the finger that teaches */
+.hint{position:absolute;inset:0;z-index:70}
+.hint .ring{position:absolute;width:3.5rem;height:3.5rem;margin:-1.75rem 0 0 -1.75rem;border-radius:50%;border:.25rem solid #F2B705;animation:hring 1.3s ease-out infinite}
+.hint .hand{position:absolute;width:2.75rem;height:3.5rem;margin:-.25rem 0 0 -1.2rem;filter:drop-shadow(0 .25rem .375rem rgba(0,0,0,.3));animation:htap 1.3s ease-in-out infinite}
+.hint .bub{position:absolute;transform:translateX(-50%);background:#14161C;color:#FFFFFF;font-weight:800;font-size:1.0625rem;padding:.5rem .875rem;border-radius:.875rem;white-space:nowrap;box-shadow:0 .375rem 1rem rgba(0,0,0,.25);animation:fade .25s ease-out}
+.hint .bub::after{content:"";position:absolute;left:50%;margin-left:-.4rem;border:.4rem solid transparent}
+.hint .bub.up::after{top:100%;border-top-color:#14161C}.hint .bub.down::after{bottom:100%;border-bottom-color:#14161C}
+@keyframes hring{0%{transform:scale(.5);opacity:.9}100%{transform:scale(1.6);opacity:0}}
+@keyframes htap{0%,100%{transform:translateY(.5rem)}45%{transform:translateY(0)}55%{transform:translateY(0) scale(.94)}}
 .savedpop{position:absolute;left:50%;top:40%;display:flex;flex-direction:column;align-items:center;gap:.5rem;pointer-events:none;z-index:60;animation:spop .95s ease-out forwards}
 .savedpop svg{width:5.5rem;height:5.5rem;filter:drop-shadow(0 .375rem .75rem rgba(0,0,0,.22))}
 .savedpop circle{fill:var(--c)}
@@ -1244,7 +1254,7 @@ window.addEventListener('popstate', () => {
 function sheet(html, cls) {
   let o = layer.querySelector('.ov');
   if (o) { o.classList.add('still'); const sh = o.firstElementChild; sh.className = 'sheet ' + (cls || ''); sh.innerHTML = html; return o; }
-  o = document.createElement('div'); o.className = 'ov'; o.innerHTML = `<div class="sheet ${cls || ''}" role="dialog" aria-modal="true">${html}</div>`; layer.appendChild(o); return o;
+  o = document.createElement('div'); o.className = 'ov'; o.innerHTML = `<div class="sheet ${cls || ''}" role="dialog" aria-modal="true">${html}</div>`; layer.appendChild(o); hintTick(); return o;
 }
 /* pull a sheet down by its top edge to close it; let go early and it springs back */
 let pull = null;
@@ -1276,6 +1286,36 @@ function say(text) {
   } catch (e) {}
 }
 const cedis = n => fmt(n) + ' cedis';
+/* ===== The finger that teaches: first time on each spot, once each ===== */
+const HINTS = [
+  {id: 'name', sel: '#gq', txt: 'Type her name', when: () => !cur() && V.tab === 'give' && givingCar() && !layer.querySelector('.ov')},
+  {id: 'cash', sel: '[data-act="cash"]', txt: 'Tap for cash', when: () => !cur() && V.tab === 'give' && givingCar() && !layer.querySelector('.ov')},
+  {id: 'photo', sel: '.sheet .ktile .kt', txt: 'Tap the photo', when: () => V.sheetKind === 'give'},
+  {id: 'take', sel: '#collist .row[data-act="pay"]', txt: 'Tap her name', when: () => !cur() && V.tab === 'collect' && !layer.querySelector('.ov')},
+  {id: 'notes', sel: '.sheet .note', txt: 'Tap the notes', when: () => V.sheetKind === 'pay'},
+  {id: 'bought', sel: '[data-act="buyadd"]', txt: 'Tap Bought', when: () => !cur() && V.tab === 'buy' && !layer.querySelector('.ov')},
+];
+function hintsSeen() { try { return JSON.parse(lsGet('stallbook_hints') || '[]'); } catch (e) { return []; } }
+let HINT = null, hintT = 0;
+function hintTick() { clearTimeout(hintT); hintT = setTimeout(hintShow, 350); }
+function hintShow() {
+  if (HINT) { HINT.el.remove(); HINT = null; }
+  if (V.demo || (navigator.webdriver && !window.HINTS_FORCE)) return;
+  const seen = hintsSeen(); const h = HINTS.find(x => !seen.includes(x.id) && x.when()); if (!h) return;
+  const t = document.querySelector(h.sel); if (!t) return;
+  const r = t.getBoundingClientRect(), L = layer.getBoundingClientRect(); if (!r.width || r.bottom < L.top || r.top > L.bottom) return;
+  const x = r.left - L.left + r.width / 2, y = r.top - L.top + r.height / 2, low = y > L.height * 0.55;
+  const el = document.createElement('div'); el.className = 'hint'; el.setAttribute('aria-hidden', 'true');
+  const bx = Math.max(90, Math.min(L.width - 90, x));
+  el.innerHTML = `<i class="ring" style="left:${x}px;top:${y}px"></i><svg class="hand" style="left:${x}px;top:${y}px" viewBox="0 0 40 52"><path d="M14 30V8a5 5 0 0 1 10 0v14l9 2a6 6 0 0 1 4.7 6.6L36 44a8 8 0 0 1-8 7H18a8 8 0 0 1-6.4-3.2L4 38a4 4 0 0 1 6-5.3z" fill="#FFFFFF" stroke="#14161C" stroke-width="2.5" stroke-linejoin="round"/></svg>
+    <span class="bub ${low ? 'up' : 'down'}" style="left:${bx}px;${low ? `bottom:${L.height - r.top + L.top + 12}px` : `top:${r.bottom - L.top + 64}px`}">${esc(h.txt)}</span>`;
+  layer.appendChild(el); HINT = {el, id: h.id};
+}
+/* any tap: the hint has done its job */
+document.addEventListener('pointerdown', () => {
+  if (!HINT) return; const seen = hintsSeen(); if (!seen.includes(HINT.id)) seen.push(HINT.id); lsSet('stallbook_hints', JSON.stringify(seen));
+  HINT.el.remove(); HINT = null; hintTick();
+}, true);
 /* a big check pops in the middle on every save, in the colour of the job; it never blocks a tap */
 function savedPop(fact, col) {
   if (RM()) return;
@@ -1413,6 +1453,7 @@ function render() {
   if (o.after) o.after();
   rollNums(same);
   if (V.turn) { V.turn = false; if (!RM()) app.querySelectorAll('.top,.mid').forEach(x => x.classList.add('turn')); sfx('page'); }
+  hintTick();
   placeToast();
 }
 
@@ -2535,7 +2576,7 @@ VIEWS.settings = () => {
     + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz') + sw('togglebig', s.big, 'Big text') + `<div class="setbox"><div class="field"><label>Hand that holds the phone</label>${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div></div>`)
     + (V.demo ? '' : card('cloud', '#24307A', 'Keep your book safe', `<div class="setbox">${saved}<p class="small">If this phone is lost, the backup file brings the book back.</p>
       <button class="btn ink" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" hidden></div>`))
-    + card('eye', '#475569', 'Help', `<div class="setbox">${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}${IOS && !STANDALONE ? `<button class="btn ghost" data-act="installhelp">Put StallBook on your Home Screen</button>` : ''}</div>`)
+    + card('eye', '#475569', 'Help', `<div class="setbox"><button class="btn ghost" data-act="hintsreset">👆 Show me how</button>${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}${IOS && !STANDALONE ? `<button class="btn ghost" data-act="installhelp">Put StallBook on your Home Screen</button>` : ''}</div>`)
     + card('del', '#D12B36', 'Delete', `<div class="setbox"><button class="btn ghost redtext" data-act="wipe">Delete everything</button></div>`)
     + `<p class="ver">StallBook ${APP_VERSION} · ${innerWidth}×${innerHeight} · ${navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? 'Home Screen' : 'browser'}</p>`;
   return {top: `<div class="hrow"><span class="mi" style="--mc:#475569">${svg('set', 20)}</span><div class="title"><b>Settings</b><small>Saved on this phone only</small></div></div>`,
@@ -2897,6 +2938,7 @@ function act(a, d, el) {
   case 'smstest': { if (!SMS.key || !SMS.from) return toast('Add the key and the sender name first'); const sent = smsSend(S.settings.momo, `StallBook test. Receipts will come from ${SMS.from}.`);
     toast('Sending a test…'); sent.then(r => { const el = document.getElementById('sms_status'); toast(r === 'ok' ? 'Test sent. Check your phone.' : r.err ? 'Not sent: ' + r.err : 'No signal. Try again.'); if (el) el.textContent = smsStatus(); }); return; }
   case 'togglevoice': S.settings.voice = !S.settings.voice; commit(); say('Speak is on.'); return render();
+  case 'hintsreset': lsSet('stallbook_hints', '[]'); toast('The hints are back. Go to Give bags.'); return;
   case 'togglebig': S.settings.big = !S.settings.big; commit(); fit(); return render();
   case 'togglesound': S.settings.sound = S.settings.sound === false; commit(); if (S.settings.sound) sfx('cash'); return render();
   case 'togglehalf': S.settings.half = S.settings.half === false; commit(); return render();
