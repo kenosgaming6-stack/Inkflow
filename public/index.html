@@ -72,6 +72,7 @@ button,a,.row,.tab,.chip,.key,.face{-webkit-user-select:none;user-select:none;-w
 .ver{font-size:.8125rem;color:var(--faint);text-align:center;padding:.25rem .75rem 1rem}
 #layer{position:absolute;inset:0;pointer-events:none;z-index:30}
 #layer>*{pointer-events:auto}
+#layer>.savedpop{pointer-events:none}
 button,input{font:inherit;color:inherit}
 button{border:0;background:none;cursor:pointer;padding:0;text-align:inherit}
 a{color:inherit;text-decoration:none}
@@ -118,6 +119,31 @@ a{color:inherit;text-decoration:none}
 *{scrollbar-width:none}
 *::-webkit-scrollbar{display:none;width:0;height:0}
 .enter{animation:enter .16s ease-out}
+/* a list that opens: its first rows rise in one after another */
+.mid.enter .lines>.row{animation:rise .32s ease-out backwards}
+.mid.enter .lines>.row:nth-child(2){animation-delay:.03s}.mid.enter .lines>.row:nth-child(3){animation-delay:.06s}.mid.enter .lines>.row:nth-child(4){animation-delay:.09s}
+.mid.enter .lines>.row:nth-child(5){animation-delay:.12s}.mid.enter .lines>.row:nth-child(6){animation-delay:.15s}.mid.enter .lines>.row:nth-child(7){animation-delay:.18s}.mid.enter .lines>.row:nth-child(8){animation-delay:.21s}
+.mid.enter .lines>.row:nth-child(n+9){animation:none}
+@keyframes rise{from{opacity:0;transform:translateY(.75rem)}to{opacity:1;transform:none}}
+/* the chosen tab icon pops */
+.tab.pop svg{animation:tabpop .34s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tabpop{0%{transform:scale(.7)}100%{transform:scale(1)}}
+/* the big check on every save */
+.savedpop{position:absolute;left:50%;top:40%;display:flex;flex-direction:column;align-items:center;gap:.5rem;pointer-events:none;z-index:60;animation:spop .95s ease-out forwards}
+.savedpop svg{width:5.5rem;height:5.5rem;filter:drop-shadow(0 .375rem .75rem rgba(0,0,0,.22))}
+.savedpop circle{fill:var(--c)}
+.savedpop path{fill:none;stroke:#FFFFFF;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;animation:sdraw .35s .1s ease-out backwards}
+.savedpop b{background:var(--c);color:#FFFFFF;padding:.375rem .875rem;border-radius:1rem;font-weight:800;font-size:1.0625rem;white-space:nowrap;box-shadow:0 .25rem .625rem rgba(0,0,0,.18)}
+@keyframes spop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}25%{transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(.96)}}
+@keyframes sdraw{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+/* the paper changes colour softly when you switch tabs */
+#shell{transition:background-color .25s ease}
+/* the notes look like paper money */
+.nstack{display:flex;justify-content:center;flex-wrap:wrap;gap:.1875rem;min-height:1rem;margin-top:.25rem}
+.nstack i{width:1.75rem;height:1rem;border-radius:.1875rem;background:var(--nt);border:.09375rem solid var(--nb);font:800 .5625rem/.85rem var(--num);color:var(--nb);text-align:center;font-style:normal}
+.disp .nstack{justify-content:flex-end}
+.nstack em{font-style:normal;font-size:.75rem;font-weight:800;color:var(--muted);align-self:center}
+.showher.pd{background:#EDE5FC;color:#6D28D9}
 .ptabs{margin-top:.5rem;display:flex;align-items:flex-end;gap:.375rem}
 .ptabs .chips{flex:1;min-width:0;margin-right:0;padding-right:0;align-items:flex-end}
 .ptabs > .chip{flex:none}
@@ -267,8 +293,9 @@ a{color:inherit;text-decoration:none}
 .key.ok.take:active{background:#0D6339}
 .key.ok[disabled]{opacity:.4}
 .kp.pay .key{min-height:3.125rem}
+.note::after{content:"₵";position:absolute;right:.125rem;bottom:-.375rem;font-size:1.625rem;opacity:.16;pointer-events:none}
 .notes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.3125rem}
-.note{min-height:2.625rem;border-radius:.5625rem;border:.09375rem dashed var(--paid);background:var(--paid-bg);color:var(--paid);font-weight:700;font-size:.9375rem;display:flex;align-items:center;justify-content:center}
+.note{position:relative;overflow:hidden;min-height:2.875rem;border-radius:.375rem;border:.125rem solid var(--nb,var(--paid));background:linear-gradient(135deg,var(--nt,var(--paid-bg)) 0%,var(--nt,var(--paid-bg)) 55%,#FFFFFF 160%);color:var(--nb,var(--paid));box-shadow:inset 0 0 0 .1875rem rgba(255,255,255,.6);font-family:var(--num);font-size:1.25rem;letter-spacing:.02em;font-weight:700;font-size:.9375rem;display:flex;align-items:center;justify-content:center}
 .disp{padding:.625rem .875rem;border-radius:1rem;background:var(--key);text-align:right;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:.125rem}
 .disp .tape{font-size:1.25rem;font-weight:700;color:var(--muted);white-space:nowrap;overflow-x:auto;scrollbar-width:none;min-height:1.25rem}
 .disp .tape::-webkit-scrollbar{display:none}
@@ -661,6 +688,18 @@ const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia 
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const NOTES = [200, 100, 50, 20, 10, 5];
+/* placeholder tints: replace with the real cedi note colours from the user's photos. [paper, edge and number] */
+const NOTE_TINT = {200: ['#F7E1C2', '#8A4F06'], 100: ['#E6DAF8', '#5B2C9A'], 50: ['#ECE6C6', '#6B5A12'], 20: ['#D9E7F8', '#1F4E8C'], 10: ['#F8DADD', '#9A1F2D'], 5: ['#D2F0E7', '#0F6B57']};
+const noteStyle = n => NOTE_TINT[n] ? `--nt:${NOTE_TINT[n][0]};--nb:${NOTE_TINT[n][1]}` : '';
+/* the notes she has counted, read from the sum: "3 × 200 + 100" shows three 200s and a 100 */
+function noteStack(ex) {
+  const out = []; String(ex || '').split('+').forEach(t => { t = t.trim(); let m;
+    if (/^\d+$/.test(t) && NOTE_TINT[t]) out.push(+t);
+    else if ((m = t.match(/^(\d+)\*(\d+)$/))) { const [a, b] = [+m[1], +m[2]]; if (NOTE_TINT[b] && a <= 30) for (let i = 0; i < a; i++) out.push(b); else if (NOTE_TINT[a] && b <= 30) for (let i = 0; i < b; i++) out.push(a); } });
+  if (!out.length) return '';
+  const shown = out.slice(0, 10);
+  return `<div class="nstack" aria-hidden="true">${shown.map(n => `<i style="${noteStyle(n)}">${n}</i>`).join('')}${out.length > 10 ? `<em>+${out.length - 10}</em>` : ''}</div>`;
+}
 
 const IC = {
   back:'<path d="M15 18l-6-6 6-6"/>', fwd:'<path d="M9 18l6-6-6-6"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>', plus:'<path d="M12 5v14M5 12h14"/>',
@@ -1217,6 +1256,13 @@ function say(text) {
   } catch (e) {}
 }
 const cedis = n => fmt(n) + ' cedis';
+/* a big check pops in the middle on every save, in the colour of the job; it never blocks a tap */
+function savedPop(fact, col) {
+  if (RM()) return;
+  const o = document.createElement('div'); o.className = 'savedpop'; o.style.setProperty('--c', col);
+  o.innerHTML = `<svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>${fact ? `<b>${esc(fact)}</b>` : ''}`;
+  layer.appendChild(o); setTimeout(() => o.remove(), 1000);
+}
 function closeSheet() { const o = layer.querySelector('.ov'); if (o) o.remove(); V.sheetKind = null; }
 let toastT = null, toastNode = null;
 function toast(msg, actions) {
@@ -1283,7 +1329,7 @@ const backSq = act => `<button class="sq" data-act="${act || 'back'}" aria-label
 function statusTag(st) { return st.k === 'clear' ? '' : `<span class="tag ${st.cls}">${esc(st.label)}</span>`; }
 function tabBar() {
   const n = debtors().filter(x => x.st.sev >= 3).length;
-  const t = (id, ic, label, badge, dot) => `<button class="tab ${V.tab === id ? 'on' : ''}" data-act="tab" data-t="${id}" ${V.tab === id ? 'aria-current="page"' : ''}>${svg(ic, 24)}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}${dot ? '<span class="tabdot" aria-label="Backup needed"></span>' : ''}</button>`;
+  const t = (id, ic, label, badge, dot) => `<button class="tab ${V.tab === id ? 'on' : ''} ${V.tabPop === id ? 'pop' : ''}" data-act="tab" data-t="${id}" ${V.tab === id ? 'aria-current="page"' : ''}>${svg(ic, 24)}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}${dot ? '<span class="tabdot" aria-label="Backup needed"></span>' : ''}</button>`;
   const buy = S.settings.buy;
   return `<nav class="tabs${buy ? ' four' : ''}">${buy ? t('buy', 'buy', 'Buy ' + unit() + 's') : ''}${t('give', 'bag', 'Give ' + unit() + 's')}${t('collect', 'cash', 'Take money', n)}${t('book', 'book', 'Book', 0, needsBackup())}</nav>`;
 }
@@ -1565,6 +1611,7 @@ function saveBuy() {
   if (b) Object.assign(b, {bags, price, amount: r2(bags * price)});
   else { b = {id: uid(), date: nowIso(), itemId: B.itemId, bags, price, amount: r2(bags * price)}; T.buys.push(b); }
   commit(); V.b = null; closeSheet(); sfx('cash'); buzz(15); V.flash = b.id; render();
+  savedPop(`${bagsTxt(bags)} · ${money(r2(bags * price))}`, '#B4541A');
   say(`${bagsTxt(bags)} at ${cedis(price)}. Spent ${cedis(tripStats(T).spent)}.`);
 }
 /* the car is here: the trip becomes a new load, kinds and counts filled in; only the selling prices are asked */
@@ -1701,6 +1748,7 @@ function saveCash() {
   parts.forEach(x => { e = add(Object.assign({type: 'cash', pid: null, carId: car.id, itemId: x.item.id, bags: x.bags, price: x.item.price, amount: r2(x.bags * x.item.price), loc}, C.date ? {date: C.date} : {}, grp ? {grp} : {})); });
   const n = sum(parts, x => x.bags), total = r2(sum(parts, x => x.bags * x.item.price));
   V.lastCash = Date.now(); V.cs = null; closeSheet(); sfx('coin'); buzz(15); V.pulse = true; V.flash = e.id; render();
+  savedPop(`Cash · ${money(total)}`, '#12804A');
   say(`Cash, ${bagsTxt(n)}. ${cedis(total)}.`);
 }
 function qtySheet() {
@@ -1746,6 +1794,7 @@ function saveGive(force) {
   parts.forEach(x => { e = add(Object.assign({type: 'give', pid: p.id, carId: car.id, itemId: x.item.id, bags: x.bags, price: x.item.price, amount: r2(x.bags * x.item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: !p.phone}, grp ? {grp} : {})); });
   V.lastSave = Date.now();
   closeSheet(); sfx('bag'); buzz(15); V.pulse = true; V.flash = e.id; render();
+  savedPop(`${p.name} · ${bagsTxt(sum(parts, x => x.bags))}${g.hold ? ' kept' : ''}`, g.hold ? '#B4690E' : '#1D3FBB');
   say(`${p.name}, ${bagsTxt(sum(parts, x => x.bags))}${g.hold ? ' kept' : ''}. ${bagsNum(Math.max(0, carStats(car.id).free))} left.`);
 }
 
@@ -1786,6 +1835,7 @@ function saveCheck() {
   add({type: 'check', carId: car.id, rows, loc: locById(S.lastLoc) ? S.lastLoc : ''});
   car.checkedAt = nowIso(); commit(); V.cc = null; V.ask = false; V.flash = flash;
   closeSheet(); sfx(short ? 'thud' : 'cash'); render();
+  if (!short) savedPop(`${bagsTxt(sum(cc.rows, r => r.n))} counted`, '#B4690E');
   if (!short) toast(more ? `${bagsTxt(more)} more. Book fixed.` : 'Count ✓');
 }
 /* a gap loses `take` bags: all of it is crossed out, or a smaller gap takes its place */
@@ -1868,11 +1918,11 @@ function entrySheet(id) {
       <button class="btn ink tall" data-act="hand" data-id="${id}">${svg('check')} Hand over ${bagsTxt(e.bags)}</button>
       <div class="field"><label for="es_by">Someone else taking them? (optional)</label><input id="es_by" autocomplete="off" placeholder="Her son, her sister…"></div>
       ${stepper}
-      <button class="btn ghost redtext" data-act="release" data-id="${id}">Release ${bagsTxt(e.bags)}</button>`);
+      <button class="btn ghost menu redtext" data-act="release" data-id="${id}"><span class="mi" style="--mc:#D12B36">${svg('ret', 20)}</span> Release ${bagsTxt(e.bags)}</button>`);
     const ld = p ? ledger(p.id).loads.find(x => x.id === id) : null; const canBack = ld && e.bags - ld.backBags > 0.001;
     return sheet(head + stepper + `
-      ${canBack ? `<button class="btn ghost" data-act="backsheet" data-id="${id}">${svg('ret')} She brought some back</button>` : ''}
-      <button class="btn ghost redtext" data-act="undoask" data-id="${id}">Remove this line</button>`);
+      ${canBack ? `<button class="btn ghost menu" data-act="backsheet" data-id="${id}"><span class="mi" style="--mc:#B4690E">${svg('ret', 20)}</span> She brought some back</button>` : ''}
+      <button class="btn ghost menu redtext" data-act="undoask" data-id="${id}"><span class="mi" style="--mc:#D12B36">${svg('del', 20)}</span> Remove this line</button>`);
   }
   if (e.type === 'move') return sheet(`<i class="grab"></i><h3>Moved to ${esc(locTxt(e.to) || 'no place')}</h3><p>${dmy(e.date)}, from ${esc(locTxt(e.from) || 'no place')}.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="undoit" data-id="${id}">Remove</button></div>`);
   const what = e.type === 'pay' ? `Paid ${money(e.amount)}` : e.type === 'back' ? `Brought back ${bagsTxt(e.bags)}` : e.type === 'promise' ? `Pay date ${dayWord(e.on)}` : 'Refused to pay';
@@ -1965,11 +2015,11 @@ function paySheet() {
   const pv = payPreview(p.id, a, P.loadId);
   const next = P.ctx === 'collect' ? nextPayId(p.id) : null;
   sheet(`<div class="hrow"><span class="av" style="${avc(p.name)}">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${L.bal > 0.001 ? 'Owes ' + money(L.bal) : 'Owes nothing'}${p.loc ? ' · ' + esc(locTxt(p.loc)) : ''}</small></div>${L.bal > 0.001 ? `<button class="lnk" data-act="promise" data-id="${p.id}">Not today</button>` : ''}<button class="lnk" data-act="person" data-id="${p.id}">History ›</button></div>
-    <div class="disp"><div class="tape">${exprTape(P.ex) || '&nbsp;'}</div><div class="v ${a ? 'g' : ''}">${money(a)}</div><div class="s">${!a ? 'Tap the notes as she counts' : over ? money(a - Math.max(0, L.bal)) + ' more than she owes' : left > 0.001 ? money(left) + ' left after this' : 'All paid'}</div></div>
+    <div class="disp"><div class="tape">${exprTape(P.ex) || '&nbsp;'}</div><div class="v ${a ? 'g' : ''}">${money(a)}</div>${noteStack(P.ex)}<div class="s">${!a ? 'Tap the notes as she counts' : over ? money(a - Math.max(0, L.bal)) + ' more than she owes' : left > 0.001 ? money(left) + ' left after this' : 'All paid'}</div></div>
     ${over ? `<div class="over">What about the extra ${money(a - Math.max(0, L.bal))}?<div class="bar"><button class="chip ${P.over === 'credit' ? 'on' : ''}" data-act="pover" data-v="credit">Keep as credit</button><button class="chip ${P.over === 'change' ? 'on' : ''}" data-act="pover" data-v="change">Gave change</button></div></div>`
       : `<p class="clears">${a ? pv.map(x => x.cleared ? `Clears <b>${dmy(x.L.date)}</b>` : `${money(x.k)} off ${dmy(x.L.date)}`).join(', ') : '&nbsp;'}</p>`}
     <div class="seg mini2"><button class="${P.method === 'cash' ? 'on' : ''}" data-act="method" data-m="cash">Cash</button><button class="${P.method === 'momo' ? 'on' : ''}" data-act="method" data-m="momo">MoMo</button></div>
-    <div class="notes">${NOTES.map(n => `<button class="note" data-act="note" data-n="${n}">${n}</button>`).join('')}</div>${keypad('pay', {act: 'paydone', label: 'Done', cls: 'take'})}
+    <div class="notes">${NOTES.map(n => `<button class="note" style="${noteStyle(n)}" data-act="note" data-n="${n}">${n}</button>`).join('')}</div>${keypad('pay', {act: 'paydone', label: 'Done', cls: 'take'})}
     ${P.err ? `<div class="err">${esc(P.err)}</div>` : ''}
     <div class="bar">${L.bal > 0.001 ? `<button class="btn ghost" data-act="payall">All ${money(L.bal)}</button>` : `<button class="btn ghost" data-act="sheetclose">Close</button>`}${next ? `<button class="btn ghost" style="flex:.7" data-act="paynext" aria-label="Save and open the next customer">Next ›</button>` : ''}</div>`, 'pay');
   V.sheetKind = 'pay';
@@ -2079,7 +2129,7 @@ VIEWS.person = f => {
   const tags = [L.bal > 0.001 ? statusTag(st) : '', recordTag(p.id), heldBags ? `<span class="tag w">${bagsTxt(heldBags)} kept</span>` : ''].filter(Boolean);
   const top = `<div class="hrow"><span class="av lg" style="${avc(p.name)}">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${esc(p.phone) || 'No number yet'}</small></div><button class="ib" data-act="edit" data-id="${p.id}" aria-label="Edit name or number">${svg('edit')}</button></div>
     <button class="locchip" data-act="ploc" data-id="${p.id}"${p.loc ? ` style="--pc:${pc(p.loc)}"` : ''}>${svg('pin', 18)} ${p.loc ? esc(locTxt(p.loc)) : 'Where does she sell?'} ${svg('down', 16)}</button>${p.note ? `<div class="landmark">${esc(p.note)}</div>` : ''}
-    <div class="owes">${L.bal > 0.001 ? `<small>Owes</small><b data-roll="owes:${p.id}" data-v="${L.bal}" data-f="m">${money(L.bal)}</b><div class="hrow" style="justify-content:center"><button class="showher" data-act="show" data-id="${p.id}">${svg('eye', 18)} Show her</button><button class="showher" data-act="promise" data-id="${p.id}">${svg('clock', 18)} Pay date</button></div>` : `<small>${L.bal < -0.001 ? 'Credit' : 'Owes'}</small><b class="ok">${L.bal < -0.001 ? money(-L.bal) : 'Nothing'}</b>`}</div>
+    <div class="owes">${L.bal > 0.001 ? `<small>Owes</small><b data-roll="owes:${p.id}" data-v="${L.bal}" data-f="m">${money(L.bal)}</b><div class="hrow" style="justify-content:center"><button class="showher" data-act="show" data-id="${p.id}">${svg('eye', 18)} Show her</button><button class="showher pd" data-act="promise" data-id="${p.id}">${svg('clock', 18)} Pay date</button></div>` : `<small>${L.bal < -0.001 ? 'Credit' : 'Owes'}</small><b class="ok">${L.bal < -0.001 ? money(-L.bal) : 'Nothing'}</b>`}</div>
     ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}`;
   const lineDate = e => e.type === 'give' ? (givenAt(e) || e.date) : e.date;
   const lines = S.entries.filter(e => e.pid === p.id && ['give', 'pay', 'back', 'promise', 'note', 'move'].includes(e.type) && !(e.type === 'pay' && e.with)).sort((a, b) => cmp(lineDate(b), lineDate(a)));
@@ -2520,7 +2570,7 @@ function act(a, d, el) {
   d = d || {};
   switch (a) {
   case 'noop': return;
-  case 'tab': V.tab = d.t; V.stack = []; V.qe = null; closeSheet(); hideToast(); return render();
+  case 'tab': { const changed = V.tab !== d.t; V.tab = d.t; V.stack = []; V.qe = null; closeSheet(); hideToast(); V.tabPop = changed ? d.t : null; render(); V.tabPop = null; return; }
   case 'back': return pop();
   case 'sheetclose': return closeSheet();
   case 'settings': return push({v: 'settings'});
