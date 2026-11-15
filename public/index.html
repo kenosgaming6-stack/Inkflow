@@ -590,6 +590,16 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .locchip[style]>svg:first-child{color:var(--pc)}
 .tag.rr{background:var(--owe);color:#fff}
 .tag.pd{background:#EDE5FC;color:#6D28D9}
+/* end of day */
+.eod{display:flex;align-items:center;gap:.625rem;width:100%;margin-top:.5rem;padding:.625rem .75rem;border-radius:.875rem;background:var(--paper);border:.125rem solid var(--paid);color:var(--paid);font-weight:800;text-align:left}
+.eod .mi{flex:none;width:2.25rem;height:2.25rem}
+.eod>span:not(.mi){flex:1;min-width:0}
+.eod small{display:block;font-weight:700;color:var(--muted);font-size:.875rem}
+.eod small.ok{color:var(--paid)}.eod small.r{color:var(--owe)}.eod small.w{color:var(--warn)}
+.tillres{text-align:center;padding:.5rem 0}
+.tillres b{display:block;font:800 2.5rem/1.1 var(--num)}
+.tillres.ok b{color:var(--paid)}.tillres.r b{color:var(--owe)}.tillres.w b{color:var(--warn)}
+.tillres small{font-weight:700;color:var(--muted)}
 .loadchips{display:flex;gap:.375rem;overflow-x:auto;scrollbar-width:none;margin:.5rem -.75rem 0;padding:0 .75rem}
 .loadchips::-webkit-scrollbar{display:none}
 .loadchips .chip{display:inline-flex;align-items:center;gap:.375rem;background:var(--paper)}
@@ -1722,6 +1732,35 @@ function giveSheet() {
   V.sheetKind = 'give';
   const ph = document.getElementById('gph'); if (ph) ph.addEventListener('input', e => { V.g.phone = e.target.value; });
 }
+/* ===== End of day: count the cash in hand ===== */
+function tillToday() {
+  const t = todayK();
+  const pays = r2(sum(S.entries.filter(e => e.type === 'pay' && live(e) && e.method !== 'momo' && dayKey(e.date) === t), e => e.amount));
+  const sales = r2(sum(S.entries.filter(e => e.type === 'cash' && live(e) && dayKey(e.date) === t), e => e.amount));
+  return {pays, sales, expected: r2(pays + sales)};
+}
+function lastTill() { const ts = S.entries.filter(e => e.type === 'till' && live(e)); return ts.length ? ts[ts.length - 1] : null; }
+function tillWord(e) { const d = r2(e.counted - e.expected); return d === 0 ? ['All there ✓', 'ok'] : d < 0 ? ['Short ' + money(-d), 'r'] : [money(d) + ' extra', 'w']; }
+function eodButton() {
+  const T = tillToday(), last = lastTill();
+  if (!T.expected && !last) return '';
+  const lw = last ? tillWord(last) : null; const when = last ? (dayKey(last.date) === todayK() ? 'Today' : dayWord(dayKey(last.date)).replace(/^./, c => c.toUpperCase())) : '';
+  return `<button class="eod" data-act="eod"><span class="mi" style="--mc:var(--paid)">${svg('cash', 20)}</span><span>End of day${last ? `<small class="${lw[1]}">${esc(when)}: ${esc(lw[0])}</small>` : `<small>Count the cash in your hand</small>`}</span>${svg('fwd', 18)}</button>`;
+}
+function tillSheet() {
+  const T = tillToday(), Q = V.till; const c = exprNum(Q.ex);
+  V.sheetKind = 'till';
+  if (Q.done) {
+    const w = tillWord(Q.done);
+    return sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>End of day</b></div>
+      <div class="tillres ${w[1]}"><b>${esc(w[0])}</b><small>You counted ${money(Q.done.counted)}. You should have ${money(Q.done.expected)}.</small></div>
+      <button class="btn take tall" data-act="sheetclose">Done</button>`, 'cashsheet');
+  }
+  sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>End of day</b></div>
+    <div class="tillres ok" style="padding:0"><small>You should have</small><b>${money(T.expected)}</b><small>${money(T.pays)} paid in cash · ${money(T.sales)} cash sales</small></div>
+    <div class="disp"><div class="tape">${exprTape(Q.ex) || '&nbsp;'}</div><div class="v ${c ? 'g' : ''}">${money(c)}</div>${noteStack(Q.ex)}<div class="s">${c ? 'Counted' : 'Count the money with the notes'}</div></div>
+    <div class="notes">${NOTES.map(n => `<button class="note" style="${noteStyle(n)}" data-act="tnote" data-n="${n}">${n}</button>`).join('')}</div>${keypad('pay', {act: 'tilldone', label: 'Done', cls: 'take'})}`, 'cashsheet');
+}
 /* ===== Cash sale: a green panel. One kind: − 1 +. Several kinds: tap the photos. ===== */
 function openCash(edit) {
   const car = givingCar(); if (!car) return noCarSheet();
@@ -2005,7 +2044,7 @@ function viewCollect() {
   const fcar = V.fCar ? carById(V.fCar) : null;
   const loadRow = outCars.length > 1 ? `<div class="loadchips"><button class="chip ${!V.fCar ? 'on' : ''}" data-act="fcar" data-id="">All</button>${outCars.map(x => `<button class="chip ${V.fCar === x.c.id ? 'on' : ''}" data-act="fcar" data-id="${x.c.id}">${svg('truck', 16)}${esc(carName(x.c))}<b>${money(x.out)}</b></button>`).join('')}</div>` : '';
   const top = `<div class="csum"><div class="cl"><small>Still owed${fcar ? ' · ' + esc(carName(fcar)) : ''}${V.fTown ? ' · ' + esc(V.fLoc ? locTxt(V.fLoc) : V.fTown) : ''}</small><b class="${total > 0.001 ? '' : 'ok'}" data-roll="owed:${esc(V.fCar || '')}:${esc(V.fTown)}:${esc(V.fLoc)}" data-v="${total}" data-f="m">${money(total)}</b></div>
-    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}</div></div>${loadRow}`;
+    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}</div></div>${eodButton()}${loadRow}`;
   const dock = `${filterChips(id => debtors().filter(x => x.p.loc === id).length)}
     <div class="bar"><label class="find ink">${svg('search')}<input id="cq" type="search" placeholder="Find a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name" value="${esc(V.cq)}"></label></div>`;
   return {top, mid, cls: 'book', dock, tabs: true, anchor: 'top',
@@ -2759,6 +2798,11 @@ function act(a, d, el) {
   case 'payload': { const e = byId(d.id); closeSheet(); return openPay(e.pid, {loadId: d.id, ctx: 'person'}); }
   case 'note': { const P = V.pay; P.ex = !P.ex ? String(d.n) : OPS.includes(P.ex.slice(-1)) ? P.ex + d.n : P.ex + '+' + d.n; P.err = ''; P.over = ''; buzz(8); return paySheet(); }
   case 'method': V.pay.method = d.m; return paySheet();
+  case 'eod': V.till = {ex: '', done: null}; return tillSheet();
+  case 'tnote': { const Q = V.till; Q.ex = !Q.ex ? String(d.n) : OPS.includes(Q.ex.slice(-1)) ? Q.ex + d.n : Q.ex + '+' + d.n; buzz(8); return tillSheet(); }
+  case 'tilldone': { const Q = V.till; const T = tillToday(); const counted = r2(exprNum(Q.ex));
+    const e = add({type: 'till', expected: T.expected, counted}); Q.done = e; const w = tillWord(e);
+    sfx(w[1] === 'r' ? 'thud' : 'cash'); buzz(25); render(); tillSheet(); if (w[1] === 'ok') savedPop('All there', '#12804A'); return; }
   case 'pover': V.pay.over = d.v; V.pay.err = ''; return paySheet();
   case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.ex = String(Math.round(b)); V.pay.err = ''; V.pay.over = ''; return paySheet(); }
   case 'paydone': { if (!savePay()) return; return proofSheet(null); }
@@ -2782,6 +2826,7 @@ function act(a, d, el) {
   case 'key': {
     if (V.sheetKind === 'pay') return payKey(d.k);
     if (V.sheetKind === 'qty') { V.qk.v = editNum(V.qk.v, d.k, 'count'); return qtySheet(); }
+    if (V.sheetKind === 'till' && V.till) { V.till.ex = exprAdd(V.till.ex, d.k, 7); return tillSheet(); }
     if (V.sheetKind === 'buy' && V.b) { V.b.ex = editNum(V.b.ex, d.k, V.b.step === 'price' ? 'money' : 'count'); V.b.err = ''; return buySheet(); }
     const f = cur(); if (!f) return;
     if (f.v === 'num') { V.num.value = editNum(V.num.value, d.k, V.num.mode); V.num.err = ''; return render(); }
