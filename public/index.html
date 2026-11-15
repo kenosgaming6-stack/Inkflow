@@ -427,6 +427,38 @@ a{color:inherit;text-decoration:none}
 .stmt .sl .a{font-weight:700;font-variant-numeric:tabular-nums}
 .set{display:flex;align-items:center;justify-content:space-between;gap:.625rem;padding:.75rem;border-bottom:.09375rem solid var(--line)}
 /* Settings: its own cool page with coloured cards, one per job */
+/* first open: four short steps, each tinted by the world it sets up */
+html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
+.mid.supage{padding:1rem .875rem;gap:1rem;align-items:stretch}
+.mid.su0{background:radial-gradient(85% 42% at 50% 44%,#E3E9FF 0%,#FFFFFF 75%)}
+.mid.su1{background:linear-gradient(#EAF0FE,#FFFFFF 12rem)}
+.mid.su2{background:linear-gradient(#FFF1E4,#FFFFFF 12rem)}
+.mid.su3{background:linear-gradient(#E3F4F1,#FFFFFF 12rem)}
+.sudots{display:flex;gap:.375rem;justify-content:center;padding:.25rem 0 0}
+.sudots i{width:.5rem;height:.5rem;border-radius:.25rem;background:var(--line);transition:width .25s}
+.sudots i.on{width:1.5rem;background:var(--ink)}
+.suq{font:800 2rem/1.1 var(--num);color:var(--text);text-align:center;letter-spacing:.01em}
+.sus{text-align:center;color:var(--muted);font-weight:700;margin-top:-.5rem}
+.hero-ill{width:min(70%,16rem);height:auto;align-self:center;margin-top:.5rem}
+.hero-ill .onion{animation:bob 2.6s ease-in-out infinite}
+.hero-ill .coin{animation:bob 2.6s .9s ease-in-out infinite}
+.hero-ill .ink path{stroke-dasharray:60;animation:inkline 1s ease-out backwards}
+.hero-ill .ink path:nth-child(2){animation-delay:.25s}.hero-ill .ink path:nth-child(3){animation-delay:.5s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-.375rem)}}
+@keyframes inkline{from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
+.suwel{margin:auto 0;display:flex;flex-direction:column;align-items:center;gap:.75rem}
+.suwel .sus{margin:0}
+.brand{font:800 3rem/1 var(--num);color:var(--ink);text-align:center;letter-spacing:.02em}
+.docards{display:flex;flex-direction:column;gap:.625rem}
+.docard{display:flex;align-items:center;gap:.875rem;padding:.875rem;border-radius:1.125rem;background:#FFFFFF;border:.1875rem solid var(--line);text-align:left;position:relative}
+.docard .mi{width:3.25rem;height:3.25rem;border-radius:.875rem}
+.docard b{display:block;font-size:1.25rem;color:var(--text)}
+.docard small{display:block;color:var(--muted);font-weight:700}
+.docard.on{border-color:var(--mc);background:linear-gradient(to right,var(--mw),#FFFFFF 70%)}
+.docard .tick{margin-left:auto;width:2rem;height:2rem;border-radius:50%;border:.1875rem solid var(--line);display:flex;align-items:center;justify-content:center;color:#FFFFFF;flex:none}
+.docard.on .tick{background:var(--mc);border-color:var(--mc)}
+.suchips{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.suchips .chip{font-size:1.0625rem;padding:.625rem 1rem}
 .mid.setpage{background:#EEF1F6;padding:.75rem .75rem 1rem;gap:.75rem}
 .scard{flex:none;background:#FFFFFF;border-radius:1.125rem;box-shadow:0 .0625rem .25rem rgba(20,22,28,.08);overflow:hidden;border-top:.25rem solid var(--sc)}
 .scard>header{display:flex;align-items:center;gap:.625rem;padding:.75rem .875rem .375rem}
@@ -1303,7 +1335,7 @@ function render() {
   const keepTop = same ? old.scrollTop : 0;
   const wasBottom = same ? old.scrollHeight - old.scrollTop - old.clientHeight < 6 : true;
   app.classList.toggle('lh', S.settings.hand === 'left');
-  if (!f) document.documentElement.dataset.mode = V.tab; else if (f.v === 'settings') document.documentElement.dataset.mode = 'set';
+  if (!f) document.documentElement.dataset.mode = V.tab; else if (f.v === 'settings') document.documentElement.dataset.mode = 'set'; else if (f.v === 'setup') document.documentElement.dataset.mode = 'setup';
   app.innerHTML = (V.demo ? `<div class="demobar"><span>Example book. Not real.</span><button data-act="leavedemo">Leave</button></div>` : '')
     + (o.tabs ? band() : '')
     + `<header class="top ${o.topCls || ''}">${o.top}</header><main class="mid ${o.cls || ''}${same ? '' : ' enter'}" id="mid"${o.midStyle ? ` style="${o.midStyle}"` : ''}>${o.mid}</main>`
@@ -2340,11 +2372,42 @@ function settingsInputs() {
   app.querySelectorAll('[data-set]').forEach(el => el.addEventListener('input', e => { const k = e.target.dataset.set; let v = e.target.value; if (k === 'cycle') v = Math.max(1, parseInt(v, 10) || 14); S.settings[k] = v; VER++; save(); }));
 }
 const setInp = (k, lab, ph, type) => `<div class="field"><label for="s_${k}">${lab}</label><input id="s_${k}" data-set="${k}" type="${type || 'text'}" ${type === 'tel' ? 'inputmode="numeric"' : ''} value="${esc(S.settings[k])}" placeholder="${ph}" autocomplete="off"></div>`;
-VIEWS.setup = () => ({
-  top: `<div class="hrow"><div class="title"><b>Set up your book</b><small>You can change all of this later in Settings</small></div></div>`,
-  mid: `<div class="setbox">${setInp('item', 'What do you hand out?', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}${setInp('seller', 'Your name (goes on receipts)', '')}${setInp('momo', 'MoMo number (goes on reminders)', '', 'tel')}</div>
-    <div class="setlabel">Where do the ${esc(unit())}s go?</div>${townsBlock()}`,
-  cls: 'plain', dock: `<div class="bar"><button class="btn ghost" data-act="demo">See an example</button><button class="btn ink" data-act="setupdone">Start</button></div>`, after: settingsInputs});
+/* ===== First open: four short steps ===== */
+const ILL = `<svg class="hero-ill" viewBox="0 0 200 160" aria-hidden="true">
+  <rect x="34" y="14" width="112" height="132" rx="10" fill="#FFFFFF" stroke="#14161C" stroke-width="3"/>
+  <g stroke="#C9D7F0" stroke-width="2"><line x1="36" y1="46" x2="144" y2="46"/><line x1="36" y1="68" x2="144" y2="68"/><line x1="36" y1="90" x2="144" y2="90"/><line x1="36" y1="112" x2="144" y2="112"/></g>
+  <line x1="56" y1="14" x2="56" y2="146" stroke="#E2343F" stroke-width="2.5"/>
+  <g class="ink" stroke="#1D3FBB" stroke-width="4.5" stroke-linecap="round" fill="none"><path d="M64 40h42"/><path d="M64 62h58"/><path d="M64 84h30"/></g>
+  <g class="onion"><path d="M158 76c-17 0-29 13-29 29s12 27 29 27 29-11 29-27-12-29-29-29z" fill="#9B3D5A"/><path d="M147 90c-6 8-6 22 0 32" stroke="#D07595" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M158 76c3-12 1-21-5-28M158 76c6-10 12-15 20-17" stroke="#4D7C0F" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+  <g class="coin"><circle cx="40" cy="132" r="19" fill="#12804A"/><circle cx="40" cy="132" r="14" fill="none" stroke="#FFFFFF" stroke-opacity=".5" stroke-width="2"/><text x="40" y="139" text-anchor="middle" font-size="20" font-weight="800" fill="#FFFFFF" font-family="system-ui,sans-serif">₵</text></g>
+</svg>`;
+VIEWS.setup = () => {
+  const st = V.su || 0; const dir = V.suDir; V.suDir = null;
+  const dots = `<div class="sudots">${[0, 1, 2, 3].map(i => `<i class="${i === st ? 'on' : ''}"></i>`).join('')}</div>`;
+  const back = `<button class="sq" data-act="suback" aria-label="Back">${svg('back')}</button>`;
+  const cls = `supage su${st}` + (dir ? ' slide-' + dir : '');
+  if (st === 0) return {top: dots, mid: `<div class="suwel">${ILL}<div class="brand">StallBook</div><p class="sus">${esc(S.settings.item || 'Bags')}, money, people. In one book.</p></div>`, cls,
+    dock: `<div class="bar"><button class="btn ghost" data-act="demo">See an example</button><button class="btn ink tall" data-act="sunext">Start ${svg('fwd', 20)}</button></div>`};
+  if (st === 1) {
+    const items = ['Onions', 'Yams', 'Tomatoes', 'Plantain', 'Rice'], units = ['bag', 'sack', 'crate', 'box'];
+    return {top: dots, mid: `<div class="suq">What do you sell?</div>
+      <div class="suchips">${items.map(x => `<button class="chip ${S.settings.item === x ? 'on' : ''}" data-act="suset" data-k="item" data-v="${x}">${x}</button>`).join('')}</div>
+      <div class="setbox" style="padding:0">${setInp('item', 'Or write it', 'Onions')}</div>
+      <div class="suq" style="font-size:1.5rem">Counted in</div>
+      <div class="suchips">${units.map(x => `<button class="chip ${S.settings.unit === x ? 'on' : ''}" data-act="suset" data-k="unit" data-v="${x}">${x}s</button>`).join('')}</div>`, cls,
+      dock: `<div class="bar">${back}<button class="btn ink tall" data-act="sunext">Next ${svg('fwd', 20)}</button></div>`, after: settingsInputs};
+  }
+  if (st === 2) {
+    const d = S.settings.does || {credit: true, cash: true, buy: !!S.settings.buy};
+    const c = (k, icon, col, wash, title, sub) => `<button class="docard ${d[k] ? 'on' : ''}" style="--mc:${col};--mw:${wash}" data-act="sudo" data-k="${k}" aria-pressed="${!!d[k]}"><span class="mi" style="--mc:${col}">${svg(icon, 28)}</span><span><b>${title}</b><small>${sub}</small></span><span class="tick">${svg('check', 18)}</span></button>`;
+    return {top: dots, mid: `<div class="suq">What do you do?</div><p class="sus">Pick all that fit you.</p>
+      <div class="docards">${c('buy', 'buy', '#B4541A', '#FFF1E4', 'I buy', 'I go and buy the ' + esc((S.settings.item || 'goods').toLowerCase()))}${c('credit', 'bag', '#1D3FBB', '#EAF0FE', 'I give on credit', 'Women pay me later')}${c('cash', 'cash', '#12804A', '#E3F4EA', 'I sell for cash', 'Money in my hand')}</div>`, cls,
+      dock: `<div class="bar">${back}<button class="btn ink tall" data-act="sunext">Next ${svg('fwd', 20)}</button></div>`};
+  }
+  return {top: dots, mid: `<div class="suq">Where do you sell?</div><p class="sus">Each market where you sell. You can skip this.</p>${townsBlock()}
+    <div class="setbox" style="padding:0">${setInp('seller', 'Your name (on receipts)', '')}</div>`, cls,
+    dock: `<div class="bar">${back}<button class="btn ink tall" data-act="setupdone">${svg('check', 20)} Start my book</button></div>`, after: settingsInputs};
+};
 VIEWS.settings = () => {
   const s = S.settings;
   const seg = (k, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(s[k]) === String(v) ? 'on' : ''}" data-act="setseg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
@@ -2722,13 +2785,17 @@ function act(a, d, el) {
   case 'togglevoice': S.settings.voice = !S.settings.voice; commit(); say('Speak is on.'); return render();
   case 'togglesound': S.settings.sound = S.settings.sound === false; commit(); if (S.settings.sound) sfx('cash'); return render();
   case 'togglehalf': S.settings.half = S.settings.half === false; commit(); return render();
-  case 'setupdone': S.setup = true; commit(); return toRoot('give');
+  case 'setupdone': { const d = S.settings.does; if (d) S.settings.buy = !!d.buy; S.setup = true; V.su = 0; commit(); sfx('page'); return toRoot(S.settings.buy ? 'buy' : 'give'); }
+  case 'sunext': V.su = Math.min(3, (V.su || 0) + 1); V.suDir = 'l'; sfx('key'); return render();
+  case 'suback': V.su = Math.max(0, (V.su || 0) - 1); V.suDir = 'r'; return render();
+  case 'suset': S.settings[d.k] = d.v; commit(); return render();
+  case 'sudo': { const dd = S.settings.does || {credit: true, cash: true, buy: !!S.settings.buy}; dd[d.k] = !dd[d.k]; S.settings.does = dd; commit(); sfx('key'); return render(); }
   case 'backupsheet': return backupSheet();
   case 'backup': closeSheet(); return doBackup();
   case 'restore': { const rf = document.getElementById('restorefile'); if (rf) rf.click(); return; }
   case 'restoreyes': { if (V.restorePhotos) { Object.keys(V.restorePhotos).forEach(id => { if (/^data:image\//.test(V.restorePhotos[id])) phPut(id, V.restorePhotos[id]); }); V.restorePhotos = null; } if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; } closeSheet(); toast('Your book is back'); return toRoot('give'); }
   case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be reversed. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
-  case 'wipeyes': S = blank(); commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
+  case 'wipeyes': S = blank(); V.su = 0; commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
   case 'reload': location.reload(); return;
   case 'installok': lsSet('stallbook_install_hint', '1'); return closeSheet();
   case 'installhelp': return installSheet();
