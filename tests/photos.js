@@ -79,7 +79,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
 
   // cash, price and count check show the photos
   await act('cash');
-  ok((await p.$$('.sheet [data-act="cashitem"] img')).length === 2 && (await p.$$('.sheet [data-act="cashitem"]')).length === 3, 'sold for cash: "Which one?" shows the photos');
+  ok((await p.$$('.sheet [data-act="csk"] img')).length === 2 && (await p.$$('.sheet [data-act="csk"]')).length === 3, 'cash sale: the panel shows each kind by its photo');
   await p.evaluate(() => closeSheet());
   await act('count');
   ok((await p.$$('.sheet .kimg')).length === 3 && (await txt('.sheet')).includes('The book says 10 + 18 + 6'), 'count check: one row per kind with its photo');

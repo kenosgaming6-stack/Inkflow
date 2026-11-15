@@ -40,9 +40,8 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   await p.evaluate(() => { V.g = null; S.entries.push({id: 'h', date: new Date().toISOString(), type: 'give', pid: 'a', carId: 'c1', itemId: 'i1', bags: 0.5, price: 600, amount: 300, loc: 'l1', off: new Date().toISOString(), rcpt: true}); commit(); say(`Ama, ${bagsTxt(1.5)}. 1 left.`); });
   ok(/1 and a half/.test(await last()), 'a half bag is said as "and a half": ' + await last());
 
-  await act('cash'); await p.waitForTimeout(150);
-  if (await p.$('[data-act="cashitem"]')) await act('cashitem');
-  ok(/^Sold one for 600 cedis\. 30 and a half left\.$/.test(await last()), 'a cash sale is said: ' + await last());
+  await act('cash'); await p.waitForTimeout(150); await act('csk'); await act('cssave');
+  ok(await last() === 'Cash, 2 bags. 1,200 cedis.', 'a cash sale is said: ' + await last());
 
   await p.evaluate(() => { V.tab = 'collect'; render(); }); await p.waitForTimeout(200);
   await p.evaluate(() => openPay('a', {ctx: 'collect'})); await p.waitForTimeout(150);

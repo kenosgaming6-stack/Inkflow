@@ -14,7 +14,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   const keys = async s => { for (const k of s) await act('key', `[data-k="${k}"]`); };
   const left = async () => (await txt('.stock .big b'));
   const names = () => p.$$eval('#mid .row .name', els => els.map(e => e.textContent.trim()));
-  const tabNames = () => p.$$eval('.ptabs [data-act="gtab"]', els => els.map(e => e.childNodes[0].textContent.trim()));
+  const tabNames = () => p.$$eval('.ptabs [data-act="gtab"]', els => els.map(e => [...e.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim()));
   const swipe = async dx => { await p.evaluate(dx => { const m = document.getElementById('mid'); const mk = (type, x) => { const t = new Touch({identifier: 1, target: m, clientX: x, clientY: 300}); m.dispatchEvent(new TouchEvent(type, {touches: type === 'touchend' ? [] : [t], changedTouches: [t], bubbles: true})); }; mk('touchstart', 220); for (let i = 1; i <= 5; i++) mk('touchmove', 220 + dx * i / 5); mk('touchend', 220 + dx); }, dx); await p.waitForTimeout(250); };
   const state = () => p.evaluate(() => JSON.parse(localStorage.getItem('stallbook_v2')));
   const addLoc = async name => { await act('addloc'); await p.fill('#ls_new', name); await act('lsadd'); await act('lssave'); };
@@ -96,15 +96,15 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   ok(await left() === '7', 'fix again: 7 left');
 
   // Cash at the car is its own button: no name needed
-  ok((await txt('[data-act="cash"]')) === '', 'cash button is a sign, no words');
+  ok((await txt('[data-act="cash"]')) === 'Cash' && await p.evaluate(() => document.querySelector('[data-act="cash"]').getBoundingClientRect().left > document.querySelector('.find').getBoundingClientRect().right), 'a big Cash button, on the right of the name box');
   await p.waitForTimeout(1600); // the message from the fix above is gone by now (1.5 s)
-  await act('cash'); await act('cash');
-  ok(await left() === '5' && (await txt('#mid .cashline')).includes('2 bags'), 'cash twice: 5 left, cash line shows 2 bags');
+  await act('cash'); await act('csk'); await act('cssave');
+  ok(await left() === '5' && (await p.$$('#mid .cashrow')).length === 1 && (await txt('#mid .cashrow .qbox')) === '2', 'cash: 2 bags in one sale, 5 left, one big cash line');
   ok(!(await p.$('#toast')), 'no message after a cash sale');
-  await act('cashfix'); await act('cashless'); await act('sheetclose');
-  ok(await left() === '6', 'tap the cash line and take one off: 6 left');
-  await act('cash');
-  ok(await left() === '5', 'cash again: 5 left');
+  await p.click('#mid .cashrow'); await p.waitForTimeout(100); await act('cashedit'); await act('csless'); await p.waitForTimeout(850); await act('cssave');
+  ok(await left() === '6' && (await txt('#mid .cashrow .qbox')) === '1', 'tap the cash line and change it to 1: 6 left');
+  await p.waitForTimeout(850); await act('cash'); await act('cssave');
+  ok(await left() === '5' && (await p.$$('#mid .cashrow')).length === 2, 'cash again: 5 left, its own line');
   let st;
 
   // Oversell guard
@@ -121,7 +121,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   ok(await left() === '4', '4 left');
   // tabs: one per place, no All; each shows only its place; swipe moves between them
   let tn = await tabNames();
-  ok(tn.join('|') === 'Bakwai Market|Koko Shell' && !(await txt('.ptabs')).includes('All'), 'tabs: Bakwai Market, Koko Shell, no All');
+  ok(tn.join('|') === 'Bakwai Market|Koko Shell' && !(await txt('.ptabs')).includes('All'), 'tabs: Bakwai Market, Koko Shell, no All: ' + tn.join(' | '));
   ns = await names();
   ok((await txt('.ptabs .chip.on')).includes('Koko Shell') && ns.join('|') === 'Amma', 'Koko Shell tab shows only the Koko Shell line');
   await swipe(150);
