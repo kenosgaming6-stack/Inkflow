@@ -23,7 +23,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
     V.stack = []; V.tab = 'collect'; commit(); render(); });
   await p.waitForTimeout(250);
   const chips = await p.$$eval('.loadchips .chip', els => els.map(e => e.textContent.trim()));
-  ok(chips.length === 3 && chips[0] === 'All' && chips[1].startsWith('Abidjan') && chips[2].startsWith('Techiman'), 'chips under the card: All, then the loads newest first: ' + chips.join(' | '));
+  ok(chips.length === 3 && chips[0].startsWith('All') && chips[1].startsWith('No 2') && chips[1].includes('Abidjan') && chips[2].startsWith('No 1') && chips[2].includes('Techiman'), 'chips under the card: All, then the loads newest first, with page numbers: ' + chips.join(' | '));
   ok(chips[1].includes('₵2,600') && chips[2].includes('₵1,200'), 'each load chip shows what is still out on it');
   ok(await p.evaluate(() => { const c = document.querySelector('.loadchips .chip.on'); return getComputedStyle(c).backgroundColor !== getComputedStyle(c).color && getComputedStyle(c).color === 'rgb(255, 255, 255)'; }), 'the chosen chip is filled, with white letters');
   ok(num(await txt('.csum .cl b')) === 3800, 'All: still owed ₵3,800');

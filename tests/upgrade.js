@@ -43,7 +43,7 @@ const v1 = {settings: {seller: 'Siddick', momo: '0550000000', item: 'Onions', un
   const s2 = await p.evaluate(() => JSON.parse(localStorage.getItem('stallbook_v2')));
   ok(s2.v === 4 && !s2.places && s2.locs.length === 2 && s2.entries.filter(e => e.type === 'stock').length === 2 && s2.cars.every(c => c.adjust === undefined), 'v2 saved back as v4: locs, stock lines, no old fields');
   await p.click('[data-act="tab"][data-t="give"]'); await p.waitForTimeout(100);
-  ok(!(await p.$('.row.held')) && (await p.$$eval('.ptabs [data-act="gtab"]', els => els.map(e => e.childNodes[0].textContent.trim()))).join('|') === 'Kejetia|Asafo', 'v2 lines go under each customer\'s place: Kejetia and Asafo tabs');
+  ok(!(await p.$('.row.held')) && (await p.$$eval('.ptabs [data-act="gtab"]', els => els.map(e => [...e.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim()))).join('|') === 'Kejetia|Asafo', 'v2 lines go under each customer\'s place: Kejetia and Asafo tabs');
   await p.click('.ptabs .chip:has-text("Asafo")'); await p.waitForTimeout(100);
   await p.click('.row.held [data-act="entry"]'); await p.waitForTimeout(100); await p.click('[data-act="hand"]'); await p.waitForTimeout(100);
   ok((await txt(p, '.stock .leg')).includes('5 given') && !(await txt(p, '.stock .leg')).includes('held'), 'v2 waiting bags can be handed over in v3');

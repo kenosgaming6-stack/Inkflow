@@ -23,14 +23,16 @@ Three tabs at the bottom: **Give bags**, **Take money** and **Book**, and a four
   - Every 10 minutes (or 5, or 15, or never: Settings › Count the car, every) the number glows amber and plays a soft sound until you count. It only asks while the Give bags screen is open and something was done in the last 3 hours.
   - A load can't be closed while bags still have no name: name them or write them off as lost.
 - **Counter** (card menu ⌄ › Counter): a full screen that counts by taps, for when the boys carry bags. Choose **Give out** or **Count car**, the kind of bag (by photo), and how many each tap is (1, 2 or 3). Tap anywhere for each trip: the number grows and dots fill in rows of ten, each trip in its own shade. **−** takes off the last trip (hold it to start again). The lock hides everything but the tapping, so you can hand the phone over; hold to unlock. **Hold to finish**: Give out asks *Who took 7 bags?* and opens the give with that number; Count car fills in the car count. The count is kept if the app closes.
-- **Take money**: who owes, most urgent first, filtered by place. When two or more loads still have money out, chips under the card pick a load: the list then shows only the women who owe on it, with what they owe on it, and a payment from there pays that load first.
+- **Take money**: who owes, most urgent first, filtered by place. It opens on the load you are working on (the open load, or else the newest load with money out); **All** is one tap, and next time it snaps back to the current load. Loads have page numbers (No 1, No 2…) so two loads from the same place are told apart. The list shows only the women who owe on that load, with what they owe on it; a line underneath says how many more women owe on other loads (**See all**). A payment from there pays that load first. **Remind** and **End of day** sit in one slim row under the card.
   - **End of day:** "You should have ₵X" (today's cash payments, not MoMo, plus today's cash sales). Count with the note buttons: **All there ✓**, **Short ₵200** or **₵50 extra**. The last count shows under the button. Tags say **Pay by 26 Nov**, **Pay today**, **2 days late**, **Pays Friday** (a pay date she gave) or **Missed pay date**.
   - **Taking a payment:** tap a name and the money pad opens. Tap the cedi notes as she counts. **Done** turns the phone to her: the lines she cleared are struck through, a part-paid line gets **− 200** written on it, what is left is circled, and a PAID stamp lands. **Next ›** goes to the next woman at that spot. **Not today** saves a pay date.
   - **Overpayment:** if she pays more than she owes, you choose: keep it as credit, or record that you gave change.
-- **Book**: everyone, by place, and every load.
+- **Book**: a big **People / Loads** switch with counts. People are in coloured sections: **Owe money** (red, with the total), **Kept bags** (amber), **Paid up** (green), each woman with her coloured face, her place and her tag. Loads are in sections too: **Open** (blue), **Taking money** (red), **Done** (green), each with its page number, a coloured truck tile and a bar of how much is paid.
   - **Her page:** where she sells now (tap to change it) and what she owes, then one list of everything she took and paid. Each line keeps the load and the place it happened at.
 
 Nothing is ever overwritten. Corrections, handovers, releases and moves are new lines. There is no Undo button: to fix a mistake, tap the line and change it, or remove it (it stays in her book, crossed out). A cash sale entered by mistake is taken off by tapping the cash line.
+
+**A very big cash sale** (more than 20 bags or ₵15,000) asks first: "Sold 25 bags for cash? That is ₵16,250 in your hand."
 
 **Closing a load:** you can only close once no bags are kept for anyone. Then choose what happened to what's left: for the next load, sent back, spoiled or lost, sold for cash, or the count was wrong.
 
@@ -150,6 +152,7 @@ After that, a customer with a phone number gets a receipt about 20 seconds after
 | `end-of-day.js` | The end of day cash count |
 | `hints.js` | The finger that teaches |
 | `hand.js` | Right hand first, left hand mirrored; the note colours |
+| `focus.js` | Take money opens on the current load; the new Book; the big cash question; full screen on the Home Screen |
 | `colors.js` | Place, woman and kind colours, tags, the card menu |
 | `vibes.js` | Each tab's own paper and ink; places tint their page |
 | `screens.js` | Keyboard, turning the phone, and many screen sizes |
