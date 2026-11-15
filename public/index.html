@@ -305,6 +305,10 @@ a{color:inherit;text-decoration:none}
 .key.ok[disabled]{opacity:.4}
 .kp.pay .key{min-height:3.125rem}
 .note::after{content:"₵";position:absolute;right:.125rem;bottom:-.375rem;font-size:1.625rem;opacity:.16;pointer-events:none}
+/* right hand: what you tap most starts on the right, near the thumb. Left hand: mirrored. */
+.ktiles,.notes,.kpick,.faces{direction:rtl}
+.ktiles>*,.notes>*,.kpick>*,.faces>*{direction:ltr}
+html.lh .ktiles,html.lh .notes,html.lh .kpick,html.lh .faces{direction:ltr}
 .notes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.3125rem}
 .note{position:relative;overflow:hidden;min-height:2.875rem;border-radius:.375rem;border:.125rem solid var(--nb,var(--paid));background:linear-gradient(135deg,var(--nt,var(--paid-bg)) 0%,var(--nt,var(--paid-bg)) 55%,#FFFFFF 160%);color:var(--nb,var(--paid));box-shadow:inset 0 0 0 .1875rem rgba(255,255,255,.6);font-family:var(--num);font-size:1.25rem;letter-spacing:.02em;font-weight:700;font-size:.9375rem;display:flex;align-items:center;justify-content:center}
 .disp{padding:.625rem .875rem;border-radius:1rem;background:var(--key);text-align:right;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:.125rem}
@@ -583,7 +587,7 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .spent small{font-size:.8125rem;font-weight:700;color:var(--muted)}
 .cashleft{align-self:flex-start;font-size:.8125rem;font-weight:700;color:var(--muted);padding:.25rem .5rem;border-radius:.5rem;background:var(--paper)}
 .cashleft b{color:var(--paid)}.cashleft b.r{color:var(--owe)}
-.ktiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+.ktiles.bk{grid-template-columns:repeat(3,minmax(0,1fr))}
 .ktiles button{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.5rem .25rem;border-radius:.875rem;border:.125rem solid var(--line);background:var(--paper);font-weight:700;color:var(--ink);font-size:.875rem}
 .ktiles button .kimg{width:4rem;height:4rem}
 .ktiles button.newk{border-style:dashed;color:var(--muted)}
@@ -718,8 +722,8 @@ const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia 
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const NOTES = [200, 100, 50, 20, 10, 5];
-/* placeholder tints: replace with the real cedi note colours from the user's photos. [paper, edge and number] */
-const NOTE_TINT = {200: ['#F7E1C2', '#8A4F06'], 100: ['#E6DAF8', '#5B2C9A'], 50: ['#ECE6C6', '#6B5A12'], 20: ['#D9E7F8', '#1F4E8C'], 10: ['#F8DADD', '#9A1F2D'], 5: ['#D2F0E7', '#0F6B57']};
+/* the cedi notes by their colour: 5 blue, 10 green, 20 violet, 50 brown, 100 a different (teal) green, 200 brick red. [paper, edge and number] */
+const NOTE_TINT = {200: ['#F6D9D3', '#A3352A'], 100: ['#D3EEE8', '#0E6F62'], 50: ['#EEDFCC', '#7A4A1E'], 20: ['#EADCF6', '#6A2C9A'], 10: ['#DCF0D6', '#2E7D32'], 5: ['#D9E6FA', '#1E4FA0']};
 const noteStyle = n => NOTE_TINT[n] ? `--nt:${NOTE_TINT[n][0]};--nb:${NOTE_TINT[n][1]}` : '';
 /* the notes she has counted, read from the sum: "3 × 200 + 100" shows three 200s and a 100 */
 function noteStack(ex) {
@@ -1440,7 +1444,7 @@ function render() {
   const same = key === lastKey && old;
   const keepTop = same ? old.scrollTop : 0;
   const wasBottom = same ? old.scrollHeight - old.scrollTop - old.clientHeight < 6 : true;
-  app.classList.toggle('lh', S.settings.hand === 'left');
+  app.classList.toggle('lh', S.settings.hand === 'left'); document.documentElement.classList.toggle('lh', S.settings.hand === 'left');
   if (!f) document.documentElement.dataset.mode = V.tab; else if (f.v === 'settings') document.documentElement.dataset.mode = 'set'; else if (f.v === 'setup') document.documentElement.dataset.mode = 'setup';
   app.innerHTML = (V.demo ? `<div class="demobar"><span>Example book. Not real.</span><button data-act="leavedemo">Leave</button></div>` : '')
     + (o.tabs ? band() : '')
@@ -1652,7 +1656,7 @@ function buySheet() {
   const T = buyTrip(), B = V.b; if (!T || !B) return closeSheet();
   const it = T.items.find(i => i.id === B.itemId); const u = unit();
   V.sheetKind = 'buy';
-  if (B.step === 'kind') return sheet(`<i class="grab"></i><h3>Which kind?</h3><div class="ktiles">${T.items.map(i => `<button data-act="bkind" data-i="${i.id}">${kindImg(i)}${esc(i.name || '')}</button>`).join('')}<button class="newk" data-act="bnew">${svg('cam')}New kind</button></div>`);
+  if (B.step === 'kind') return sheet(`<i class="grab"></i><h3>Which kind?</h3><div class="ktiles bk">${T.items.map(i => `<button data-act="bkind" data-i="${i.id}">${kindImg(i)}${esc(i.name || '')}</button>`).join('')}<button class="newk" data-act="bnew">${svg('cam')}New kind</button></div>`);
   if (B.step === 'photo') return sheet(`<i class="grab"></i><h3>Photo of this kind</h3><p>The photo becomes its button.</p><button class="camera" data-act="bcam">${svg('cam', 48)}<span>Take a photo</span></button><input type="file" id="bcamin" accept="image/*" capture="environment" hidden><div class="bar"><button class="btn ghost" data-act="bnophoto">No photo</button></div>`)
     && document.getElementById('bcamin').addEventListener('change', onBuyCamera);
   const money_ = B.step === 'price';
@@ -2549,7 +2553,9 @@ VIEWS.setup = () => {
     const d = S.settings.does || {credit: true, cash: true, buy: !!S.settings.buy};
     const c = (k, icon, col, wash, title, sub) => `<button class="docard ${d[k] ? 'on' : ''}" style="--mc:${col};--mw:${wash}" data-act="sudo" data-k="${k}" aria-pressed="${!!d[k]}"><span class="mi" style="--mc:${col}">${svg(icon, 28)}</span><span><b>${title}</b><small>${sub}</small></span><span class="tick">${svg('check', 18)}</span></button>`;
     return {top: dots, mid: `<div class="suq">What do you do?</div><p class="sus">Pick all that fit you.</p>
-      <div class="docards">${c('buy', 'buy', '#B4541A', '#FFF1E4', 'I buy', 'I go and buy the ' + esc((S.settings.item || 'goods').toLowerCase()))}${c('credit', 'bag', '#1D3FBB', '#EAF0FE', 'I give on credit', 'Women pay me later')}${c('cash', 'cash', '#12804A', '#E3F4EA', 'I sell for cash', 'Money in my hand')}</div>`, cls,
+      <div class="docards">${c('buy', 'buy', '#B4541A', '#FFF1E4', 'I buy', 'I go and buy the ' + esc((S.settings.item || 'goods').toLowerCase()))}${c('credit', 'bag', '#1D3FBB', '#EAF0FE', 'I give on credit', 'Women pay me later')}${c('cash', 'cash', '#12804A', '#E3F4EA', 'I sell for cash', 'Money in my hand')}</div>
+      <div class="suq" style="font-size:1.375rem">Phone in which hand?</div>
+      <div class="seg">${[['right', 'Right hand'], ['left', 'Left hand']].map(([v, l]) => `<button class="${(S.settings.hand || 'right') === v ? 'on' : ''}" data-act="setseg" data-k="hand" data-v="${v}">${l}</button>`).join('')}</div>`, cls,
       dock: `<div class="bar">${back}<button class="btn ink tall" data-act="sunext">Next ${svg('fwd', 20)}</button></div>`};
   }
   return {top: dots, mid: `<div class="suq">Where do you sell?</div><p class="sus">Each market where you sell. You can skip this.</p>${townsBlock()}
