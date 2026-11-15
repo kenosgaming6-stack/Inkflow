@@ -48,6 +48,7 @@ html[data-mode="collect"]{--bar:#12804A}html[data-mode="book"]{--bar:#14161C}
 /* each job has its own world, so you feel where you are before you read: blue paper for Give bags, green paper and
    green ink for Take money, cream ledger paper and dark ink for Book. Panels (sheets) stay white so they stand out. */
 html[data-mode="buy"]{--bar:#B4541A;--paper:#FFF6EC;--page:#FFF6EC;--key:#FBE6D2;--line:#F0D6BD;--rule:#EDCFB2;--ink:#8A3A0C;--pen-wash:#FBE6D2}
+html[data-mode="set"]{--bar:#475569;--paper:#F7F8FB;--page:#EEF1F6;--key:#EEF1F6;--line:#DDE2EA;--rule:#DDE2EA;--ink:#24307A}
 html[data-mode="give"]{--paper:#F5F8FF;--page:#F5F8FF;--key:#E5ECFD;--line:#D3DDF4}
 html[data-mode="collect"]{--paper:#F2FAF5;--page:#F2FAF5;--key:#DCF0E3;--line:#C8E4D3;--rule:#BCDDC9;--ink:#0A5C35;--pen-wash:#DCF0E3}
 html[data-mode="book"]{--paper:#FBF7EE;--page:#FBF7EE;--key:#F0E8D7;--line:#E2D7C0;--rule:#E3D6BB;--ink:#262A33;--pen-wash:#F0E8D7}
@@ -425,6 +426,28 @@ a{color:inherit;text-decoration:none}
 .stmt .sl .w small{display:block;font-size:.875rem;color:var(--faint)}
 .stmt .sl .a{font-weight:700;font-variant-numeric:tabular-nums}
 .set{display:flex;align-items:center;justify-content:space-between;gap:.625rem;padding:.75rem;border-bottom:.09375rem solid var(--line)}
+/* Settings: its own cool page with coloured cards, one per job */
+.mid.setpage{background:#EEF1F6;padding:.75rem .75rem 1rem;gap:.75rem}
+.scard{flex:none;background:#FFFFFF;border-radius:1.125rem;box-shadow:0 .0625rem .25rem rgba(20,22,28,.08);overflow:hidden;border-top:.25rem solid var(--sc)}
+.scard>header{display:flex;align-items:center;gap:.625rem;padding:.75rem .875rem .375rem}
+.scard>header b{flex:1;min-width:0;font-size:1.125rem;color:var(--text)}
+.scard>header small{flex:none;font-size:.8125rem;font-weight:700;color:var(--muted)}
+.scard .setbox{padding:.375rem .875rem .875rem}
+.scard .seg button.on{color:var(--sc)}
+.scard .btn.ghost{color:var(--sc)}
+.scard .chips .chip{background:#FFFFFF}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:3.25rem;padding:.25rem .875rem;border-top:.0625rem solid var(--line)}
+.srow>span{font-weight:700;min-width:0}
+.switch{flex:none;position:relative;width:3.375rem;height:2.0625rem;border-radius:1.03rem;background:#C9CFDD}
+.switch i{position:absolute;top:.1875rem;left:.1875rem;width:1.6875rem;height:1.6875rem;border-radius:50%;background:#FFFFFF;box-shadow:0 .0625rem .25rem rgba(0,0,0,.28)}
+.switch.on{background:var(--sc,var(--paid))}
+.switch.on i{transform:translateX(1.3125rem)}
+.switch.just.on i{animation:knobon .22s cubic-bezier(.3,1.4,.5,1)}
+.switch.just:not(.on) i{animation:knoboff .22s cubic-bezier(.3,1.4,.5,1)}
+@keyframes knobon{from{transform:translateX(0)}to{transform:translateX(1.3125rem)}}
+@keyframes knoboff{from{transform:translateX(1.3125rem)}to{transform:translateX(0)}}
+.savestat{align-self:flex-start;font-weight:700;font-size:.9375rem;padding:.3125rem .75rem;border-radius:.625rem}
+.savestat.ok{background:var(--paid-bg);color:var(--paid)}.savestat.w{background:var(--warn-bg);color:var(--warn)}.savestat.r{background:var(--owe-bg);color:var(--owe)}
 .setbox{display:flex;flex-direction:column;gap:.75rem;padding:.75rem}
 .setlabel{padding:1rem .75rem .25rem;font-size:.8125rem;font-weight:700;letter-spacing:.0375rem;text-transform:uppercase;color:var(--faint)}
 .demobar{flex:none;display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:var(--warn-bg);color:var(--warn);font-size:.875rem;font-weight:700}
@@ -1280,7 +1303,7 @@ function render() {
   const keepTop = same ? old.scrollTop : 0;
   const wasBottom = same ? old.scrollHeight - old.scrollTop - old.clientHeight < 6 : true;
   app.classList.toggle('lh', S.settings.hand === 'left');
-  if (!f) document.documentElement.dataset.mode = V.tab;
+  if (!f) document.documentElement.dataset.mode = V.tab; else if (f.v === 'settings') document.documentElement.dataset.mode = 'set';
   app.innerHTML = (V.demo ? `<div class="demobar"><span>Example book. Not real.</span><button data-act="leavedemo">Leave</button></div>` : '')
     + (o.tabs ? band() : '')
     + `<header class="top ${o.topCls || ''}">${o.top}</header><main class="mid ${o.cls || ''}${same ? '' : ' enter'}" id="mid"${o.midStyle ? ` style="${o.midStyle}"` : ''}>${o.mid}</main>`
@@ -2325,29 +2348,29 @@ VIEWS.setup = () => ({
 VIEWS.settings = () => {
   const s = S.settings;
   const seg = (k, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(s[k]) === String(v) ? 'on' : ''}" data-act="setseg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
-  return {top: `<div class="hrow"><div class="title"><b>Settings</b><small>Saved on this phone only</small></div></div>`,
-    mid: `<div class="setbox">${setInp('seller', 'Your name (goes on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (goes on reminders)', '055 000 0000', 'tel')}${setInp('item', 'What you hand out', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}</div>
-      <div class="setlabel">Places</div>${townsBlock()}
-      ${SMS_OK && !V.demo ? `<div class="setlabel">Receipts by SMS</div><div class="setbox">
-        <div class="set"><span>Send receipts by themselves</span><button class="chip ${SMS.on ? 'on' : ''}" data-act="smstoggle" aria-pressed="${SMS.on}">${SMS.on ? 'On' : 'Off'}</button></div>
+  const card = (icon, col, title, body, sub) => `<section class="scard" style="--sc:${col}"><header><span class="mi" style="--mc:${col}">${svg(icon, 20)}</span><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</header>${body}</section>`;
+  const sw = (act, on, label) => `<div class="srow"><span>${label}</span><button class="switch ${on ? 'on' : ''} ${V.justSw === act ? 'just' : ''}" data-act="${act}" aria-pressed="${!!on}" aria-label="${esc(label)}"><i></i></button></div>`;
+  const days = S.lastBackup ? Math.floor((Date.now() - Date.parse(S.lastBackup)) / 864e5) : -1;
+  const saved = days < 0 ? '<span class="savestat r">Never saved</span>' : `<span class="savestat ${days <= 7 ? 'ok' : 'w'}">${days === 0 ? 'Saved today' : days === 1 ? 'Saved yesterday' : 'Saved ' + days + ' days ago'}</span>`;
+  const mid = card('bag', '#1D3FBB', 'Your business', `<div class="setbox">${setInp('item', 'What you sell', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}${setInp('seller', 'Your name (on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (on reminders)', '055 000 0000', 'tel')}</div>${sw('togglehalf', s.half !== false, 'Half ' + esc(unit()) + 's')}`)
+    + card('pin', '#0F766E', 'Places', townsBlock(), placesSorted().length ? String(placesSorted().length) : '')
+    + card('buy', '#B4541A', 'Buying', sw('togglebuy', s.buy, 'Buying trips (Buy ' + esc(unit()) + 's tab)'))
+    + card('tally', '#B4690E', 'Counting', `<div class="setbox"><div class="field"><label>Count the car, every</label>${seg('checkMins', [[0, 'Never'], [5, '5 min'], [10, '10 min'], [15, '15 min']])}</div></div>`)
+    + card('msg', '#12804A', 'Receipts', `<div class="setbox"><div class="field"><label>Messages go by</label>${seg('via', [['sms', 'SMS'], ['wa', 'WhatsApp']])}</div></div>`
+      + (SMS_OK && !V.demo ? sw('smstoggle', SMS.on, 'Send receipts by themselves') + `<div class="setbox">
         <div class="field"><label for="sms_key">Arkesel API key (stays on this phone)</label><input id="sms_key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(SMS.key)}"></div>
         <div class="field"><label for="sms_from">Sender name (up to 11 letters, approved by Arkesel)</label><input id="sms_from" maxlength="11" autocomplete="off" spellcheck="false" value="${esc(SMS.from)}" placeholder="StallBook"></div>
         <p class="small" id="sms_status">${esc(smsStatus())}</p>
-        ${S.settings.momo ? `<button class="btn ghost" data-act="smstest">Send a test to ${esc(S.settings.momo)}</button>` : ''}</div>` : ''}
-      <div class="setlabel">Count the car, every</div><div class="setbox">${seg('checkMins', [[0, 'Never'], [5, '5 min'], [10, '10 min'], [15, '15 min']])}</div>
-      <div class="setlabel">Messages go by</div><div class="setbox">${seg('via', [['sms', 'SMS'], ['wa', 'WhatsApp']])}</div>
-      <div class="setlabel">Hand that holds the phone</div><div class="setbox">${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div>
-      <div class="set"><span>Half ${esc(unit())}s</span><button class="chip ${s.half !== false ? 'on' : ''}" data-act="togglehalf" aria-pressed="${s.half !== false}">${s.half !== false ? 'On' : 'Off'}</button></div>
-      <div class="set"><span>Buying trips (Buy ${esc(unit())}s tab)</span><button class="chip ${s.buy ? 'on' : ''}" data-act="togglebuy" aria-pressed="${!!s.buy}">${s.buy ? 'On' : 'Off'}</button></div>
-      <div class="set"><span>Speak out loud</span><button class="chip ${s.voice ? 'on' : ''}" data-act="togglevoice" aria-pressed="${!!s.voice}">${s.voice ? 'On' : 'Off'}</button></div>
-      <div class="set"><span>Sounds and buzz</span><button class="chip ${s.sound !== false ? 'on' : ''}" data-act="togglesound" aria-pressed="${s.sound !== false}">${s.sound !== false ? 'On' : 'Off'}</button></div>
-      ${V.demo ? '' : `<div class="setlabel">Backup</div><div class="setbox"><p class="small">${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) : 'No backup yet.'} If this phone is lost, the backup file brings the book back.</p>
-      <button class="btn ink" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" hidden></div>`}
-      ${IOS && !STANDALONE ? `<div class="setbox"><button class="btn ghost" data-act="installhelp">Put StallBook on your Home Screen</button></div>` : ''}
-      <div class="setbox">${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}<button class="btn ghost redtext" data-act="wipe">Delete everything</button></div>
-      <p class="ver">StallBook ${APP_VERSION} · ${innerWidth}×${innerHeight} · ${navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? 'Home Screen' : 'browser'}</p>`,
-    cls: 'plain', dock: `<div class="bar">${backSq()}<span class="sp"></span></div>`,
-    after: () => { settingsInputs(); smsInputs(); const rf = document.getElementById('restorefile'); if (rf) rf.addEventListener('change', onRestoreFile); }};
+        ${S.settings.momo ? `<button class="btn ghost" data-act="smstest">Send a test to ${esc(S.settings.momo)}</button>` : ''}</div>` : ''))
+    + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz') + `<div class="setbox"><div class="field"><label>Hand that holds the phone</label>${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div></div>`)
+    + (V.demo ? '' : card('cloud', '#24307A', 'Keep your book safe', `<div class="setbox">${saved}<p class="small">If this phone is lost, the backup file brings the book back.</p>
+      <button class="btn ink" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" hidden></div>`))
+    + card('eye', '#475569', 'Help', `<div class="setbox">${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}${IOS && !STANDALONE ? `<button class="btn ghost" data-act="installhelp">Put StallBook on your Home Screen</button>` : ''}</div>`)
+    + card('del', '#D12B36', 'Delete', `<div class="setbox"><button class="btn ghost redtext" data-act="wipe">Delete everything</button></div>`)
+    + `<p class="ver">StallBook ${APP_VERSION} · ${innerWidth}×${innerHeight} · ${navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? 'Home Screen' : 'browser'}</p>`;
+  return {top: `<div class="hrow"><span class="mi" style="--mc:#475569">${svg('set', 20)}</span><div class="title"><b>Settings</b><small>Saved on this phone only</small></div></div>`,
+    mid, cls: 'setpage', dock: `<div class="bar">${backSq()}<span class="sp"></span></div>`,
+    after: () => { V.justSw = null; settingsInputs(); smsInputs(); const rf = document.getElementById('restorefile'); if (rf) rf.addEventListener('change', onRestoreFile); }};
 };
 function onRestoreFile(e) {
   const file = e.target.files && e.target.files[0]; if (!file) return;
@@ -2742,6 +2765,7 @@ document.addEventListener('click', e => {
   if (t.classList && t.classList.contains('ov')) { if (V.sheetKind === 'proof') return proofDone(); closeSheet(); return; }
   const b = t.closest('[data-act]'); if (!b) return;
   if (b.tagName !== 'A') e.preventDefault();
+  if (b.classList.contains('switch')) V.justSw = b.dataset.act;
   act(b.dataset.act, Object.assign({}, b.dataset), b);
 });
 
