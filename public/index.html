@@ -590,6 +590,11 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .locchip[style]>svg:first-child{color:var(--pc)}
 .tag.rr{background:var(--owe);color:#fff}
 .tag.pd{background:#EDE5FC;color:#6D28D9}
+.loadchips{display:flex;gap:.375rem;overflow-x:auto;scrollbar-width:none;margin:.5rem -.75rem 0;padding:0 .75rem}
+.loadchips::-webkit-scrollbar{display:none}
+.loadchips .chip{display:inline-flex;align-items:center;gap:.375rem;background:var(--paper)}
+.loadchips .chip b{font-family:var(--num);font-size:1.0625rem;color:var(--owe)}
+.loadchips .chip.on b{color:#FFFFFF}
 .sect.r{color:var(--owe)}.sect.pd{color:#6D28D9}
 .btn.menu{justify-content:flex-start;gap:.75rem;text-align:left}
 .mi{flex:none;width:2.25rem;height:2.25rem;border-radius:.625rem;display:flex;align-items:center;justify-content:center;background:var(--mc);color:#fff}
@@ -1962,7 +1967,9 @@ function locSheet(o) {
 /* ===== Collect ===== */
 function collectLists() {
   const q = V.cq.trim().toLowerCase();
-  const all = debtors().filter(x => inFilter(x.p) && (!q || x.p.name.toLowerCase().includes(q)));
+  const fc = V.fCar && carById(V.fCar) ? V.fCar : '';
+  const all = debtors().map(x => Object.assign(x, {owe: fc ? r2(sum(x.L.loads.filter(l => l.carId === fc), l => l.left)) : x.L.bal}))
+    .filter(x => x.owe > 0.001 && inFilter(x.p) && (!q || x.p.name.toLowerCase().includes(q)));
   const bySev = (a, b) => b.st.sev - a.st.sev || b.L.bal - a.L.bal;
   const now = all.filter(x => x.st.sev >= 3).sort(bySev);
   const prom = all.filter(x => x.st.k === 'promised').sort((a, b) => cmp(a.st.on, b.st.on));
@@ -1976,8 +1983,8 @@ function collectListHtml() {
   const inToday = sum(paysToday, e => e.amount);
   const paidIds = [...new Set(paysToday.map(e => e.pid))].filter(id => { const p = person(id); return p && ledger(id).bal <= 0.001 && inFilter(p); });
   const fp = V.flashPay && Date.now() - V.flashPay.t < 4500 ? V.flashPay : null;
-  const row = x => `<button class="row ${fp && fp.pid === x.p.id ? 'flash' : ''}" data-act="pay" data-id="${x.p.id}"><div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${x.p.loc ? pdot(x.p.loc) + esc(locTxt(x.p.loc)) + ' · ' : ''}${statusTag(x.st)}</div></div><span class="amt">${money(x.L.bal)}${fp && fp.pid === x.p.id ? `<small class="ok">−${money(fp.amt)} ✓</small>` : ''}</span></button>`;
-  const sect = (label, arr, cls) => arr.length ? `<div class="sect ${cls || ''}"><span>${label} · ${arr.length}</span><span style="flex:none">${money(sum(arr, x => x.L.bal))}</span></div>` + arr.map(row).join('') : '';
+  const row = x => `<button class="row ${fp && fp.pid === x.p.id ? 'flash' : ''}" data-act="pay" data-id="${x.p.id}"><div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${x.p.loc ? pdot(x.p.loc) + esc(locTxt(x.p.loc)) + ' · ' : ''}${statusTag(x.st)}</div></div><span class="amt">${money(x.owe)}${fp && fp.pid === x.p.id ? `<small class="ok">−${money(fp.amt)} ✓</small>` : ''}</span></button>`;
+  const sect = (label, arr, cls) => arr.length ? `<div class="sect ${cls || ''}"><span>${label} · ${arr.length}</span><span style="flex:none">${money(sum(arr, x => x.owe))}</span></div>` + arr.map(row).join('') : '';
   let mid = '';
   if (!all.length && !paidIds.length) mid += `<div class="empty"><h2>${V.cq || V.fTown ? 'Nobody here owes' : 'Nobody owes you'}</h2><p>${V.cq || V.fTown ? 'Try All, or check the spelling.' : 'Money given on credit shows up here.'}</p></div>`;
   mid += sect('Take now', now, 'r') + sect('Pay dates', prom, 'pd') + sect('Not yet', later);
@@ -1990,10 +1997,15 @@ function viewCollect() {
   const inToday = r2(sum(S.entries.filter(e => e.type === 'pay' && live(e) && !e.with && dayKey(e.date) === t), e => e.amount) + cashToday);
   const {html, all} = collectListHtml();
   const mid = `<div class="lines down" id="collist">${html}</div>`;
-  const total = sum(all, x => x.L.bal);
+  const total = sum(all, x => x.owe);
   const remindN = remindList().length;
-  const top = `<div class="csum"><div class="cl"><small>Still owed${V.fTown ? ' · ' + esc(V.fLoc ? locTxt(V.fLoc) : V.fTown) : ''}</small><b class="${total > 0.001 ? '' : 'ok'}" data-roll="owed:${esc(V.fTown)}:${esc(V.fLoc)}" data-v="${total}" data-f="m">${money(total)}</b></div>
-    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}</div></div>`;
+  /* one chip per load that still has money out (shown when there are two or more) */
+  const outCars = carsNewest().map(c => ({c, out: carStats(c.id).out})).filter(x => x.out > 0.001);
+  if (V.fCar && !outCars.some(x => x.c.id === V.fCar)) V.fCar = '';
+  const fcar = V.fCar ? carById(V.fCar) : null;
+  const loadRow = outCars.length > 1 ? `<div class="loadchips"><button class="chip ${!V.fCar ? 'on' : ''}" data-act="fcar" data-id="">All</button>${outCars.map(x => `<button class="chip ${V.fCar === x.c.id ? 'on' : ''}" data-act="fcar" data-id="${x.c.id}">${svg('truck', 16)}${esc(carName(x.c))}<b>${money(x.out)}</b></button>`).join('')}</div>` : '';
+  const top = `<div class="csum"><div class="cl"><small>Still owed${fcar ? ' · ' + esc(carName(fcar)) : ''}${V.fTown ? ' · ' + esc(V.fLoc ? locTxt(V.fLoc) : V.fTown) : ''}</small><b class="${total > 0.001 ? '' : 'ok'}" data-roll="owed:${esc(V.fCar || '')}:${esc(V.fTown)}:${esc(V.fLoc)}" data-v="${total}" data-f="m">${money(total)}</b></div>
+    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}</div></div>${loadRow}`;
   const dock = `${filterChips(id => debtors().filter(x => x.p.loc === id).length)}
     <div class="bar"><label class="find ink">${svg('search')}<input id="cq" type="search" placeholder="Find a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name" value="${esc(V.cq)}"></label></div>`;
   return {top, mid, cls: 'book', dock, tabs: true, anchor: 'top',
@@ -2007,9 +2019,9 @@ function remindList(ids) {
 
 /* money pad over the list: the calculator lives where money is typed */
 const paySum = () => r2(exprNum(V.pay.ex));
-function payPreview(pid, amt, loadId) {
+function payPreview(pid, amt, loadId, carId) {
   const open = ledger(pid).loads.filter(L => L.left > 0.001); const first = open.find(L => L.id === loadId);
-  const order = (first ? [first] : []).concat(open.filter(L => L !== first)); let r = amt; const outp = [];
+  const order = (first ? [first] : []).concat(open.filter(L => L !== first && carId && L.carId === carId)); open.forEach(L => { if (!order.includes(L)) order.push(L); }); let r = amt; const outp = [];
   for (const L of order) { if (r <= 0.001) break; const k = Math.min(L.left, r); r -= k; outp.push({L, k, cleared: k >= L.left - 0.001}); }
   return outp;
 }
@@ -2018,7 +2030,7 @@ function nextPayId(pid) { const ord = collectLists().order.map(x => x.p.id); con
 function paySheet() {
   const P = V.pay; const p = person(P.pid); const L = ledger(p.id); const a = paySum(); const left = r2(L.bal - a);
   const over = a > Math.max(0, L.bal) + 0.001;
-  const pv = payPreview(p.id, a, P.loadId);
+  const pv = payPreview(p.id, a, P.loadId, P.carId);
   const next = P.ctx === 'collect' ? nextPayId(p.id) : null;
   sheet(`<div class="hrow"><span class="av" style="${avc(p.name)}">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${L.bal > 0.001 ? 'Owes ' + money(L.bal) : 'Owes nothing'}${p.loc ? ' · ' + esc(locTxt(p.loc)) : ''}</small></div>${L.bal > 0.001 ? `<button class="lnk" data-act="promise" data-id="${p.id}">Not today</button>` : ''}<button class="lnk" data-act="person" data-id="${p.id}">History ›</button></div>
     <div class="disp"><div class="tape">${exprTape(P.ex) || '&nbsp;'}</div><div class="v ${a ? 'g' : ''}">${money(a)}</div>${noteStack(P.ex)}<div class="s">${!a ? 'Tap the notes as she counts' : over ? money(a - Math.max(0, L.bal)) + ' more than she owes' : left > 0.001 ? money(left) + ' left after this' : 'All paid'}</div></div>
@@ -2044,8 +2056,8 @@ function savePay() {
   const amount = over && P.over === 'change' ? Math.max(0, L.bal) : a;
   if (!amount) { P.err = 'She owes nothing. Keep it as credit, or give it back.'; paySheet(); return false; }
   const outBefore = new Map(S.cars.filter(c => c.phase === 'out').map(c => [c.id, carStats(c.id).out]));
-  const pv = payPreview(p.id, amount, P.loadId);
-  const e = add(Object.assign({type: 'pay', pid: p.id, amount, method: P.method, loadId: P.loadId || null, carId: null, rcpt: !p.phone}, over && P.over === 'change' ? {change: r2(a - amount)} : {}));
+  const pv = payPreview(p.id, amount, P.loadId, P.carId);
+  const e = add(Object.assign({type: 'pay', pid: p.id, amount, method: P.method, loadId: P.loadId || null, carId: P.carId || null, rcpt: !p.phone}, over && P.over === 'change' ? {change: r2(a - amount)} : {}));
   const bal = ledger(p.id).bal;
   sfx('cash'); buzz(25);
   const done = S.cars.find(c => c.phase === 'out' && outBefore.get(c.id) > 0.001 && carStats(c.id).out <= 0.001);
@@ -2741,7 +2753,8 @@ function act(a, d, el) {
   case 'ploc': { const p = person(d.id); return locSheet({mode: 'person', pid: p.id, sel: p.loc, mark: p.note || ''}); }
 
   /* collect */
-  case 'pay': return openPay(d.id, {ctx: 'collect'});
+  case 'pay': return openPay(d.id, {ctx: 'collect', carId: V.fCar && carById(V.fCar) ? V.fCar : null});
+  case 'fcar': V.fCar = d.id || ''; sfx('key'); return render();
   case 'paybook': return openPay(d.id, {ctx: 'person'});
   case 'payload': { const e = byId(d.id); closeSheet(); return openPay(e.pid, {loadId: d.id, ctx: 'person'}); }
   case 'note': { const P = V.pay; P.ex = !P.ex ? String(d.n) : OPS.includes(P.ex.slice(-1)) ? P.ex + d.n : P.ex + '+' + d.n; P.err = ''; P.over = ''; buzz(8); return paySheet(); }
@@ -2749,9 +2762,9 @@ function act(a, d, el) {
   case 'pover': V.pay.over = d.v; V.pay.err = ''; return paySheet();
   case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.ex = String(Math.round(b)); V.pay.err = ''; V.pay.over = ''; return paySheet(); }
   case 'paydone': { if (!savePay()) return; return proofSheet(null); }
-  case 'paynext': { const P = V.pay; const nx = nextPayId(P.pid); if (paySum() > 0) { if (!savePay()) return; return proofSheet(nx); } if (!nx) return closeSheet(); return openPay(nx, {ctx: 'collect'}); }
+  case 'paynext': { const P = V.pay; const nx = nextPayId(P.pid); if (paySum() > 0) { if (!savePay()) return; return proofSheet(nx); } if (!nx) return closeSheet(); return openPay(nx, {ctx: 'collect', carId: V.fCar && carById(V.fCar) ? V.fCar : null}); }
   case 'pfdone': return proofDone();
-  case 'pfnext': { proofDone(); return d.id && person(d.id) ? openPay(d.id, {ctx: 'collect'}) : null; }
+  case 'pfnext': { proofDone(); return d.id && person(d.id) ? openPay(d.id, {ctx: 'collect', carId: V.fCar && carById(V.fCar) ? V.fCar : null}) : null; }
   case 'promise': V.pr = null; return promiseSheet(d.id);
   case 'pron': V.pr.on = d.k; return promiseSheet(V.pr.pid);
   case 'prhow': V.pr.how = d.h; return promiseSheet(V.pr.pid);
