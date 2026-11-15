@@ -15,7 +15,7 @@ Three tabs at the bottom: **Give bags**, **Take money** and **Book**, and a four
 - **Give bags**: the open load. A card with the bags left, given and kept, then one tab per place (Koko Shell, Market…) and **+** to add a place. Each tab lists only that place, top to bottom in the order you gave. Swipe left or right to move between places; the list follows your finger.
   - **Starting a load:** **New load** asks one thing at a time: where it is from, a photo of each kind of bag, how many, the price, then what the load cost.
   - **Recording someone:** type two letters or tap a face. Set the number of bags with − and + (tap the number to type it). With several kinds, tap the photo of each kind she takes; she gets one line with each kind's photo and count side by side (more kinds wrap inside the line). Tap a photo on her line to change that kind's count, or her name to pick which kind to open. Switch on **Keep for her** to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She goes into the tab you are on.
-  - **Cash sales:** the cash button counts a bag sold for cash, with no name.
+  - **Cash sales:** the big green **Cash** button (right of the name box) opens a green panel: − 1 + for one kind, or tap the photos for several kinds, then **Sold · ₵1,300**. Every cash sale is its own big green CASH line among the women's lines; tap it to change it or remove it. The load card counts cash in green, and Take money's **In today** and Book's **This week** include cash sales.
   - **Correcting a line:** tap the number in her row to change it. Tap her name to hand over kept bags, release them, pick the right customer or change the place.
 - **Counting the car:** tap the big number on the card ("40 left") any time. It shows what the book says, you set what is really in the car with − and + (tap the number to type it), and save.
   - Same number: one tap. More than the book: the book is fixed. Fewer than the book: the missing bags show in the list as an amber line, **Who took these?**, in the place you are at. Tap it and pick who took them, or **Nobody. They are lost**. Naming turns them into a normal give, so the book stays right.
@@ -23,7 +23,8 @@ Three tabs at the bottom: **Give bags**, **Take money** and **Book**, and a four
   - Every 10 minutes (or 5, or 15, or never: Settings › Count the car, every) the number glows amber and plays a soft sound until you count. It only asks while the Give bags screen is open and something was done in the last 3 hours.
   - A load can't be closed while bags still have no name: name them or write them off as lost.
 - **Counter** (card menu ⌄ › Counter): a full screen that counts by taps, for when the boys carry bags. Choose **Give out** or **Count car**, the kind of bag (by photo), and how many each tap is (1, 2 or 3). Tap anywhere for each trip: the number grows and dots fill in rows of ten, each trip in its own shade. **−** takes off the last trip (hold it to start again). The lock hides everything but the tapping, so you can hand the phone over; hold to unlock. **Hold to finish**: Give out asks *Who took 7 bags?* and opens the give with that number; Count car fills in the car count. The count is kept if the app closes.
-- **Take money**: who owes, most urgent first, filtered by place. Tags say **Pay by 26 Nov**, **Pay today**, **2 days late**, **Pays Friday** (a pay date she gave) or **Missed pay date**.
+- **Take money**: who owes, most urgent first, filtered by place. When two or more loads still have money out, chips under the card pick a load: the list then shows only the women who owe on it, with what they owe on it, and a payment from there pays that load first.
+  - **End of day:** "You should have ₵X" (today's cash payments, not MoMo, plus today's cash sales). Count with the note buttons: **All there ✓**, **Short ₵200** or **₵50 extra**. The last count shows under the button. Tags say **Pay by 26 Nov**, **Pay today**, **2 days late**, **Pays Friday** (a pay date she gave) or **Missed pay date**.
   - **Taking a payment:** tap a name and the money pad opens. Tap the cedi notes as she counts. **Done** turns the phone to her: the lines she cleared are struck through, a part-paid line gets **− 200** written on it, what is left is circled, and a PAID stamp lands. **Next ›** goes to the next woman at that spot. **Not today** saves a pay date.
   - **Overpayment:** if she pays more than she owes, you choose: keep it as credit, or record that you gave change.
 - **Book**: everyone, by place, and every load.
@@ -32,6 +33,12 @@ Three tabs at the bottom: **Give bags**, **Take money** and **Book**, and a four
 Nothing is ever overwritten. Corrections, handovers, releases and moves are new lines. There is no Undo button: to fix a mistake, tap the line and change it, or remove it (it stays in her book, crossed out). A cash sale entered by mistake is taken off by tapping the cash line.
 
 **Closing a load:** you can only close once no bags are kept for anyone. Then choose what happened to what's left: for the next load, sent back, spoiled or lost, sold for cash, or the count was wrong.
+
+**First open:** four short steps with a moving picture: welcome, what you sell, what you do (I buy · I give on credit · I sell for cash; "I buy" turns on Buy bags) and which hand holds the phone, and where you sell.
+
+**Settings** is its own page of coloured cards (Your business, Places, Buying, Counting, Receipts, Sound and voice, Keep your book safe, Help, Delete) with real switches and a coloured backup status (red Never saved, green Saved 2 days ago).
+
+**The finger that teaches:** the first time on each spot an animated hand taps it with a few words (Type her name, Tap for cash, Tap the photo, Tap her name, Tap the notes, Tap Bought). Each shows once; Settings › Help › **Show me how** brings them back.
 
 **Speak out loud** (Settings, off at first): the phone says each give ("Ama, 3 bags. 35 left."), each cash sale and each payment ("Ama paid 1,000 cedis. 2,300 cedis left."), and "Count the bags." when it is time to count. It uses the phone's own voice and works offline.
 
@@ -44,6 +51,10 @@ Nothing is ever overwritten. Corrections, handovers, releases and moves are new 
 - **Numbers are painted big** in Barlow Condensed (SIL Open Font License, `public/fonts/OFL-barlow.txt`). Words stay in Atkinson Hyperlegible.
 - **Places are index tabs** standing on the page.
 - **Every number pad is a calculator**, laid out like the iPhone's: 7 8 9 × / 4 5 6 − / 1 2 3 + / 00 0 ⌫ and the action key. What you type shows small on top ("5 + 6 + 7 + 8") and the total shows big underneath; times goes before plus and minus. Tap ⌫ to take one off, hold it to clear. On the money pad the cedi notes add themselves to the sum.
+- **Right hand first:** the things you tap most start on the right, near the thumb: bag photo tiles, the notes (₵200 on the right, ₵5 on the left), the Counter's kinds, the faces, the Cash button. Settings › Hand (or the first open) mirrors it all for the left hand.
+- **The notes look like the real cedi notes:** ₵5 blue, ₵10 green, ₵20 violet, ₵50 brown, ₵100 teal green, ₵200 brick red. Counted notes stack under the total.
+- **A big check on every save** in the job's colour (give blue, kept amber, cash green, buy clay, count amber) with the key fact, like "Ama · 3 bags".
+- **Readable in the sun:** small lines are 15px and darker, the load card legend is icons with big numbers, and **Big text** (Settings) makes the whole app 15% bigger.
 - **Things move like paper:** big numbers roll to their new value, a new line writes itself in from left to right, a panel follows your finger when you pull it down by its top edge (let go early and it springs back), a new load comes in as a page turning, and report totals count up over a double rule. Turn on Reduce Motion on the phone and all of it stops.
 
 ## Every screen size
@@ -130,6 +141,15 @@ After that, a customer with a phone number gets a receipt about 20 seconds after
 | `voice.js` | Speak out loud |
 | `counter.js` | The Counter |
 | `one-line.js` | Several kinds given together make one line |
+| `onboard.js` | The first open: four steps, the picture, What do you do? |
+| `cash.js` | Cash: the button, the panel, a big line per sale, totals |
+| `settings.js` | Settings cards, switches, backup status |
+| `wow.js` | The big check, paper-money notes, tab pop, rows rising (motion on) |
+| `sun.js` | Bigger, darker small text; icon legend; Big text |
+| `by-load.js` | Take money by load, and paying a load first |
+| `end-of-day.js` | The end of day cash count |
+| `hints.js` | The finger that teaches |
+| `hand.js` | Right hand first, left hand mirrored; the note colours |
 | `colors.js` | Place, woman and kind colours, tags, the card menu |
 | `vibes.js` | Each tab's own paper and ink; places tint their page |
 | `screens.js` | Keyboard, turning the phone, and many screen sizes |

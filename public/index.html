@@ -617,6 +617,7 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .loadchips{display:flex;gap:.375rem;overflow-x:auto;scrollbar-width:none;margin:.5rem -.75rem 0;padding:0 .75rem}
 .loadchips::-webkit-scrollbar{display:none}
 .loadchips .chip{display:inline-flex;align-items:center;gap:.375rem;background:var(--paper)}
+.loadchips .chip.on{background:var(--ink);border-color:var(--ink);color:#FFFFFF}
 .loadchips .chip b{font-family:var(--num);font-size:1.0625rem;color:var(--owe)}
 .loadchips .chip.on b{color:#FFFFFF}
 .sect.r{color:var(--owe)}.sect.pd{color:#6D28D9}
@@ -715,7 +716,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '7.4';
+const APP_VERSION = '8.0';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
