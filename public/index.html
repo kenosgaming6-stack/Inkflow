@@ -43,7 +43,6 @@ body{margin:0;background:var(--page);color:var(--text);font-family:'Atkinson Hyp
 html{touch-action:manipulation;-webkit-text-size-adjust:100%;font-size:calc(16px * var(--s, 1));background:#FFFFFF}
 #shell{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;max-width:35rem;margin:0 auto;background:var(--paper);overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
 html.kb #shell{bottom:auto;top:var(--app-top,0px);height:var(--app-h)}
-html.sa:not(.kb) #shell{bottom:auto;top:0;height:var(--full-h)}
 /* the band at the top says which job you are doing: blue is Give, green is Collect, black is Book. The status bar takes the same colour. */
 html[data-mode="collect"]{--bar:#12804A}html[data-mode="book"]{--bar:#14161C}
 /* each job has its own world, so you feel where you are before you read: blue paper for Give bags, green paper and
@@ -742,7 +741,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '8.1';
+const APP_VERSION = '8.2';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -914,7 +913,7 @@ function load() {
 function save() { if (V.demo) return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
 let S = null;
-let V = {tab: 'give', stack: [], gq: '', bq: '', cq: '', fTown: '', fLoc: '', sort: 'owes', bseg: 'people', pay: null};
+let V = {tab: 'give', stack: [], gq: '', bq: '', cq: '', fTown: '', fLoc: '', sort: 'new', bseg: 'people', pay: null};
 S = load();
 
 /* Derived data is cached per change. */
@@ -2090,15 +2089,21 @@ function defaultCar() {
   const g = givingCar(); if (g && carStats(g.id).out > 0.001) return g.id;
   const c = carsNewest().find(x => carStats(x.id).out > 0.001); return c ? c.id : '';
 }
+/* when she last took bags (on one load if you pass it); newest first is how every list is ordered */
+function lastTook(pid, carId) {
+  let m = ''; S.entries.forEach(e => { if (e.type === 'give' && e.pid === pid && live(e) && (!carId || e.carId === carId) && e.date > m) m = e.date; });
+  return m;
+}
+const newest = carId => (a, b) => cmp(lastTook(b.p.id, carId), lastTook(a.p.id, carId)) || b.L.bal - a.L.bal;
 function collectLists() {
   const q = V.cq.trim().toLowerCase();
   const fc = V.fCar && carById(V.fCar) ? V.fCar : '';
   const all = debtors().map(x => Object.assign(x, {owe: fc ? r2(sum(x.L.loads.filter(l => l.carId === fc), l => l.left)) : x.L.bal}))
     .filter(x => x.owe > 0.001 && inFilter(x.p) && (!q || x.p.name.toLowerCase().includes(q)));
-  const bySev = (a, b) => b.st.sev - a.st.sev || b.L.bal - a.L.bal;
-  const now = all.filter(x => x.st.sev >= 3).sort(bySev);
-  const prom = all.filter(x => x.st.k === 'promised').sort((a, b) => cmp(a.st.on, b.st.on));
-  const later = all.filter(x => x.st.sev < 3 && x.st.k !== 'promised').sort((a, b) => cmp(a.st.due || '', b.st.due || ''));
+  const nw = newest(fc);
+  const now = all.filter(x => x.st.sev >= 3).sort(nw);
+  const prom = all.filter(x => x.st.k === 'promised').sort(nw);
+  const later = all.filter(x => x.st.sev < 3 && x.st.k !== 'promised').sort(nw);
   return {all, now, prom, later, order: [...now, ...prom, ...later]};
 }
 function collectListHtml() {
@@ -2254,7 +2259,7 @@ function viewBook() {
     const grp = (k, icon, label) => { const cs = cars.filter(c => ph(c) === k); return cs.length ? `<div class="bsect ${k}"><span class="bi">${svg(icon, 16)}</span>${label}<em>${cs.length}</em>${k === 'taking' ? `<span class="br">${money(sum(cs, c => carStats(c.id).out))}</span>` : ''}</div>` + cs.map(carRow).join('') : ''; };
     return {top, mid: `<div class="lines down">${cars.length ? grp('open', 'bag', 'Open') + grp('taking', 'cash', 'Taking money') + grp('done', 'check', 'Done') : '<div class="empty"><h2>No loads yet</h2><p>Start one from Give.</p></div>'}</div>`, cls: 'book', dock: `<div class="bar"><button class="btn ink" data-act="newcar">${svg('truck')} New load</button></div>`, tabs: true, anchor: 'top'};
   }
-  const dock = `<div class="bar"><label class="find ink">${svg('search')}<input id="bq" type="search" placeholder="Find a name or number" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name or number" value="${esc(V.bq)}"></label><button class="sq" data-act="bsort" aria-label="${V.sort === 'az' ? 'Sorted A to Z' : 'Sorted by money owed'}"><b style="font-size:1.125rem">${V.sort === 'az' ? 'A–Z' : '₵'}</b>${svg('down', 16)}</button></div>`;
+  const dock = `<div class="bar"><label class="find ink">${svg('search')}<input id="bq" type="search" placeholder="Find a name or number" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name or number" value="${esc(V.bq)}"></label><button class="sq" data-act="bsort" aria-label="${V.sort === 'az' ? 'Sorted A to Z' : V.sort === 'owes' ? 'Sorted by money owed' : 'Newest first'}">${V.sort === 'new' ? svg('clock', 22) : `<b style="font-size:1.125rem">${V.sort === 'az' ? 'A–Z' : '₵'}</b>`}${svg('down', 16)}</button></div>`;
   return {top, mid: `<div class="lines down" id="booklist">${bookList()}</div>`, cls: 'book', dock, tabs: true, anchor: 'top',
     after: () => { const i = document.getElementById('bq'); if (i) i.addEventListener('input', () => { V.bq = i.value; document.getElementById('booklist').innerHTML = bookList(); }); }};
 }
@@ -2262,7 +2267,8 @@ function bookList() {
   const q = V.bq.trim().toLowerCase(), qd = q.replace(/\D/g, '');
   let ps = S.people.filter(p => inFilter(p) && (!q || p.name.toLowerCase().includes(q) || (qd.length >= 3 && digits(p.phone).includes(qd)) || locTxt(p.loc).toLowerCase().includes(q) || (p.note || '').toLowerCase().includes(q)));
   if (V.sort === 'az') ps.sort((a, b) => cmp(a.name.toLowerCase(), b.name.toLowerCase()));
-  else ps.sort((a, b) => ledger(b.id).bal - ledger(a.id).bal || cmp(a.name, b.name));
+  else if (V.sort === 'owes') ps.sort((a, b) => ledger(b.id).bal - ledger(a.id).bal || cmp(a.name, b.name));
+  else ps.sort((a, b) => cmp(lastTook(b.id), lastTook(a.id)) || cmp(a.name, b.name));
   if (!ps.length) return `<div class="empty"><h2>${q || V.fTown ? 'Not found' : 'No names yet'}</h2><p>${q ? 'Check the spelling, or try her number.' : V.fTown ? 'Nobody here yet.' : 'Names are added when you give ' + esc(unit()) + 's.'}</p></div>`;
   const info = ps.map(p => { const L = ledger(p.id); return {p, L, st: status(p.id), w: sum(L.waiting, e => e.bags)}; });
   const owe = info.filter(x => x.L.bal > 0.001), kept = info.filter(x => x.L.bal <= 0.001 && x.w > 0), clear = info.filter(x => x.L.bal <= 0.001 && !x.w);
@@ -2788,7 +2794,7 @@ function act(a, d, el) {
   }
   case 'gotogive': return toRoot('give');
   case 'bseg': V.bseg = d.s; return render();
-  case 'bsort': V.sort = V.sort === 'az' ? 'owes' : 'az'; return render();
+  case 'bsort': V.sort = V.sort === 'new' ? 'owes' : V.sort === 'owes' ? 'az' : 'new'; return render();
   case 'ftown': V.fTown = d.t; V.fLoc = ''; return render();
   case 'floc': V.fLoc = d.id; return render();
 
@@ -3076,12 +3082,6 @@ function fit() {
   root.style.setProperty('--app-top', Math.round(vv ? vv.offsetTop : 0) + 'px');
   root.classList.toggle('kb', kb);
   if (kb && window.scrollY) window.scrollTo(0, 0);
-  /* on a phone's Home Screen the app is the whole screen: never let a short layout height leave a strip at the bottom */
-  const sa = (STANDALONE || window.__forceSA) && COARSE, portrait = h >= w;
-  const full = Math.max(h, portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height));
-  const fills = sa && !kb && Math.abs(w - (portrait ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height))) < 2;
-  root.classList.toggle('sa', fills); root.style.setProperty('--full-h', full + 'px');
-  if (!typing && (window.scrollY || document.documentElement.scrollTop)) window.scrollTo(0, 0);
 }
 fit();
 ['resize', 'orientationchange'].forEach(ev => window.addEventListener(ev, fit));

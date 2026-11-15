@@ -1,6 +1,6 @@
 // Take money opens on the load you are working on (All is one tap; it snaps back next time); women on other loads are
 // never hidden; Remind and End of day sit in one row; a huge cash sale asks first; the Home Screen app fills the screen;
-// Book has coloured sections and a face on every line.
+// Book has coloured sections and a face on every line; newest first everywhere.
 const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
 const URL = process.env.URL || 'http://127.0.0.1:8768/';
 const fs = require('fs'), path = require('path'); const OUT = path.join(__dirname, 'out', 'focus'); fs.mkdirSync(OUT, {recursive: true});
@@ -65,12 +65,18 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   ok(ls.join(',') === 'open,taking', 'loads in sections: Open, Taking money');
   ok((await txt('#mid .row .name')).startsWith('No 2'), 'loads show their page number: No 2 · Abidjan');
   await p.screenshot({path: OUT + '/3-book-loads.png'});
-  // the Home Screen app fills the whole screen, even when the phone reports a short height
-  const ctx2 = await b.newContext({viewport: {width: 390, height: 797}, screen: {width: 390, height: 844}, hasTouch: true, isMobile: true, reducedMotion: 'reduce'});
-  await ctx2.addInitScript(() => { window.__forceSA = true; });
-  const q = await ctx2.newPage(); await q.route(/fonts\.g/, r => r.abort()); await q.goto(URL); await q.waitForTimeout(400);
-  const sh = await q.evaluate(() => [document.documentElement.classList.contains('sa'), document.getElementById('shell').getBoundingClientRect().height]);
-  ok(sh[0] && Math.round(sh[1]) === 844, 'Home Screen app: the app is the full screen height (844), no strip at the bottom');
+  // newest first: whoever took bags last is on top (Take money and Book); the sort button can also do most owed and A to Z
+  await p.evaluate(() => { const d = n => new Date(Date.now() - n * 864e5).toISOString(); S.entries.push({id: 'gn1', date: d(0.5), type: 'give', pid: 'k', carId: 'old', itemId: 'i1', bags: 1, price: 600, amount: 600, loc: 'l1', off: d(0.5), rcpt: true}); commit(); V.tab = 'collect'; V.fCar = ''; render(); });
+  const order = await p.$$eval('#collist .row .name', els => els.map(e => e.textContent).join(','));
+  ok(order === 'Kukua,Esi,Abena', 'Take money: inside each group the newest to take bags is on top (Kukua and Esi are late, so they stay in "Take now"): ' + order);
+  await act('tab', '[data-t="book"]'); await act('bseg', '[data-s="people"]');
+  const bo = await p.$$eval('#booklist .row .name', els => els.map(e => e.textContent).join(','));
+  ok(bo === 'Kukua,Abena,Esi,Yaa', 'Book: newest on top, paid up at the bottom: ' + bo);
+  await act('bsort'); const bo2 = await p.$$eval('#booklist .row .name', els => els.map(e => e.textContent).join(','));
+  ok(bo2.startsWith('Esi,Abena'), 'the sort button: most owed first: ' + bo2);
+  await act('bsort'); const bo3 = await p.$$eval('#booklist .row .name', els => els.map(e => e.textContent).join(','));
+  ok(bo3 === 'Abena,Esi,Kukua,Yaa', 'then A to Z: ' + bo3);
+  await act('bsort'); ok((await p.$$eval('#booklist .row .name', els => els[0].textContent)) === 'Kukua', 'then newest again');
   ok(errs.length === 0, 'no script errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   console.log(fails ? `${fails} FAILED` : 'ALL PASSED');
   await b.close(); process.exit(fails ? 1 : 0);
