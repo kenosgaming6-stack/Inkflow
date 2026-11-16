@@ -606,6 +606,8 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .tag.pd{background:#EDE5FC;color:#6D28D9}
 /* end of day */
 /* Book: sections in their own colours, a face on every line, loads with page numbers */
+.codebig{font:800 1.875rem/1.15 var(--num);letter-spacing:.06em;white-space:nowrap;text-align:center;color:var(--ink);padding:.875rem .5rem;border-radius:1rem;background:var(--key);user-select:all;-webkit-user-select:all}
+a.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;text-decoration:none}
 .bsegs{display:flex;gap:.5rem}
 .bsegs button{flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:3.125rem;border-radius:.875rem;background:var(--paper);border:.125rem solid var(--line);font-weight:800;font-size:1.0625rem;color:var(--muted)}
 .bsegs button em{font-style:normal;font-family:var(--num);font-size:1.0625rem;padding:.0625rem .5rem;border-radius:.5rem;background:var(--key);color:var(--text)}
@@ -741,7 +743,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '8.2';
+const APP_VERSION = '9.0';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -1147,7 +1149,7 @@ function carStats(cid) {
 }
 const gapsOn = cid => S.entries.filter(e => e.type === 'gap' && e.carId === cid && live(e));
 function heldOn(cid) { return S.entries.filter(e => e.type === 'give' && e.carId === cid && live(e) && !givenAt(e)); }
-function needsBackup() { return !V.demo && !!S.changedAt && S.entries.length > 0 && (!S.lastBackup || S.changedAt > S.lastBackup); }
+function needsBackup() { if (V.demo) return false; if (SYNC_OK && CB.on) return CB.pending || CB.status === 'err' || CB.status === 'offline'; return !!S.changedAt && S.entries.length > 0 && (!S.lastBackup || S.changedAt > S.lastBackup); }
 
 /* ---------- messages (plain letters, see smsMoney) ---------- */
 function from() { const s = S.settings; return s.seller ? 'From ' + s.seller + (s.item ? ' (' + s.item + ')' : '') + ': ' : ''; }
@@ -2598,7 +2600,7 @@ VIEWS.setup = () => {
   const dots = `<div class="sudots">${[0, 1, 2, 3].map(i => `<i class="${i === st ? 'on' : ''}"></i>`).join('')}</div>`;
   const back = `<button class="sq" data-act="suback" aria-label="Back">${svg('back')}</button>`;
   const cls = `supage su${st}` + (dir ? ' slide-' + dir : '');
-  if (st === 0) return {top: dots, mid: `<div class="suwel">${ILL}<div class="brand">StallBook</div><p class="sus">${esc(S.settings.item || 'Bags')}, money, people. In one book.</p></div>`, cls,
+  if (st === 0) return {top: dots, mid: `<div class="suwel">${ILL}<div class="brand">StallBook</div><p class="sus">${esc(S.settings.item || 'Bags')}, money, people. In one book.</p>${SYNC_OK ? `<button class="lnk" data-act="cloudjoin" style="font-size:1rem">${svg('users', 18)} Already have a book? Join it</button>` : ''}</div>`, cls,
     dock: `<div class="bar"><button class="btn ghost" data-act="demo">See an example</button><button class="btn ink tall" data-act="sunext">Start ${svg('fwd', 20)}</button></div>`};
   if (st === 1) {
     const items = ['Onions', 'Yams', 'Tomatoes', 'Plantain', 'Rice'], units = ['bag', 'sack', 'crate', 'box'];
@@ -2640,6 +2642,11 @@ VIEWS.settings = () => {
         <p class="small" id="sms_status">${esc(smsStatus())}</p>
         ${S.settings.momo ? `<button class="btn ghost" data-act="smstest">Send a test to ${esc(S.settings.momo)}</button>` : ''}</div>` : ''))
     + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz') + sw('togglebig', s.big, 'Big text') + `<div class="setbox"><div class="field"><label>Hand that holds the phone</label>${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div></div>`)
+    + (SYNC_OK && !V.demo ? card('cloud', '#0284C7', 'Cloud book', CB.on
+      ? `<div class="setbox"><span class="savestat ${cbStatus().cls}" id="cb_status">${esc(cbStatus().text)}</span><p class="small">One book on every phone. Each line is scrambled before it leaves this phone.</p>
+        <button class="btn ink" data-act="cloudinvite">${svg('users')} Invite another phone</button><button class="btn ghost" data-act="cloudsync">Send and get now</button><button class="btn ghost redtext" data-act="clouddrop">Disconnect this phone</button></div>`
+      : `<div class="setbox"><p class="small">One book on every phone, saved online. Needs your own free Cloudflare database (steps in the README).</p>
+        <button class="btn ink" data-act="cloudnew">${svg('cloud')} Start a cloud book</button><button class="btn ghost" data-act="cloudjoin">${svg('users')} Join a book</button></div>`) : '')
     + (V.demo ? '' : card('cloud', '#24307A', 'Keep your book safe', `<div class="setbox">${saved}<p class="small">If this phone is lost, the backup file brings the book back.</p>
       <button class="btn ink" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" hidden></div>`))
     + card('eye', '#475569', 'Help', `<div class="setbox"><button class="btn ghost" data-act="hintsreset">👆 Show me how</button>${V.demo ? '' : '<button class="btn ghost" data-act="demo">See the example book</button>'}${IOS && !STANDALONE ? `<button class="btn ghost" data-act="installhelp">Put StallBook on your Home Screen</button>` : ''}</div>`)
@@ -2673,6 +2680,8 @@ function doBackup() {
   try { const url = URL.createObjectURL(new Blob([json], {type: 'application/json'})); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); done(); } catch (x) { toast('Backup did not work on this phone'); }
 }
 function backupSheet() {
+  if (SYNC_OK && CB.on) { const st = cbStatus(); sheet(`<i class="grab"></i><h3>${svg('cloud', 22)} Cloud book</h3><p><span class="savestat ${st.cls}" id="cb_status">${esc(st.text)}</span></p><p>Your book is kept online and on every phone that joined. You can also save a file.</p>
+    <button class="btn ink tall" data-act="cloudsync">Send and get now</button><button class="btn ghost" data-act="backup">${svg('cloud')} Back up a file too</button><button class="btn ghost" data-act="sheetclose">Close</button>`); return; }
   const need = needsBackup();
   sheet(`<i class="grab"></i><h3>${need ? 'Back up your book' : 'Book is backed up ✓'}</h3><p>${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) + '.' : 'No backup yet.'} ${need ? 'Some changes are only on this phone.' : ''} Send the file to your own WhatsApp, or save it in Files. If the phone is lost, it brings everything back.</p>
     <button class="btn ink tall" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="sheetclose">Close</button>`);
@@ -3006,6 +3015,23 @@ function act(a, d, el) {
     toast('Sending a test…'); sent.then(r => { const el = document.getElementById('sms_status'); toast(r === 'ok' ? 'Test sent. Check your phone.' : r.err ? 'Not sent: ' + r.err : 'No signal. Try again.'); if (el) el.textContent = smsStatus(); }); return; }
   case 'togglevoice': S.settings.voice = !S.settings.voice; commit(); say('Speak is on.'); return render();
   case 'hintsreset': lsSet('stallbook_hints', '[]'); toast('The hints are back. Go to Give bags.'); return;
+  case 'cloudnew': return cbSheetNew();
+  case 'cnstart': { const u = (document.getElementById('cn_url') || {}).value; cbSheetWait('Starting your book…');
+    cbCreate(u).then(err => { if (err) cbSheetNew(err); else { cbSoon(100); cbSheetCode(true); render(); } }); return; }
+  case 'cloudjoin': return cbSheetJoin();
+  case 'cjgo': { const t = (document.getElementById('cj_in') || {}).value; cbSheetWait('Looking for the book…');
+    cbCheck(t).then(r => {
+      if (r.err) return cbSheetJoin(r.err);
+      if (S.people.length || S.entries.length) { V.cj = r; return sheet(`<i class="grab"></i><h3>This phone has its own book</h3><p>${S.people.length} ${S.people.length === 1 ? 'name' : 'names'} and ${S.entries.length} ${S.entries.length === 1 ? 'line' : 'lines'} on this phone will be added to the shared book. Nothing is deleted.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Cancel</button><button class="btn ink" data-act="cjyes">Add and join</button></div>`); }
+      V.cj = r; act('cjyes', {});
+    }); return; }
+  case 'cjyes': { const r = V.cj; if (!r) return closeSheet(); V.cj = null; cbSheetWait('Getting your book…'); cbConnect(r.url, r.code, r.keys, true); S.setup = true; save();
+    cbSync().then(() => { if (CB.status === 'ok') { closeSheet(); V.su = 0; sfx('page'); toRoot('give'); toast(`Your book is here: ${S.people.length} ${S.people.length === 1 ? 'name' : 'names'}`); } else { const m = cbStatus().text; cbDrop(); cbSheetJoin(m); } }); return; }
+  case 'cloudinvite': return cbSheetCode(false);
+  case 'cbcopy': cbCopy(cbInvite()); return toast('Copied. Paste it in WhatsApp.');
+  case 'cloudsync': toast('Sending and getting…'); return cbSync();
+  case 'clouddrop': return sheet(`<i class="grab"></i><h3>Disconnect this phone?</h3><p>This phone stops sending and getting. Its book stays here, and the online book stays online. You can join again with the code.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="clouddropyes">Disconnect</button></div>`);
+  case 'clouddropyes': cbDrop(); closeSheet(); return render();
   case 'togglebig': S.settings.big = !S.settings.big; commit(); fit(); return render();
   case 'togglesound': S.settings.sound = S.settings.sound === false; commit(); if (S.settings.sound) sfx('cash'); return render();
   case 'togglehalf': S.settings.half = S.settings.half === false; commit(); return render();
@@ -3017,9 +3043,9 @@ function act(a, d, el) {
   case 'backupsheet': return backupSheet();
   case 'backup': closeSheet(); return doBackup();
   case 'restore': { const rf = document.getElementById('restorefile'); if (rf) rf.click(); return; }
-  case 'restoreyes': { if (V.restorePhotos) { Object.keys(V.restorePhotos).forEach(id => { if (/^data:image\//.test(V.restorePhotos[id])) phPut(id, V.restorePhotos[id]); }); V.restorePhotos = null; } if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; } closeSheet(); toast('Your book is back'); return toRoot('give'); }
+  case 'restoreyes': { if (V.restorePhotos) { Object.keys(V.restorePhotos).forEach(id => { if (/^data:image\//.test(V.restorePhotos[id])) phPut(id, V.restorePhotos[id]); }); V.restorePhotos = null; } if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; cbAfterReplace(); } closeSheet(); toast('Your book is back'); return toRoot('give'); }
   case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be reversed. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
-  case 'wipeyes': S = blank(); V.su = 0; commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
+  case 'wipeyes': cbDrop(); S = blank(); V.su = 0; commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
   case 'reload': location.reload(); return;
   case 'installok': lsSet('stallbook_install_hint', '1'); return closeSheet();
   case 'installhelp': return installSheet();
@@ -3088,6 +3114,245 @@ fit();
 if (window.visualViewport) ['resize', 'scroll'].forEach(ev => window.visualViewport.addEventListener(ev, fit));
 document.addEventListener('focusout', () => setTimeout(fit, 350));
 window.addEventListener('pageshow', () => setTimeout(fit, 50));
+
+/* ===== Cloud book: one book on every phone, saved online =====
+   The phone scrambles every line (AES-GCM) with a key made from the book code before it leaves, so the server only holds
+   scrambled text. Lines (gives, payments, cash sales, buys, counts) are only ever added, so two phones can never overwrite
+   each other: the book is the union of both. The few things that can be edited (a woman, a load, a place, a trip, the
+   settings) keep an edit time and the newest edit wins. Photos travel too. Works offline; catches up when there is signal. */
+const SYNC_OK = true; /* the Claude artifact build turns this off */
+const CBKEY = 'stallbook_cloud', CBURL = 'stallbook_cburl';
+const CB = {on: false, url: '', code: '', since: 0, known: new Set(), docU: {}, photoSent: new Set(), last: '', status: 'off', err: '', busy: false, again: false, pending: false, ver: -1, keys: null, soonT: 0, rt: 0};
+const CB_SIG = new Map();                 /* what each record looked like when last seen, so a change gets a new edit time */
+const CB_ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const CB_OVERLAP = 120000 * 100;          /* every pull starts two minutes before the last one ended (server units: ms × 100) */
+const CB_SET = ['seller', 'momo', 'item', 'unit', 'price', 'cycle', 'half', 'via'];
+const cbUrl = u => { u = String(u || '').trim(); if (u && !/^https?:\/\//i.test(u)) u = 'https://' + u; return u.replace(/\/+$/, ''); };
+const cbPretty = c => String(c).replace(/(.{4})(?=.)/g, '$1-');
+const cbEnc = new TextEncoder(), cbDec = new TextDecoder();
+const cbB64 = u8 => { let t = ''; for (let i = 0; i < u8.length; i += 0x8000) t += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(t); };
+const cbUnB64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+const cbHex = u8 => [...u8].map(b => b.toString(16).padStart(2, '0')).join('');
+function cbLoad() {
+  try { const j = JSON.parse(lsGet(CBKEY) || 'null'); if (j && j.url && j.code) Object.assign(CB, {on: true, url: j.url, code: j.code, since: j.since || 0, known: new Set(j.known || []), docU: j.docU || {}, photoSent: new Set(j.photoSent || []), last: j.last || ''}); } catch (e) {}
+}
+function cbSave() { lsSet(CBKEY, JSON.stringify({url: CB.url, code: CB.code, since: CB.since, known: [...CB.known], docU: CB.docU, photoSent: [...CB.photoSent], last: CB.last})); }
+function cbNewCode() {
+  let out = ''; while (out.length < 16) { const b = crypto.getRandomValues(new Uint8Array(32)); for (const x of b) { if (x < 248 && out.length < 16) out += CB_ALPHA[x % 31]; } }
+  return out;
+}
+/* "ABCD-EFGH-JKMN-PQRS@https://server" (or just the code) from whatever was pasted, even inside a longer message */
+function cbParse(text) {
+  const re = /(?:^|[^A-Za-z0-9])([A-Za-z0-9]{4}(?:[-\s]?[A-Za-z0-9]{4}){3})(?![A-Za-z0-9])(?:\s*@\s*(\S+))?/g; let m;
+  while ((m = re.exec(String(text || '')))) {            /* the code must stand on its own, not be the end of a word */
+    const code = m[1].toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (code.length === 16 && [...code].every(c => CB_ALPHA.includes(c))) return {code, url: m[2] ? cbUrl(m[2]) : ''};
+    re.lastIndex = m.index + 1;
+  }
+  return null;
+}
+async function cbKeys(code) {
+  const base = await crypto.subtle.importKey('raw', cbEnc.encode('stallbook:' + code), 'HKDF', false, ['deriveBits']);
+  const bits = async info => new Uint8Array(await crypto.subtle.deriveBits({name: 'HKDF', hash: 'SHA-256', salt: cbEnc.encode('stallbook-sync-v1'), info: cbEnc.encode(info)}, base, 256));
+  return {id: cbHex(await bits('id')).slice(0, 32), auth: cbHex(await bits('auth')), enc: await crypto.subtle.importKey('raw', await bits('enc'), 'AES-GCM', false, ['encrypt', 'decrypt'])};
+}
+async function cbSeal(keys, k, id, obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv, additionalData: cbEnc.encode(k + ':' + id)}, keys.enc, cbEnc.encode(JSON.stringify(obj))));
+  const out = new Uint8Array(12 + ct.length); out.set(iv); out.set(ct, 12); return cbB64(out);
+}
+async function cbOpen(keys, k, id, d) {
+  const u = cbUnB64(d);
+  return JSON.parse(cbDec.decode(await crypto.subtle.decrypt({name: 'AES-GCM', iv: u.subarray(0, 12), additionalData: cbEnc.encode(k + ':' + id)}, keys.enc, u.subarray(12))));
+}
+async function cbPost(url, body) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 25000); let r;
+  try { r = await fetch(url + '/v1/sync', {method: 'POST', headers: {'content-type': 'text/plain'}, body: JSON.stringify(body), signal: ctl.signal}); }
+  catch (e) { const x = new Error('offline'); x.offline = true; throw x; } finally { clearTimeout(t); }
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok || !j || !j.ok) { const x = new Error((j && j.err) || 'http' + r.status); x.code = (j && j.err) || ''; x.http = r.status; throw x; }
+  return j;
+}
+function cbErrText(e) {
+  const c = (e && e.code) || '';
+  return e && e.offline ? 'No signal. It will send later.' : c === 'auth' ? 'This code does not match the book. Check it.' : c === 'nobook' ? 'There is no book with this code on that server.'
+    : c === 'nodb' ? 'The server has no database yet. Add the DB binding (see the README).' : c === 'nocrypto' ? 'This browser cannot keep the book online.' : c === 'server' ? 'The server had a problem. It will try again.' : 'The server said no (' + (c || (e && e.http) || '?') + ').';
+}
+/* what each kind of record is, in the book */
+const cbDocs = () => [['p', S.people], ['c', S.cars], ['l', S.locs], ['t', S.trips = S.trips || []]];
+const cbSig = r => JSON.stringify(r, (k, v) => k === 'u' ? undefined : v);
+function cbSettingsDoc() { const o = {carry: S.carry || 0}; CB_SET.forEach(k => { o[k] = S.settings[k]; }); return o; }
+/* an edited record gets a new edit time (the newest edit wins); a record seen for the first time keeps the time it has */
+function cbStamp() {
+  const now = nowIso(); let ch = false;
+  cbDocs().forEach(([k, arr]) => arr.forEach(r => {
+    const key = k + ':' + r.id, sg = cbSig(r), was = CB_SIG.get(key);
+    if (was === undefined ? !r.u : was !== sg) { r.u = now; ch = true; } CB_SIG.set(key, sg);
+  }));
+  const sg = JSON.stringify(cbSettingsDoc()), was = CB_SIG.get('s:main');
+  if (was === undefined ? !S.sU : was !== sg) { S.sU = now; ch = true; } CB_SIG.set('s:main', sg);
+  if (ch) save();
+}
+const cbPhotoIds = () => { const ids = new Set(); S.cars.concat(S.trips || []).forEach(c => (c.items || []).forEach(i => { if (i.photo) ids.add(i.photo); })); return ids; };
+/* everything this phone has that the server may not */
+function cbDirty() {
+  const rows = [];
+  S.entries.forEach(e => { if (!CB.known.has(e.id)) rows.push({k: 'e', id: e.id, u: '', obj: e}); });
+  cbDocs().forEach(([k, arr]) => arr.forEach(r => { if (CB.docU[k + ':' + r.id] !== r.u) rows.push({k, id: r.id, u: r.u, obj: r}); }));
+  if (CB.docU['s:main'] !== S.sU) rows.push({k: 's', id: 'main', u: S.sU, obj: Object.assign(cbSettingsDoc(), {u: S.sU})});
+  cbPhotoIds().forEach(id => { if (PH[id] && !CB.photoSent.has(id)) rows.push({k: 'h', id, u: '', obj: PH[id]}); });
+  return rows;
+}
+async function cbPush(S0) {
+  for (let guard = 0; guard < 600; guard++) {
+    const dirty = cbDirty(); if (!dirty.length) return;
+    const sealed = []; let bytes = 0;
+    for (const r of dirty) {
+      if (sealed.length >= 100 || (sealed.length && bytes > 250000)) break;
+      const d = await cbSeal(CB.keys, r.k, r.id, r.obj); sealed.push({k: r.k, id: r.id, u: r.u, d}); bytes += d.length;
+    }
+    if (S !== S0 || V.demo) { const x = new Error('swap'); x.swap = true; throw x; }
+    await cbPost(CB.url, {book: CB.keys.id, auth: CB.keys.auth, rows: sealed});
+    sealed.forEach(r => { if (r.k === 'e') CB.known.add(r.id); else if (r.k === 'h') CB.photoSent.add(r.id); else CB.docU[r.k === 's' ? 's:main' : r.k + ':' + r.id] = r.u; });
+  }
+}
+async function cbPull(S0) {
+  const rows = []; let from = Math.max(0, CB.since - CB_OVERLAP), cursor = CB.since;
+  for (let i = 0; i < 400; i++) {
+    const j = await cbPost(CB.url, {book: CB.keys.id, auth: CB.keys.auth, pull: true, since: from});
+    rows.push(...j.rows); if (j.rows.length) { from = j.cursor; cursor = Math.max(cursor, j.cursor); }
+    if (!j.more) break;
+  }
+  const got = [];
+  for (const r of rows) { try { got.push({k: r.k, id: r.id, u: r.u, obj: await cbOpen(CB.keys, r.k, r.id, r.d)}); } catch (e) {} }
+  if (S !== S0 || V.demo) { const x = new Error('swap'); x.swap = true; throw x; }
+  return {got, cursor};
+}
+/* put what came from the server into this phone's book, all at once (so a half-arrived book is never shown) */
+function cbApply(got) {
+  let ch = false, photos = false; const newE = []; const have = new Set(S.entries.map(e => e.id));
+  const docs = {p: S.people, c: S.cars, l: S.locs, t: S.trips = S.trips || []};
+  const order = {h: 0, l: 1, p: 2, c: 3, t: 4, s: 5, e: 6};
+  got.sort((a, b) => order[a.k] - order[b.k]);
+  for (const r of got) {
+    if (r.k === 'h') { CB.photoSent.add(r.id); if (!PH[r.id] && typeof r.obj === 'string' && /^data:image\//.test(r.obj)) { phPut(r.id, r.obj); photos = true; } }
+    else if (r.k === 'e') {
+      CB.known.add(r.id);
+      /* receipts are sent by the phone that wrote the line, never twice */
+      if (!have.has(r.id) && r.obj && r.obj.id === r.id) { if (r.obj.type === 'give' || r.obj.type === 'pay') r.obj.rcpt = true; newE.push(r.obj); have.add(r.id); }
+    } else if (r.k === 's') {
+      if (r.u > (S.sU || '')) { CB_SET.forEach(k => { if (r.obj[k] !== undefined) S.settings[k] = r.obj[k]; }); if (r.obj.carry !== undefined) S.carry = r.obj.carry; S.sU = r.u; CB.docU['s:main'] = r.u; CB_SIG.set('s:main', JSON.stringify(cbSettingsDoc())); ch = true; }
+      else if (r.u === S.sU) CB.docU['s:main'] = r.u;
+    } else if (docs[r.k] && r.obj && r.obj.id === r.id) {
+      const arr = docs[r.k], key = r.k + ':' + r.id, i = arr.findIndex(x => x.id === r.id);
+      if (i < 0 || r.u > (arr[i].u || '')) { r.obj.u = r.u; if (i < 0) arr.push(r.obj); else arr[i] = r.obj; CB.docU[key] = r.u; CB_SIG.set(key, cbSig(r.obj)); ch = true; }
+      else if (r.u === arr[i].u) CB.docU[key] = r.u;
+    }
+  }
+  if (newE.length) { S.entries.push(...newE); S.entries.sort((a, b) => cmp(a.date, b.date)); ch = true; }
+  if (ch) { VER++; save(); }
+  return {ch, photos};
+}
+async function cbSync() {
+  if (!SYNC_OK || !CB.on || V.demo) return;
+  if (CB.busy) { CB.again = true; return; }
+  const S0 = S, v0 = VER; CB.busy = true; cbPaint(); let swapped = false;
+  try {
+    if (!(window.crypto && crypto.subtle)) { const x = new Error('nocrypto'); x.code = 'nocrypto'; throw x; }
+    CB.keys = CB.keys || await cbKeys(CB.code);
+    cbStamp(); await cbPush(S0);
+    const pulled = await cbPull(S0); const r = cbApply(pulled.got);
+    const mine = VER - (r.ch ? 1 : 0) !== v0;   /* the person did something while we talked to the server */
+    CB.since = Math.max(CB.since, pulled.cursor); CB.ver = VER; cbStamp();
+    CB.status = 'ok'; CB.err = ''; CB.last = nowIso(); CB.pending = mine; if (mine) CB.again = true; cbSave();
+    if (r.ch || r.photos) cbRender();
+  } catch (e) {
+    if (e && e.swap) swapped = true; else if (e && e.offline) CB.status = 'offline'; else { CB.status = 'err'; CB.err = cbErrText(e); }
+    if (!swapped) CB.pending = true;
+  }
+  CB.busy = false; cbPaint(); cbTop();
+  if (CB.again || swapped) { CB.again = false; cbSoon(swapped ? 400 : 900); }
+}
+function cbSoon(ms) { clearTimeout(CB.soonT); CB.soonT = setTimeout(() => cbSync(), ms == null ? 1500 : ms); }
+function cbStatus() {
+  if (!CB.on) return {text: '', cls: ''};
+  if (CB.busy) return {text: 'Sending…', cls: 'w'};
+  if (CB.status === 'offline') return {text: 'No signal. It will send later.', cls: 'w'};
+  if (CB.status === 'err') return {text: CB.err || 'Something went wrong.', cls: 'r'};
+  if (CB.pending) return {text: 'Waiting to send…', cls: 'w'};
+  const m = CB.last ? Math.floor((Date.now() - Date.parse(CB.last)) / 60000) : -1;
+  return {text: m < 0 ? 'Not sent yet' : m < 1 ? 'Saved just now' : m < 60 ? 'Saved ' + m + ' min ago' : 'Saved ' + Math.floor(m / 60) + ' h ago', cls: m < 0 ? 'w' : 'ok'};
+}
+function cbPaint() { const el = document.getElementById('cb_status'); if (el) { const st = cbStatus(); el.textContent = st.text; el.className = 'savestat ' + st.cls; } }
+/* the cloud button on Book follows the state; redraw only when nobody is typing or has a panel open */
+let cbTopSeen = '';
+function cbTop() { const k = String(needsBackup()); if (k !== cbTopSeen) { cbTopSeen = k; if (V.tab === 'book' && !cur()) cbRender(); } }
+function cbRender() {
+  const ed = document.activeElement, typing = ed && /^(INPUT|TEXTAREA|SELECT)$/.test(ed.tagName) && !/^(button|checkbox|radio|file|submit)$/.test(ed.type || '');
+  clearTimeout(CB.rt); if (typing || layer.querySelector('.ov')) { CB.rt = setTimeout(cbRender, 1500); return; }
+  render();
+}
+function cbConnect(url, code, keys, joined) {
+  Object.assign(CB, {on: true, url, code, since: 0, known: new Set(), docU: {}, photoSent: new Set(), last: '', status: 'ok', err: '', keys, pending: true, ver: VER});
+  /* a phone that joins takes the book's settings: its own defaults must not count as the newest edit */
+  if (joined) { S.sU = '0'; CB_SIG.set('s:main', JSON.stringify(cbSettingsDoc())); }
+  lsSet(CBURL, url); cbStamp(); cbSave();
+}
+function cbDrop() {
+  Object.assign(CB, {on: false, url: '', code: '', since: 0, known: new Set(), docU: {}, photoSent: new Set(), last: '', status: 'off', err: '', keys: null, pending: false});
+  try { localStorage.removeItem(CBKEY); } catch (e) {}
+}
+/* start a new cloud book on a server; returns an error text, or '' when it worked */
+async function cbCreate(url) {
+  url = cbUrl(url); if (!/^https?:\/\/\S+\.\S+|^http:\/\/(127\.0\.0\.1|localhost)/.test(url)) return 'Type the server address, like https://stallbook-sync.yourname.workers.dev';
+  try { const j = await (await fetch(url + '/')).json(); if (!j || j.app !== 'stallbook-sync') return 'That address is not a StallBook server.'; } catch (e) { return 'Could not reach that address. Check it, and your signal.'; }
+  const code = cbNewCode(), keys = await cbKeys(code);
+  try { await cbPost(url, {book: keys.id, auth: keys.auth, create: true}); } catch (e) { return cbErrText(e); }
+  cbConnect(url, code, keys); return '';
+}
+/* check an invite against the server without joining yet: {err} or {url, code, keys} */
+async function cbCheck(text) {
+  const inv = cbParse(text); if (!inv) return {err: 'That is not a book code. It has 16 letters and numbers, like ABCD-EFGH-JKMN-PQRS.'};
+  const url = cbUrl(inv.url || lsGet(CBURL) || ''); if (!url) return {err: 'Paste the whole invite. The server address comes after the @.'};
+  const keys = await cbKeys(inv.code);
+  try { await cbPost(url, {book: keys.id, auth: keys.auth, pull: true, since: Number.MAX_SAFE_INTEGER}); } catch (e) { return {err: e && e.offline ? 'Could not reach that server. Check the address, and your signal.' : cbErrText(e)}; }
+  return {url, code: inv.code, keys};
+}
+function cbCopy(t) {
+  const fb = () => { const a = document.createElement('textarea'); a.value = t; a.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) {} a.remove(); };
+  try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).catch(fb); else fb(); } catch (e) { fb(); }
+}
+const cbInvite = () => cbPretty(CB.code) + '@' + CB.url;
+function cbSheetNew(err) {
+  sheet(`<i class="grab"></i><h3>Start a cloud book</h3><p>Paste the address of your StallBook server.</p>
+    <div class="field"><input id="cn_url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="url" placeholder="https://stallbook-sync.yourname.workers.dev" value="${esc(lsGet(CBURL) || '')}" aria-label="Server address"></div>
+    ${err ? `<div class="err">${esc(err)}</div>` : ''}
+    <button class="btn ink tall" data-act="cnstart">${svg('cloud')} Start</button><button class="btn ghost" data-act="sheetclose">Cancel</button>`);
+}
+function cbSheetJoin(err) {
+  sheet(`<i class="grab"></i><h3>Join a book</h3><p>Paste the invite from the other phone.</p>
+    <div class="field"><input id="cj_in" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="ABCD-EFGH-JKMN-PQRS@https://…" aria-label="Invite"></div>
+    ${err ? `<div class="err">${esc(err)}</div>` : ''}
+    <button class="btn ink tall" data-act="cjgo">${svg('users')} Join</button><button class="btn ghost" data-act="sheetclose">Cancel</button>`);
+}
+function cbSheetCode(fresh) {
+  const text = 'Join my StallBook. In the app: Settings › Cloud book › Join a book, then paste this:\n\n' + cbInvite();
+  sheet(`<i class="grab"></i><h3>${fresh ? 'Your book is online ✓' : 'Invite another phone'}</h3>
+    <p>On the other phone: <b>Settings › Cloud book › Join a book</b>, then paste the invite.</p>
+    <div class="codebig" id="cb_code">${esc(cbPretty(CB.code))}</div>
+    <p class="small center">Keep this code private. Anyone who has it can read your book.</p>
+    <a class="btn ink tall" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_top" data-act="noop">${svg('msg')} Send by WhatsApp</a>
+    <button class="btn ghost" data-act="cbcopy">Copy the invite</button><button class="btn ghost" data-act="sheetclose">Done</button>`);
+}
+function cbSheetWait(t) { sheet(`<i class="grab"></i><h3>${esc(t)}</h3><div class="sync-wait" style="text-align:center;padding:1rem">${svg('cloud', 40)}</div>`); }
+function cbAfterReplace() { CB_SIG.clear(); if (CB.on) { cbStamp(); cbSoon(800); } }
+const cbHeaderState = () => (CB.on && V.tab === 'book');
+cbLoad();
+if (CB.on) { cbStamp(); cbSoon(2000); }
+setInterval(() => { if (CB.on && VER !== CB.ver) { CB.ver = VER; CB.pending = true; cbSoon(1500); } }, 700);
+setInterval(() => { if (CB.on && document.visibilityState === 'visible') cbSync(); }, 20000);
+document.addEventListener('visibilitychange', () => { if (CB.on && document.visibilityState === 'visible') cbSoon(300); });
+window.addEventListener('online', () => { if (CB.on) cbSoon(300); });
 
 /* ---------- start ---------- */
 if (S.migrated) { delete S.migrated; commit(); setTimeout(() => toast('Your book from version 1 is here. Nothing was lost.'), 500); }

@@ -1,0 +1,10 @@
+# Only for people who deploy with the wrangler command line. Most people paste stallbook-sync.mjs in the Cloudflare
+# dashboard instead (see README, "Keep one book on every phone").
+name = "stallbook-sync"
+main = "stallbook-sync.mjs"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "stallbook"
+database_id = "PUT-YOUR-D1-DATABASE-ID-HERE"

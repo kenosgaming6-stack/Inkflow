@@ -38,7 +38,7 @@ Nothing is ever overwritten. Corrections, handovers, releases and moves are new 
 
 **First open:** four short steps with a moving picture: welcome, what you sell, what you do (I buy · I give on credit · I sell for cash; "I buy" turns on Buy bags) and which hand holds the phone, and where you sell.
 
-**Settings** is its own page of coloured cards (Your business, Places, Buying, Counting, Receipts, Sound and voice, Keep your book safe, Help, Delete) with real switches and a coloured backup status (red Never saved, green Saved 2 days ago).
+**Settings** is its own page of coloured cards (Your business, Places, Buying, Counting, Receipts, Sound and voice, Cloud book, Keep your book safe, Help, Delete) with real switches and a coloured backup status (red Never saved, green Saved 2 days ago).
 
 **The finger that teaches:** the first time on each spot an animated hand taps it with a few words (Type her name, Tap for cash, Tap the photo, Tap her name, Tap the notes, Tap Bought). Each shows once; Settings › Help › **Show me how** brings them back.
 
@@ -116,6 +116,34 @@ On GitHub, open the file and press the download arrow at the top right of the fi
 
 Change `VERSION` in `public/sw.js` and `APP_VERSION` in `public/index.html`, then push. Phones download the new version in the background and show **New version of StallBook ready · Reload**.
 
+## Keep one book on every phone (cloud book)
+
+By default the book lives on one phone. The **cloud book** keeps the same book on every phone you join (you and your mom, for example), saved online, so a lost phone loses nothing. It still works with no signal: lines wait on the phone and go when there is signal.
+
+**How it stays safe and correct**
+- Every line is **scrambled on the phone** (AES-GCM, with a key made from your book code) before it leaves. The online store only holds scrambled text, row ids and edit times, never names, numbers, places or money. Whoever has the book code can read the book, so treat it like a password.
+- Lines (gives, payments, cash sales, buys, counts, removals) are **only ever added**, so two phones can never overwrite each other: the book is both phones' lines together, in date order. A removed line stays, crossed out, on both phones.
+- The few things you can edit (a woman, a load, a place, a buying trip, the shared settings) keep an edit time, and **the newest edit wins**.
+- Bag photos travel too.
+- A **receipt SMS is sent by the phone that wrote the line**, never twice.
+- Settings that belong to a phone (hand, sounds, voice, Big text, the Buy tab) stay on that phone.
+
+**One-time setup on Cloudflare** (about ten minutes, free; the screens may be named a little differently):
+1. In the Cloudflare dashboard, open **Storage & databases › D1 SQL database › Create database**. Name it `stallbook`.
+2. Open **Workers & Pages › Create › Create Worker**. Name it `stallbook-sync` and press **Deploy**. Then **Edit code**, delete what is there, paste everything from `worker/stallbook-sync.mjs`, and **Deploy**.
+3. On that Worker, open **Settings › Bindings › Add › D1 database**. Set the variable name to `DB` (capital letters) and choose `stallbook`. **Deploy** again.
+4. Copy the Worker's address (it ends in `.workers.dev`). Open it in a browser: it should say `{"ok":true,"app":"stallbook-sync"...}`.
+5. In StallBook on your phone: **Settings › Cloud book › Start a cloud book**, paste the address, **Start**. It shows your **book code**.
+6. On your mom's phone: open StallBook, tap **Already have a book? Join it** (or **Settings › Cloud book › Join a book**), and paste the invite. The invite is the code and the address together (`ABCD-EFGH-JKMN-PQRS@https://…`); **Invite another phone** sends it by WhatsApp. Her phone then gets the whole book, photos included.
+
+The tables are made by themselves the first time the Worker is used. If you use the wrangler command line instead, `worker/wrangler.toml` has the same setup.
+
+**Good to know**
+- **Keep the book code safe** (and still make a file backup now and then). If every phone and the code are lost, the online copy cannot be opened by anyone, not even you.
+- **Disconnect this phone** stops syncing but keeps this phone's book. **Delete everything** only empties this phone: the online book stays, and you can join again.
+- If two phones add the same new woman or place at the same moment, you get two names for her. Fix it by giving to one of them.
+- Free Cloudflare limits are far above what a stall needs. Each phone asks the server for news about every 20 seconds while the app is open.
+
 ## Receipts by SMS
 
 StallBook can send every receipt by itself, through [Arkesel](https://sms.arkesel.com), an SMS company in Ghana. An iPhone app or website cannot send text messages on its own; Apple asks for a tap on Send each time, so the messages come from Arkesel instead.
@@ -143,6 +171,7 @@ After that, a customer with a phone number gets a receipt about 20 seconds after
 | `voice.js` | Speak out loud |
 | `counter.js` | The Counter |
 | `one-line.js` | Several kinds given together make one line |
+| `sync.js` | The cloud book: two phones and the real Worker, no signal, edits, removals, scrambled data, wrong codes, disconnecting |
 | `onboard.js` | The first open: four steps, the picture, What do you do? |
 | `cash.js` | Cash: the button, the panel, a big line per sale, totals |
 | `settings.js` | Settings cards, switches, backup status |
@@ -159,7 +188,7 @@ After that, a customer with a phone number gets a receipt about 20 seconds after
 
 ## Your data
 
-Everything is saved on the phone, in the browser's storage. The app asks the phone to keep it, but still use **Back up (WhatsApp or Files)** often. If the phone is lost, open the backup file with **Restore from a backup**.
+Everything is saved on the phone, in the browser's storage (and, if you turned on the cloud book, also online, scrambled). The app asks the phone to keep it, but still use **Back up (WhatsApp or Files)** often. If the phone is lost, open the backup file with **Restore from a backup**.
 
 Older books are upgraded automatically when the app opens, and a version 1 copy is left untouched. Places are one list of names: a town and spot such as Bakwai and Market become the place Bakwai Market. Half bags are off until you switch them on in Settings.
 

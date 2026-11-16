@@ -200,6 +200,7 @@ rep("function commit() { VER++; if (!V.demo) S.changedAt = nowIso(); save(); sms
     "function commit() { VER++; if (!V.demo) { S.changedAt = nowIso(); S.rev = Math.max(S.rev || 0, CL.remoteRev || 0) + 1; } save(); smsSoon(); }")
 # the viewer blocks requests to other websites, so receipts cannot go by SMS from the artifact
 rep("const SMS_OK = true;", "const SMS_OK = false;")
+rep("const SYNC_OK = true;", "const SYNC_OK = false;")  # the viewer blocks other websites; this build has its own online save
 
 # the cloud icon at the top now means "saved online" when the online copy is on
 rep("function needsBackup() { return !V.demo && !!S.changedAt && S.entries.length > 0 && (!S.lastBackup || S.changedAt > S.lastBackup); }",
