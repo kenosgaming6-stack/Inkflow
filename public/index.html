@@ -606,6 +606,23 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .tag.pd{background:#EDE5FC;color:#6D28D9}
 /* end of day */
 /* Book: sections in their own colours, a face on every line, loads with page numbers */
+/* the collect round */
+.rwrap{margin:auto 0;display:flex;flex-direction:column;align-items:center;gap:.75rem;text-align:center;padding:1rem .75rem}
+.rwrap .av{width:5.5rem;height:5.5rem;font-size:2rem}
+.rname{font:800 2.75rem/1.05 var(--num);color:var(--text);letter-spacing:.01em;max-width:100%;overflow-wrap:anywhere}
+.rwhere{font-weight:700;color:var(--muted);font-size:1.0625rem}
+.rowe small{display:block;font-weight:800;color:var(--muted);font-size:1rem}
+.rowe b{display:block;font:800 4.5rem/1 var(--num);color:var(--owe)}
+.rlast{color:var(--muted);font-size:.9375rem}
+.rres{padding:.625rem 1rem;border-radius:.875rem;font-weight:800;font-size:1.125rem}
+.rres.ok{background:var(--paid-bg);color:var(--paid)}.rres.pd{background:#EDE5FC;color:#6D28D9}.rres.sk{background:var(--key);color:var(--muted)}
+.rprog{flex:1;max-width:9rem;height:.5rem;border-radius:.25rem;background:var(--key);overflow:hidden}
+.rprog i{display:block;height:100%;background:var(--paid)}
+.btn.huge{min-height:4.5rem;font-size:1.375rem}
+.rsum{display:flex;flex-direction:column;gap:.5rem;width:100%;max-width:20rem}
+.rsum div{display:flex;justify-content:space-between;padding:.75rem 1rem;border-radius:.875rem;background:var(--key);font-weight:800;font-size:1.0625rem}
+.rsum b{font-family:var(--num);font-size:1.375rem}
+.roundbtn{flex:none;min-width:4.75rem;min-height:3.5rem;border-radius:.875rem;background:var(--paid);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.0625rem;font-weight:800;font-size:.875rem;box-shadow:0 .1875rem 0 #0B5E35}
 .codebig{font:800 1.875rem/1.15 var(--num);letter-spacing:.06em;white-space:nowrap;text-align:center;color:var(--ink);padding:.875rem .5rem;border-radius:1rem;background:var(--key);user-select:all;-webkit-user-select:all}
 a.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;text-decoration:none}
 .bsegs{display:flex;gap:.5rem}
@@ -1003,6 +1020,7 @@ function kindCol(it) {
   if (k) return KCOL[k];
   const car = S.cars.find(c => c.items.includes(it)) || (S.trips || []).find(t => t.items.includes(it)); return PAL[(car ? Math.max(0, car.items.indexOf(it)) : 0) % PAL.length];
 }
+function av(p, name, cls) { const n = p ? p.name : name; return `<span class="av ${cls || ''}" style="${avc(n)}">${esc(initials(n))}</span>`; }
 function locTxt(id) { const l = locById(id); if (!l) return ''; return l.spot ? l.town + ' ' + l.spot : l.town; }
 const placesSorted = () => S.locs.slice().sort((a, b) => cmp(locTxt(a.id).toLowerCase(), locTxt(b.id).toLowerCase()));
 function getLoc(town, spot) {
@@ -2143,10 +2161,44 @@ function viewCollect() {
     <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}</div></div>${remindN || eodButton() ? `<div class="cacts">${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}${eodButton()}</div>` : ''}${loadRow}`;
   const mid = mid0 + (others.length ? `<button class="morebtn" data-act="fcar" data-id="">${svg('truck', 18)} ${others.length} more ${others.length === 1 ? 'woman owes' : 'women owe'} ${money(othersAmt)} on other loads · See all</button>` : '');
   const dock = `${filterChips(id => debtors().filter(x => x.p.loc === id).length)}
-    <div class="bar"><label class="find ink">${svg('search')}<input id="cq" type="search" placeholder="Find a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name" value="${esc(V.cq)}"></label></div>`;
+    <div class="bar"><label class="find ink">${svg('search')}<input id="cq" type="search" placeholder="Find a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name" value="${esc(V.cq)}"></label>${all.length ? `<button class="roundbtn" data-act="round" aria-label="Start a round: one woman at a time">${svg('fwd', 26)}<span>Round</span></button>` : ''}</div>`;
   return {top, mid, cls: 'book', dock, tabs: true, anchor: 'top',
     after: () => { const i = document.getElementById('cq'); if (i) i.addEventListener('input', () => { V.cq = i.value; document.getElementById('collist').innerHTML = collectListHtml().html; }); }};
 }
+/* ===== The collect round: one woman at a time ===== */
+function roundOwe(pid, carId) { const L = ledger(pid); return carId ? r2(sum(L.loads.filter(l => l.carId === carId), l => l.left)) : L.bal; }
+VIEWS.round = () => {
+  const R = V.round; if (!R) { pop(); return null; }
+  const fcar = R.carId ? carById(R.carId) : null;
+  if (R.i >= R.ids.length) {
+    const res = Object.values(R.res), paid = res.filter(x => x.kind === 'paid' || x.kind === 'some');
+    const dates = res.filter(x => x.kind === 'date').length, skipped = R.ids.length - paid.length - dates - res.filter(x => x.kind === 'refused').length;
+    return {top: `<div class="hrow"><div class="title"><b>Round done</b><small>${R.ids.length} ${R.ids.length === 1 ? 'woman' : 'women'}${fcar ? ' · ' + pageNo(fcar) + ' · ' + esc(carName(fcar)) : ''}</small></div></div>`,
+      mid: `<div class="rwrap"><span class="mi" style="--mc:var(--paid);width:4.5rem;height:4.5rem;border-radius:50%">${svg('check', 40)}</span><div class="rname">Round done</div>
+        <div class="rsum"><div><span>Paid</span><b style="color:var(--paid)">${paid.length} · ${money(sum(paid, x => x.amt))}</b></div><div><span>Pay dates</span><b style="color:#6D28D9">${dates}</b></div><div><span>Not seen</span><b>${Math.max(0, skipped)}</b></div></div></div>`,
+      cls: 'plain', dock: `<div class="bar"><button class="btn take tall" data-act="roundstop">Done</button></div>`,
+      after: () => { if (R.cel) { const c = R.cel; R.cel = null; setTimeout(() => celebrate(c), 400); } }};
+  }
+  const pid = R.ids[R.i], p = person(pid); if (!p) { R.i++; return VIEWS.round(); }
+  const owe = roundOwe(pid, R.carId), st = status(pid), r = R.res[pid];
+  const lastG = S.entries.filter(e => e.type === 'give' && e.pid === pid && live(e) && (!R.carId || e.carId === R.carId)).sort((a, b) => cmp(b.date, a.date))[0];
+  const pct = Math.round(R.i / R.ids.length * 100);
+  const top = `<div class="hrow">${backSq('roundstop')}<div class="title"><b>Round · ${R.i + 1} of ${R.ids.length}</b><small>${fcar ? pageNo(fcar) + ' · ' + esc(carName(fcar)) : 'All loads'}</small></div><span class="rprog"><i style="width:${pct}%"></i></span></div>`;
+  const resBox = r ? (r.kind === 'paid' || r.kind === 'some' ? `<div class="rres ok">Paid ${money(r.amt)} ✓</div>` : r.kind === 'date' ? `<div class="rres pd">Pay date ${esc(dayWord(r.on))}</div>` : r.kind === 'refused' ? `<div class="rres sk">Refused</div>` : `<div class="rres sk">Skipped</div>`) : '';
+  const mid = `<div class="rwrap">${av(p, p.name, 'lg')}<div class="rname">${esc(p.name)}</div>
+    <div class="rwhere">${p.loc ? pdot(p.loc) + esc(locTxt(p.loc)) : ''}${p.loc && st.k !== 'clear' ? ' · ' : ''}${statusTag(st)}</div>
+    ${owe > 0.001 ? `<div class="rowe"><small>Owes${fcar ? ' on this load' : ''}</small><b>${money(owe)}</b></div>` : `<div class="rowe"><b style="color:var(--paid);font-size:2.5rem">Paid up ✓</b></div>`}
+    ${lastG ? `<div class="rlast">${bagsTxt(lastG.bags)} · ${dmy(givenAt(lastG) || lastG.date)}</div>` : ''}${resBox}</div>`;
+  const method = `<div class="seg mini2"><button class="${R.method === 'cash' ? 'on' : ''}" data-act="rmethod" data-m="cash">Cash</button><button class="${R.method === 'momo' ? 'on' : ''}" data-act="rmethod" data-m="momo">MoMo</button></div>`;
+  const dock = r && (r.kind === 'paid' || r.kind === 'some')
+    ? `<button class="btn ghost redtext" data-act="rundo">Remove this payment</button><div class="bar">${R.i > 0 ? `<button class="btn ghost" data-act="rback">‹ Back</button>` : ''}<button class="btn take tall" data-act="rskip">Next ›</button></div>`
+    : `${owe > 0.001 ? method + `<button class="btn take tall huge" data-act="rpaid">${svg('check', 26)} Paid all · ${money(owe)}</button>
+      <div class="bar"><button class="btn ghost" data-act="rsome">Paid some</button><button class="btn ghost" style="color:#6D28D9" data-act="rdate">Not today</button></div>` : ''}
+      <div class="bar">${R.i > 0 ? `<button class="btn ghost" data-act="rback">‹ Back</button>` : ''}<button class="btn ghost" data-act="rskip">Skip ›</button></div>`;
+  return {top, mid, cls: 'plain', dock};
+};
+/* a payment made from the money pad, a pay date or a refusal during the round counts for the woman on screen */
+function roundMark(pid, res) { const R = V.round; if (R && cur() && cur().v === 'round' && R.ids[R.i] === pid) { R.res[pid] = res; R.i++; return true; } return false; }
 function remindList(ids) {
   const t = todayK();
   const pool = ids ? ids.map(id => ({p: person(id), st: status(id), L: ledger(id)})).filter(x => x.p && x.L.bal > 0.001) : debtors().filter(x => inFilter(x.p) && (x.st.sev >= 3 || x.st.k === 'soon'));
@@ -2227,7 +2279,7 @@ function proofSheet(nextId) {
   marks.forEach(([d, k]) => { if (k) setTimeout(() => { if (live.isConnected) sfx(k); }, d * 1000); });
   setTimeout(() => { if (!live.isConnected) return; sfx('stamp'); if (bal <= 0.001) coins(14); }, stampAt * 1000);
 }
-function proofDone() { closeSheet(); render(); if (V.celebrateCar) { const c = V.celebrateCar; V.celebrateCar = null; setTimeout(() => celebrate(c), 150); } }
+function proofDone() { if (V.lastPay && roundMark(V.lastPay.p.id, {kind: 'some', amt: V.lastPay.amount, eid: V.lastPay.e.id}) && V.celebrateCar) { V.round.cel = V.celebrateCar; V.celebrateCar = null; } closeSheet(); render(); if (V.celebrateCar) { const c = V.celebrateCar; V.celebrateCar = null; setTimeout(() => celebrate(c), 150); } }
 function payToast() { const {e, p, amount, bal} = V.lastPay; toast(`${p.name} paid ${money(amount)}`, [p.phone && !smsReady() ? {label: 'Receipt', href: sendHref(p, msgPay(p, amount, bal))} : null]); }
 function celebrate(car) {
   sfx('win'); buzz([30, 60, 30, 60, 90]); coins(26);
@@ -2929,9 +2981,9 @@ function act(a, d, el) {
   case 'promise': V.pr = null; return promiseSheet(d.id);
   case 'pron': V.pr.on = d.k; return promiseSheet(V.pr.pid);
   case 'prhow': V.pr.how = d.h; return promiseSheet(V.pr.pid);
-  case 'prsave': { const P = V.pr; const p = person(P.pid); add({type: 'promise', pid: P.pid, on: P.on, how: P.how}); closeSheet(); render();
+  case 'prsave': { const P = V.pr; const p = person(P.pid); add({type: 'promise', pid: P.pid, on: P.on, how: P.how}); if (roundMark(P.pid, {kind: 'date', on: P.on})) { closeSheet(); return render(); } closeSheet(); render();
     return toast(`Pay date: ${dayWord(P.on)}`, [p.phone ? {label: 'Send it to her', href: sendHref(p, msgPromise(p, P.on))} : null]); }
-  case 'refused': { add({type: 'note', kind: 'refused', pid: V.pr.pid}); closeSheet(); render(); return toast('Refused'); }
+  case 'refused': { add({type: 'note', kind: 'refused', pid: V.pr.pid}); const inR = roundMark(V.pr.pid, {kind: 'refused'}); closeSheet(); render(); return inR ? null : toast('Refused'); }
   case 'remindall': { const ids = remindList(); const none = debtors().filter(x => !x.p.phone && x.st.sev >= 3 && inFilter(x.p)).map(x => x.p.name); V.queue = {kind: 'remind', ids, i: 0, none}; return queueStep(); }
   case 'remindcar': { const st = carStats(d.id); const owing = st.people.filter(id => ledger(id).loads.some(x => x.carId === d.id && x.left > 0.001)); V.queue = {kind: 'remind', ids: remindList(owing), i: 0, none: owing.filter(id => !person(id).phone).map(id => person(id).name)}; return queueStep(); }
   case 'qsent': { const Q = V.queue; if (Q.kind === 'rcpt') markReceipts(d.id); else { const p = person(d.id); p.remindedOn = todayK(); commit(); } setTimeout(() => { if (V.queue) { V.queue.i++; queueStep(); } }, 600); return; }
@@ -3015,6 +3067,19 @@ function act(a, d, el) {
     toast('Sending a test…'); sent.then(r => { const el = document.getElementById('sms_status'); toast(r === 'ok' ? 'Test sent. Check your phone.' : r.err ? 'Not sent: ' + r.err : 'No signal. Try again.'); if (el) el.textContent = smsStatus(); }); return; }
   case 'togglevoice': S.settings.voice = !S.settings.voice; commit(); say('Speak is on.'); return render();
   case 'hintsreset': lsSet('stallbook_hints', '[]'); toast('The hints are back. Go to Give bags.'); return;
+  case 'round': { const ids = collectLists().order.map(x => x.p.id); if (!ids.length) return toast('Nobody owes here'); V.round = {ids, i: 0, res: {}, carId: V.fCar && carById(V.fCar) ? V.fCar : '', method: 'cash'}; sfx('page'); return push({v: 'round'}); }
+  case 'roundstop': { V.round = null; return pop(); }
+  case 'rmethod': V.round.method = d.m; return render();
+  case 'rpaid': { const R = V.round, pid = R.ids[R.i], p = person(pid), owe = roundOwe(pid, R.carId); if (!(owe > 0.001)) return;
+    V.pay = {pid, ex: String(owe), method: R.method, err: '', loadId: null, carId: R.carId || null, ctx: 'round', over: ''};
+    if (!savePay()) return; R.res[pid] = {kind: 'paid', amt: owe, eid: V.lastPay.e.id}; V.lastPay = null; R.i++; render();
+    savedPop(`${p.name} · ${money(owe)}`, '#12804A'); say(`${p.name} paid ${cedis(owe)}.`);
+    if (V.celebrateCar) { R.cel = V.celebrateCar; V.celebrateCar = null; } return; }
+  case 'rsome': { const R = V.round; return openPay(R.ids[R.i], {ctx: 'round', carId: R.carId || null, method: R.method}); }
+  case 'rdate': { const R = V.round; V.pr = null; return promiseSheet(R.ids[R.i]); }
+  case 'rskip': { const R = V.round, pid = R.ids[R.i]; if (!R.res[pid]) R.res[pid] = {kind: 'skip'}; R.i++; return render(); }
+  case 'rback': { const R = V.round; R.i = Math.max(0, R.i - 1); return render(); }
+  case 'rundo': { const R = V.round, pid = R.ids[R.i], r = R.res[pid]; if (r && r.eid) undoEntry(r.eid); delete R.res[pid]; commit(); render(); return toast('Payment removed', []); }
   case 'cloudnew': return cbSheetNew();
   case 'cnstart': { const u = (document.getElementById('cn_url') || {}).value; cbSheetWait('Starting your book…');
     cbCreate(u).then(err => { if (err) cbSheetNew(err); else { cbSoon(100); cbSheetCode(true); render(); } }); return; }
