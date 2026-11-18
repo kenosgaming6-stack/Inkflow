@@ -749,11 +749,25 @@ a.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;text-deco
 <script>
 'use strict';
 /* if something breaks while opening, say so on screen instead of showing a blank page */
+/* the book as a file, without the app: from the main copy, or else the second copy */
+function rescueBook(done) {
+  const finish = raw => {
+    let book; try { book = JSON.parse(raw); } catch (e) { return done(false); }
+    const name = 'StallBook-backup-' + new Date().toISOString().slice(0, 10) + '.json', json = JSON.stringify({stallbook: book, savedAt: new Date().toISOString(), version: 3, photos: {}});
+    try { const file = new File([json], name, {type: 'application/json'}); if (navigator.canShare && navigator.canShare({files: [file]})) { navigator.share({files: [file], title: 'StallBook backup'}).then(() => done(true), () => done(false)); return; } } catch (e) {}
+    try { const url = URL.createObjectURL(new Blob([json], {type: 'application/json'})); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); done(true); } catch (e) { done(false); }
+  };
+  let raw = null; try { raw = localStorage.getItem('stallbook_v2'); } catch (e) {}
+  if (raw) return finish(raw);
+  try { const r = indexedDB.open('stallbook-book', 1); r.onupgradeneeded = () => r.result.createObjectStore('b'); r.onsuccess = () => { try { const q = r.result.transaction('b').objectStore('b').get('book'); q.onsuccess = () => q.result ? finish(q.result) : done(false); q.onerror = () => done(false); } catch (e) { done(false); } }; r.onerror = () => done(false); }
+  catch (e) { done(false); }
+}
 window.addEventListener('error', ev => {
   const a = document.getElementById('app'); if (!a || a.querySelector('.top')) return;
-  a.innerHTML = '<div style="padding:1.5rem 1.125rem;display:flex;flex-direction:column;gap:.75rem"><h2 style="margin:0">StallBook could not open</h2><p style="margin:0">Your book is still saved on this phone. Take a screenshot of this and send it.</p><p style="margin:0;color:#BE2329;word-break:break-word"></p><button style="padding:.875rem;border-radius:.75rem;background:#24307A;color:#fff;font-weight:700">Try again</button></div>';
-  a.querySelectorAll('p')[1].textContent = String(ev.message || ev.error || 'Unknown error') + (ev.lineno ? ' (line ' + ev.lineno + ')' : '');
-  a.querySelector('button').addEventListener('click', () => location.reload());
+  a.innerHTML = '<div id="rescue" style="padding:1.5rem 1.125rem;display:flex;flex-direction:column;gap:.875rem"><h2 style="margin:0">StallBook could not open</h2><p style="margin:0;font-size:1.125rem">Your book is safe on this phone.</p><button data-r="save" style="text-align:center;padding:1.125rem;border-radius:.875rem;background:#12804A;color:#fff;font-weight:800;font-size:1.125rem">Save my book</button><p data-r="said" style="margin:0;font-weight:700"></p><button data-r="again" style="text-align:center;padding:.875rem;border-radius:.75rem;background:#24307A;color:#fff;font-weight:700">Try again</button><p data-r="why" style="margin:0;color:#BE2329;word-break:break-word;font-size:.875rem"></p></div>';
+  a.querySelector('[data-r="why"]').textContent = String(ev.message || ev.error || 'Unknown error') + (ev.lineno ? ' (line ' + ev.lineno + ')' : '');
+  a.querySelector('[data-r="again"]').addEventListener('click', () => location.reload());
+  a.querySelector('[data-r="save"]').addEventListener('click', () => rescueBook(ok => { a.querySelector('[data-r="said"]').textContent = ok ? 'Saved. Keep the file in WhatsApp.' : 'No book found on this phone.'; }));
 });
 /*
   StallBook v4: a credit book for market traders.
@@ -985,9 +999,8 @@ function saveBar() {
 }
 /* the book comes back from the second copy when the first is empty or older */
 function bkRecover() {
-  if (navigator.webdriver && !window.RECOVER_FORCE) return;
   bkGet().then(json => {
-    if (!json) return; let raw; try { raw = JSON.parse(json); } catch (e) { return; }
+    if (!json || (navigator.webdriver && !window.RECOVER_FORCE)) return; let raw; try { raw = JSON.parse(json); } catch (e) { return; }
     if (!hasData(raw) || (hasData(S) && String(raw.changedAt || '') <= String(S.changedAt || ''))) return;
     S = normalize(raw); VER++; save(); V.stack = []; V.tab = 'give'; render(); toast('Your book is back');
   });
@@ -3195,6 +3208,8 @@ function act(a, d, el) {
   case 'facecam': { const c = document.getElementById('facein'); if (c) c.click(); return; }
   case 'facedel': { const p = person(d.id); if (p && p.photo) { phDel(p.photo); delete p.photo; commit(); } closeSheet(); render(); return toast('Photo removed'); }
   case 'togglefaces': S.settings.faces = !S.settings.faces; commit(); return render();
+  case 'cbwrote': lsSet('stallbook_code_ok', String(Date.now())); return closeSheet();
+  case 'cbshowcode': return cbSheetCode('show');
   case 'cloudnew': return cbSheetNew();
   case 'cnstart': { const u = (document.getElementById('cn_url') || {}).value; cbSheetWait('Starting your book…');
     cbCreate(u).then(err => { if (err) cbSheetNew(err); else { cbSoon(100); cbSheetCode(true); render(); } }); return; }
@@ -3517,12 +3532,21 @@ function cbSheetJoin(err) {
 }
 function cbSheetCode(fresh) {
   const text = 'Join my StallBook. In the app: Settings › Cloud book › Join a book, then paste this:\n\n' + cbInvite();
-  sheet(`<i class="grab"></i><h3>${fresh ? 'Your book is online ✓' : 'Invite another phone'}</h3>
-    <p>On the other phone: <b>Settings › Cloud book › Join a book</b>, then paste the invite.</p>
+  const write = fresh === true || fresh === 'show';
+  sheet(`<i class="grab"></i><h3>${fresh === true ? 'Your book is online ✓' : write ? 'Your book code' : 'Invite another phone'}</h3>
+    ${write ? `<p><b>Write this code on paper.</b> It is the only key.</p>` : `<p>On the other phone: <b>Settings › Cloud book › Join a book</b>, then paste the invite.</p>`}
     <div class="codebig" id="cb_code">${esc(cbPretty(CB.code))}</div>
-    <p class="small center">Keep this code private. Anyone who has it can read your book.</p>
-    <a class="btn ink tall" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_top" data-act="noop">${svg('msg')} Send by WhatsApp</a>
-    <button class="btn ghost" data-act="cbcopy">Copy the invite</button><button class="btn ghost" data-act="sheetclose">Done</button>`);
+    ${write ? `<button class="btn ink tall" data-act="cbwrote">I wrote it down</button>` : ''}
+    <a class="btn ${write ? 'ghost' : 'ink tall'}" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_top" data-act="noop">${svg('msg')} Send by WhatsApp</a>
+    <button class="btn ghost" data-act="cbcopy">Copy the invite</button>${write ? '' : `<button class="btn ghost" data-act="sheetclose">Done</button>`}`);
+}
+/* once a month: do you still have the book code? It is the only key to the online book. */
+function cbCodeCheck() {
+  if (!(SYNC_OK && CB.on) || V.demo || (navigator.webdriver && !window.CODECHECK_FORCE)) return;
+  if (Date.now() - Number(lsGet('stallbook_code_ok') || 0) < 30 * 864e5) return;
+  if (layer.querySelector('.ov') || cur()) return;
+  sheet(`<i class="grab"></i><h3>Do you still have your book code?</h3><p>It is the only key to your online book.</p>
+    <button class="btn ink tall" data-act="cbwrote">Yes, I have it</button><button class="btn ghost" data-act="cbshowcode">Show my code</button>`);
 }
 function cbSheetWait(t) { sheet(`<i class="grab"></i><h3>${esc(t)}</h3><div class="sync-wait" style="text-align:center;padding:1rem">${svg('cloud', 40)}</div>`); }
 function cbAfterReplace() { CB_SIG.clear(); if (CB.on) { cbStamp(); cbSoon(800); } }
@@ -3545,6 +3569,7 @@ render();
 smsSoon(4000);
 phLoadAll().then(() => { if (Object.keys(PH).length) render(); });
 bkRecover();
+setTimeout(cbCodeCheck, 4500);
 /* ask the phone not to clear the book when it runs low on space */
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 /* in Safari, explain once how to put the app on the Home Screen, where the book lives */

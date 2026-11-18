@@ -54,7 +54,9 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   ok(invite === code + '@' + SERVER, 'the invite is the code and the server address: ' + invite);
   ok(await A.p.evaluate(() => { const c = document.getElementById('cb_code'); return c.getBoundingClientRect().height < 80 && c.scrollWidth <= c.clientWidth + 1; }), 'the code fits on one line');
   await A.p.screenshot({path: OUT + '/1-code.png'});
-  await act(A, 'sheetclose'); await sync(A);
+  ok(await A.p.evaluate(() => !!document.querySelector('[data-act="cbwrote"]') && document.querySelector('.sheet').textContent.includes('Write this code on paper')), 'the new book says "Write this code on paper"');
+  await act(A, 'cbwrote'); await sync(A);
+  ok(await A.p.evaluate(() => Date.now() - Number(localStorage.getItem('stallbook_code_ok')) < 60000), '"I wrote it down" is remembered for a month');
   ok(await A.p.evaluate(() => CB.on && CB.status === 'ok' && !CB.pending && CB.known.size >= 134 && CB.photoSent.has('ph1')), 'phone A sent its book: every line, and the photo');
   ok((await txt(A, '#cb_status')) === 'Saved just now', 'Settings says "Saved just now"');
   // ---- the server holds only scrambled data ----
