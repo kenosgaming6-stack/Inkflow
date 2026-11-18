@@ -42,7 +42,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
 
   // new delivery: count with +
   await p.evaluate(() => { S.cars.forEach(c => { c.phase = 'out'; }); commit(); V.tab = 'give'; render(); startWizard(); }); await p.waitForTimeout(300);
-  await p.click('[data-act="wfrom"]'); await p.waitForTimeout(150); await p.click('[data-act="wphoto"]'); await p.waitForTimeout(150);
+  await p.click('[data-act="wfrom"]'); await p.waitForTimeout(150); await p.click('[data-act="wnophoto"]'); await p.waitForTimeout(100); await p.click('[data-act="wcolor"][data-c="red"]'); await p.waitForTimeout(150);
   await holdDel(); await keys('5+6+7+8');
   ok((await txt('.disp .tape')).includes('5 + 6 + 7 + 8') && (await txt('.disp .v')).startsWith('26'), 'new delivery: "5 + 6 + 7 + 8" shows 26 bags');
   await shot('4-newcount');

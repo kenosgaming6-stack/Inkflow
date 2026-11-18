@@ -36,7 +36,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   await keys('650'); await act('wnext');
   ok((await txt('.q')).includes('Another kind of bag?') && (await p.$$('.kindrow')).length === 1 && (await txt('.kindrow')).includes('14') && (await txt('.kindrow')).includes('650'), 'step 5: "Another kind of bag?" lists 14 at ₵650');
   await act('wmore'); await photo('brown-sack.jpg'); await act('wphoto'); await keys('20'); await act('wnext'); await keys('700'); await act('wnext');
-  await act('wmore'); await act('wphoto'); await keys('6'); await act('wnext'); await keys('480'); await act('wnext');
+  await act('wmore'); await act('wnophoto'); await act('wcolor', '[data-c="red"]'); await keys('6'); await act('wnext'); await keys('480'); await act('wnext');
   ok((await p.$$('.kindrow')).length === 3 && (await p.$$('.kstrip .kthumb')).length === 3, 'three kinds: two photos and one with no photo');
   await shot('3-kinds');
   // change one: retake the second photo

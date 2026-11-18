@@ -335,7 +335,14 @@ html.lh .ktiles,html.lh .notes,html.lh .kpick,html.lh .faces{direction:ltr}
 .q{font-size:1.625rem;font-weight:700;color:var(--ink);text-align:center;line-height:1.25}
 /* bag kinds: the photo is the button */
 .kimg{display:block;width:3rem;height:3rem;border-radius:.5rem;object-fit:cover;background:var(--key);border:.125rem solid var(--text);flex:none}
-.kimg.none{display:flex;align-items:center;justify-content:center;font:800 1.5rem/1 var(--num);color:var(--ink);background:var(--pen-wash)}
+.kimg.none{display:flex;align-items:center;justify-content:center;background:#F3ECDD;padding:.1875rem;overflow:hidden}
+.kimg.none svg{display:block;height:100%;width:auto;max-width:100%}
+.kimg.xs.none{padding:.0625rem}
+.colgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;width:100%;margin:.25rem 0}
+.colbtn{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.375rem .125rem;border-radius:.875rem;border:.125rem solid var(--line);background:var(--paper);font-weight:800;font-size:.9375rem;color:var(--ink)}
+.colbtn.on{border-color:var(--ink);background:var(--key)}
+.colbtn .colbag{display:block;width:3.5rem;height:3.5rem}
+.colbtn .colbag svg{display:block;width:100%;height:100%}
 .kimg.xs{width:1.375rem;height:1.375rem;border-width:.09375rem;border-radius:.3rem;font-size:.8125rem;display:inline-flex;vertical-align:middle}
 .kimg.sm{width:2.25rem;height:2.25rem;font-size:1.125rem}
 .kimg.big{width:100%;height:6.75rem;border:0;border-radius:0;font-size:2.75rem}
@@ -1070,7 +1077,15 @@ const AV = [['#1D3FBB', '#E3EAFD'], ['#0F766E', '#DDF3EF'], ['#A21CAF', '#F7E2F9
 function avc(name) { let h = 0; for (const ch of String(name || '').trim().toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0; const c = AV[h % AV.length]; return `background:${c[1]};color:${c[0]}`; }
 /* a kind of bag with no photo takes the colour in its name ("Red net"), or one of its own */
 const KCOL = {red: '#C62828', yellow: '#F2B705', white: '#FFFFFF', brown: '#8D5A2B', green: '#2E7D32', blue: '#1565C0', black: '#1F2229', orange: '#EF6C00', purple: '#6A1B9A', pink: '#D81B60', grey: '#8A8F98', gray: '#8A8F98'};
+/* the bag colours a trader can pick, and a drawn onion bag in any colour */
+const BAG_COLS = [['red', 'Red'], ['white', 'White'], ['yellow', 'Yellow'], ['brown', 'Brown'], ['green', 'Green'], ['blue', 'Blue'], ['orange', 'Orange'], ['black', 'Black']];
+function bagSvg(c) {
+  const light = c === '#FFFFFF' || c === '#F2B705', ink = '#14161C', mesh = light ? ink : '#FFFFFF';
+  return `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 8c2-3 4-4 7-4s5 1 7 4l2 6c5 4 8 10 8 18 0 7-6 12-17 12S7 39 7 32c0-8 3-14 8-18z" fill="${c}" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round"/><path d="M15 14.5c6 2 12 2 18 0" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/><path d="M11 25c8 3 18 3 26 0M10 33c9 3 19 3 28 0M19 17c-5 9-5 19 0 27M29 17c5 9 5 19 0 27" fill="none" stroke="${mesh}" stroke-opacity=".4" stroke-width="1.4"/></svg>`;
+}
+const colGrid = (act, on) => `<div class="colgrid">${BAG_COLS.map(([k, l]) => `<button class="colbtn ${on === k ? 'on' : ''}" data-act="${act}" data-c="${k}" aria-label="${l}"><span class="colbag">${bagSvg(KCOL[k])}</span>${l}</button>`).join('')}</div>`;
 function kindCol(it) {
+  if (it && it.col && KCOL[it.col]) return KCOL[it.col];
   const w = String(it && it.name || '').toLowerCase().match(/[a-z]+/g) || []; const k = w.find(x => KCOL[x]);
   if (k) return KCOL[k];
   const car = S.cars.find(c => c.items.includes(it)) || (S.trips || []).find(t => t.items.includes(it)); return PAL[(car ? Math.max(0, car.items.indexOf(it)) : 0) % PAL.length];
@@ -1611,8 +1626,7 @@ const kindLabel = it => it.name || money(it.price);
 function kindImg(it, cls) {
   const src = it && it.photo && PH[it.photo];
   if (src) return `<img class="kimg ${cls || ''}" src="${src}" alt="">`;
-  const c = kindCol(it), light = c === '#FFFFFF' || c === '#F2B705';
-  return `<span class="kimg none ${cls || ''}" style="background:${c};color:${light ? '#14161C' : '#FFFFFF'}">${esc(it && it.name ? it.name.slice(0, 1) : '₵')}</span>`;
+  return `<span class="kimg none ${cls || ''}" role="img" aria-label="${esc((BAG_COLS.find(x => x[0] === (it && it.col)) || ['', 'Bag'])[1])}">${bagSvg(kindCol(it))}</span>`;
 }
 
 /* ===== Give ===== */
@@ -1770,6 +1784,7 @@ function buySheet() {
   if (B.step === 'kind') return sheet(`<i class="grab"></i><h3>Which kind?</h3><div class="ktiles bk">${T.items.map(i => `<button data-act="bkind" data-i="${i.id}">${kindImg(i)}${esc(i.name || '')}</button>`).join('')}<button class="newk" data-act="bnew">${svg('cam')}New kind</button></div>`);
   if (B.step === 'photo') return sheet(`<i class="grab"></i><h3>Photo of this kind</h3><p>The photo becomes its button.</p><button class="camera" data-act="bcam">${svg('cam', 48)}<span>Take a photo</span></button><input type="file" id="bcamin" accept="image/*" capture="environment" hidden><div class="bar"><button class="btn ghost" data-act="bnophoto">No photo</button></div>`)
     && document.getElementById('bcamin').addEventListener('change', onBuyCamera);
+  if (B.step === 'color') return sheet(`<i class="grab"></i><h3>What colour is the bag?</h3>${colGrid('bcolor', '')}`);
   const money_ = B.step === 'price';
   const last = money_ ? [...T.buys].reverse().find(b => b.itemId === B.itemId && b.id !== B.edit) : null;
   sheet(`<div class="hrow">${kindImg(it || {}, 'sm')}<div class="title"><b>${money_ ? `Paid for one ${esc(u)}?` : `How many ${esc(u)}s?`}</b><small>${money_ ? bagsTxt(exprNum(B.n)) : (it && it.name) || ''}</small></div></div>
@@ -1796,7 +1811,7 @@ function tripToLoad(id) {
   const T = tripById(id); if (!T) return;
   if (givingCar()) return toast('Close the open load first');
   const st = tripStats(T);
-  const items = st.items.filter(x => x.bags > 0).map(x => ({id: x.it.id, name: x.it.name || '', count: x.bags, price: 0, photo: x.it.photo || '', paid: x.avg}));
+  const items = st.items.filter(x => x.bags > 0).map(x => ({id: x.it.id, name: x.it.name || '', count: x.bags, price: 0, photo: x.it.photo || '', col: x.it.col || '', paid: x.avg}));
   if (!items.length) return toast('Nothing was bought on this trip');
   V.w = {s: 'price', items, si: 0, tmp: '', err: '', label: T.place || '', fromTrip: T.id, cost: st.spent};
   V.tab = 'give'; push({v: 'newcar'});
@@ -1885,7 +1900,7 @@ function giveSheet() {
     : `<div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><button class="num" data-act="gqmore" aria-label="Type how many">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></button><button class="key" data-act="gplus" aria-label="One more">+</button></div>
     ${S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="ghalf">± ½</button></div>` : ''}`}
     <div class="togs">${simple() && !g.hold && !g.more ? `<button class="tog more" data-act="gmore">More ${svg('down', 16)}</button>` : `<button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Keep for her</button>`}</div>
-    <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave" ${g.bags > 0 ? '' : 'disabled'}>${g.bags > 0 ? (g.hold ? 'Hold ' : 'Give ') + bagsTxt(g.bags) : 'Tap a photo'}</button>`);
+    <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave" ${g.bags > 0 ? '' : 'disabled'}>${g.bags > 0 ? (g.hold ? 'Hold ' : 'Give ') + bagsTxt(g.bags) : tapWord()}</button>`);
   V.sheetKind = 'give';
   const ph = document.getElementById('gph'); if (ph) ph.addEventListener('input', e => { V.g.phone = e.target.value; });
 }
@@ -1934,7 +1949,7 @@ function cashSheet() {
     : `<div class="step"><button class="key" data-act="csless" data-i="${car.items[0].id}" aria-label="One less">−</button><button class="num" data-act="csn" data-i="${car.items[0].id}" aria-label="Type how many">${bagsNum(n)}<small>${esc(unit())}${n === 1 ? '' : 's'}</small></button><button class="key" data-act="csk" data-i="${car.items[0].id}" aria-label="One more">+</button></div>`;
   sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>${C.edit ? 'Change cash sale' : 'Cash sale'}</b></div>${body}
     <div class="ktot cash"><b>${money(total)}</b>${multi ? `<small>${bagsTxt(n)}</small>` : ""}</div>
-    <button class="btn take tall" data-act="cssave" ${n > 0 ? '' : 'disabled'}>${n > 0 ? (C.edit ? 'Save · ' : 'Sold · ') + money(total) : 'Tap a photo'}</button>`, 'cashsheet');
+    <button class="btn take tall" data-act="cssave" ${n > 0 ? '' : 'disabled'}>${n > 0 ? (C.edit ? 'Save · ' : 'Sold · ') + money(total) : tapWord()}</button>`, 'cashsheet');
   V.sheetKind = 'cash';
 }
 function saveCash() {
@@ -2492,7 +2507,10 @@ VIEWS.show = f => {
 
 /* ===== New delivery ===== */
 function startWizard() { V.w = {s: 'from', items: [], si: 0, tmp: '', err: '', label: ''}; push({v: 'newcar'}); }
-const newKind = () => ({id: uid(), name: '', count: 0, price: 0, photo: ''});
+/* the words on a button that waits for a kind to be tapped: a photo, or a bag when the kinds are drawn */
+const tapWord = car => { const c = car || (V.g && carById(V.g.carId)) || (V.cs && carById(V.cs.carId)) || givingCar(); return 'Tap a ' + (c && c.items.some(i => i.photo) ? 'photo' : 'bag'); };
+const newKind = () => ({id: uid(), name: '', count: 0, price: 0, photo: '', col: ''});
+function wToCount() { const W = V.w, it = W.items[W.si]; W.s = 'count'; W.tmp = it.count ? String(it.count) : W.si === 0 && S.carry ? String(S.carry) : ''; W.err = ''; return render(); }
 VIEWS.newcar = () => {
   const W = V.w; const u = unit(); const it = W.items[W.si];
   const strip = W.items.length && W.s !== 'from' ? `<div class="kstrip">${W.items.map((x, i) => `<button class="kthumb ${i === W.si && !['more', 'cost'].includes(W.s) ? 'on' : ''}" data-act="wedit" data-i="${i}" aria-label="Kind ${i + 1}">${kindImg(x, 'sm')}</button>`).join('')}</div>` : '';
@@ -2505,12 +2523,14 @@ VIEWS.newcar = () => {
       `<div class="bar">${backSq('wback')}<button class="btn ink tall" data-act="wfrom">Next</button></div>`,
       () => { const i = document.getElementById('w_label'); if (i) i.addEventListener('input', () => { V.w.label = i.value; }); });
   }
+  if (W.s === 'color') return view(kn, 'What colour is the bag?', '', colGrid('wcolor', it.col), `<div class="bar">${backSq('wback')}</div>`);
   if (W.s === 'photo') {
     const src = it.photo && PH[it.photo];
     const body = src ? `<div class="photowrap">${kindImg(it, 'hero')}<button class="retake" data-act="wcam" aria-label="Take the photo again">${svg('cam', 24)}</button></div>`
+      : it.col ? `<div class="photowrap">${kindImg(it, 'hero')}<button class="retake" data-act="wcam" aria-label="Take a photo">${svg('cam', 24)}</button></div>`
       : `<button class="camera" data-act="wcam">${svg('cam', 48)}<span>Take a photo</span></button>`;
-    return view(kn, src ? 'Is this the right bag?' : 'Take a photo of one kind of bag', src ? '' : 'The photo becomes its button when you give.', body + `<input type="file" id="camin" accept="image/*" capture="environment" hidden>`,
-      `<div class="bar">${backSq('wback')}${src ? `${W.items.length > 1 ? `<button class="btn ghost redtext" data-act="wdel">Remove</button>` : ''}<button class="btn ink tall" data-act="wphoto">Yes, next</button>` : `<button class="btn ghost" data-act="wphoto">No photo</button>`}</div>`,
+    return view(kn, src || it.col ? 'Is this the right bag?' : 'Take a photo of one kind of bag', '', body + `<input type="file" id="camin" accept="image/*" capture="environment" hidden>`,
+      `<div class="bar">${backSq('wback')}${src ? `${W.items.length > 1 ? `<button class="btn ghost redtext" data-act="wdel">Remove</button>` : ''}<button class="btn ink tall" data-act="wphoto">Yes, next</button>` : it.col ? `<button class="btn ghost" data-act="wnophoto">Colour</button><button class="btn ink tall" data-act="wphoto">Yes, next</button>` : `<button class="btn ghost" data-act="wnophoto">No photo</button>`}</div>`,
       () => { const c = document.getElementById('camin'); if (c) c.addEventListener('change', onCamera); });
   }
   if (W.s === 'count') return view(kn, `How many of these ${esc(u)}s?`, W.si === 0 && S.carry ? `${bagsNum(S.carry)} from the last load are counted in` : '', `<div class="photowrap">${kindImg(it, 'sm')}</div>${exprDisp(W.tmp, false, esc(u) + 's')}`,
@@ -2536,6 +2556,7 @@ function wizBack() {
   const W = V.w; W.err = ''; W.tmp = '';
   if (W.s === 'from') return pop();
   if (W.s === 'photo') { const it = W.items[W.si]; if (!it.count && !it.price) { W.items.splice(W.si, 1); W.si = Math.max(0, W.items.length - 1); } W.s = W.items.length ? 'more' : 'from'; return render(); }
+  if (W.s === 'color') { W.s = 'photo'; return render(); }
   if (W.s === 'count') { W.s = 'photo'; return render(); }
   if (W.s === 'price') { W.s = 'count'; W.tmp = String(W.items[W.si].count || ''); return render(); }
   if (W.s === 'more') { W.si = W.items.length - 1; W.s = 'price'; W.tmp = String(W.items[W.si].price || ''); return render(); }
@@ -2899,7 +2920,8 @@ function act(a, d, el) {
   case 'bkind': V.b.itemId = d.i; V.b.step = 'count'; V.b.ex = ''; return buySheet();
   case 'bnew': V.b.step = 'photo'; return buySheet();
   case 'bcam': { const c = document.getElementById('bcamin'); if (c) c.click(); return; }
-  case 'bnophoto': { const T = buyTrip(); const it = {id: uid(), name: '', photo: ''}; T.items.push(it); commit(); V.b.itemId = it.id; V.b.step = 'count'; V.b.ex = ''; return buySheet(); }
+  case 'bnophoto': V.b.step = 'color'; return buySheet();
+  case 'bcolor': { const T = buyTrip(); const it = {id: uid(), name: '', photo: '', col: d.c}; T.items.push(it); commit(); V.b.itemId = it.id; V.b.step = 'count'; V.b.ex = ''; return buySheet(); }
   case 'bnext': { const n = exprNum(V.b.ex); if (!(n > 0)) { V.b.err = 'Type how many.'; return buySheet(); } V.b.n = String(n); V.b.step = 'price'; const e0 = V.b.edit && buyTrip().buys.find(x => x.id === V.b.edit); V.b.ex = e0 ? String(e0.price) : ''; return buySheet(); }
   case 'blast': { const T = buyTrip(); const last = [...T.buys].reverse().find(b => b.itemId === V.b.itemId && b.id !== V.b.edit); if (last) V.b.ex = String(last.price); return saveBuy(); }
   case 'bsave': return saveBuy();
@@ -3125,7 +3147,9 @@ function act(a, d, el) {
   case 'wlabel': V.w.label = d.l; return render();
   case 'wfrom': { const W = V.w; if (!W.items.length) W.items.push(newKind()); W.si = 0; W.s = 'photo'; return render(); }
   case 'wcam': { const c = document.getElementById('camin'); if (c) c.click(); return; }
-  case 'wphoto': { const W = V.w; const it = W.items[W.si]; W.s = 'count'; W.tmp = it.count ? String(it.count) : W.si === 0 && S.carry ? String(S.carry) : ''; W.err = ''; return render(); }
+  case 'wphoto': return wToCount();
+  case 'wnophoto': { V.w.s = 'color'; return render(); }
+  case 'wcolor': { const it = V.w.items[V.w.si]; it.col = d.c; it.photo = ''; return wToCount(); }
   case 'wdel': { const W = V.w; W.items.splice(W.si, 1); W.si = 0; W.s = 'more'; return render(); }
   case 'wedit': { const W = V.w; W.si = +d.i; W.s = 'photo'; W.err = ''; return render(); }
   case 'wmore': { const W = V.w; W.items.push(newKind()); W.si = W.items.length - 1; W.s = 'photo'; W.tmp = ''; return render(); }
@@ -3138,7 +3162,7 @@ function act(a, d, el) {
     if (nx >= 0) { W.si = nx; W.s = 'price'; return render(); } W.s = 'more'; return render(); }
   case 'wfinish': { const W = V.w; const cost = d.skip ? 0 : exprNum(W.tmp);
     if (!W.items.length || W.items.some(i => !(i.count > 0) || !(i.price > 0))) { W.s = 'more'; W.err = 'Every kind needs a number and a price.'; return render(); }
-    const car = {id: uid(), date: nowIso(), label: (W.label || '').trim(), items: W.items.map(i => ({id: i.id, name: i.name || '', count: i.count, price: i.price, photo: i.photo || ''})), costs: cost ? [{id: uid(), name: 'Load', amount: cost}] : [], phase: 'giving'};
+    const car = {id: uid(), date: nowIso(), label: (W.label || '').trim(), items: W.items.map(i => ({id: i.id, name: i.name || '', count: i.count, price: i.price, photo: i.photo || '', col: i.col || ''})), costs: cost ? [{id: uid(), name: 'Load', amount: cost}] : [], phase: 'giving'};
     if (W.fromTrip) { const T = tripById(W.fromTrip); if (T) { T.carId = car.id; car.tripId = T.id; } }
     S.cars.push(car); S.carry = 0; S.settings.price = car.items[0].price; commit(); V.w = null; V.turn = true; return toRoot('give'); }
 

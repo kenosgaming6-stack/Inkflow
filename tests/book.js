@@ -50,7 +50,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   await p.evaluate(() => { S.settings.simple = false; commit(); render(); }); // this test checks every button
 
   // new delivery Wankai, 12 bags at 650
-  await act('newcar'); await p.fill('#w_label', 'Wankai'); await act('wfrom'); await act('wphoto'); await keys('12'); await act('wnext'); await keys('650'); await act('wnext'); await act('wdone'); await act('wfinish', '[data-skip]');
+  await act('newcar'); await p.fill('#w_label', 'Wankai'); await act('wfrom'); await act('wnophoto'); await act('wcolor', '[data-c="red"]'); await keys('12'); await act('wnext'); await keys('650'); await act('wnext'); await act('wdone'); await act('wfinish', '[data-skip]');
   ok(await left() === '12' && (await txt('.stock .dl')).includes('Wankai'), 'delivery Wankai: 12 left');
 
   // The give panel for a new name: phone, + and −, Hold for her. Nothing else.
@@ -191,7 +191,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   ok((await txt('.sheet')).includes('What happened to the 4 bags left'), 'after release: asks about the 4 left');
   await act('clopt', '[data-k="next"]'); await shot('08-close'); await act('cldo');
   ok((await txt('#app')).includes('4 bags waiting for the next one'), 'closed: 4 bags waiting for the next delivery');
-  await act('newcar'); await act('wfrom'); await act('wphoto');
+  await act('newcar'); await act('wfrom'); await act('wnophoto'); await act('wcolor', '[data-c="red"]');
   ok((await txt('.disp')).includes('4'), 'next delivery starts with 4 counted');
   await act('wback'); await act('wback'); await act('wback');
 

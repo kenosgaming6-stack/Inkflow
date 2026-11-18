@@ -80,7 +80,7 @@ const num = t => Number(String(t).replace(/[^\d.]/g, ''));
 
   // a new load turns the page
   await p.evaluate(() => { S.cars.forEach(c => { c.phase = 'out'; }); commit(); render(); startWizard(); }); await p.waitForTimeout(250);
-  await act('wfrom'); await act('wphoto'); await keys('12'); await act('wnext'); await keys('600'); await act('wnext'); await act('wdone'); await act('wfinish', '[data-skip]');
+  await act('wfrom'); await act('wnophoto'); await act('wcolor', '[data-c="red"]'); await keys('12'); await act('wnext'); await keys('600'); await act('wnext'); await act('wdone'); await act('wfinish', '[data-skip]');
   await p.waitForTimeout(80);
   ok(await p.evaluate(() => { const m = document.querySelector('.mid.turn'); return !!m && getComputedStyle(m).animationName === 'turn'; }), 'the new load comes in as a page turning');
   await p.waitForTimeout(700);
