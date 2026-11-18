@@ -533,6 +533,8 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .srow>span{font-weight:700;min-width:0}
 .btn.setmore{align-self:center;width:auto;padding:0 1.25rem;margin:.25rem 0}
 .tog.more{color:var(--muted);border-style:dashed}
+[data-act]{-webkit-touch-callout:none}
+.heard{outline:.1875rem solid var(--ink);outline-offset:.125rem}
 .swnote{margin:-.375rem 0 0;padding:0 .875rem .625rem;font-size:.875rem}
 .switch{flex:none;position:relative;width:3.375rem;height:2.0625rem;border-radius:1.03rem;background:#C9CFDD}
 .switch i{position:absolute;top:.1875rem;left:.1875rem;width:1.6875rem;height:1.6875rem;border-radius:50%;background:#FFFFFF;box-shadow:0 .0625rem .25rem rgba(0,0,0,.28)}
@@ -1414,8 +1416,8 @@ function pullEnd() {
 layer.addEventListener('touchend', pullEnd, {passive: true});
 layer.addEventListener('touchcancel', pullEnd, {passive: true});
 /* the phone says it out loud when Speak is on: "Ama, 2 bags. 35 left." Off by default. */
-function say(text) {
-  if (!S.settings.voice || V.demo || !('speechSynthesis' in window)) return;
+function say(text, force) {
+  if ((!S.settings.voice && !force) || (V.demo && !force) || !('speechSynthesis' in window)) return;
   try {
     const ss = window.speechSynthesis; ss.cancel();
     const u = new SpeechSynthesisUtterance(String(text).replace(/(\d)½/g, '$1 and a half').replace(/½/g, 'half'));
@@ -2118,7 +2120,7 @@ function gapLose(g, n) {
 /* the count reminder: while the Give screen is open, ask for a count every few minutes */
 const lastOf = (car, types) => S.entries.reduce((m, e) => e.carId === car.id && types.includes(e.type) && live(e) && e.date > m ? e.date : m, '');
 function checkDue() {
-  const car = givingCar(); const mins = Number(S.settings.checkMins) || 0;
+  const car = givingCar(); const mins = simple() ? 0 : Number(S.settings.checkMins) || 0;
   if (!car || !mins) return false;
   const since = [car.date, car.checkedAt || '', lastOf(car, ['check'])].reduce((a, b) => a > b ? a : b);
   const act = [car.date, lastOf(car, ['give', 'cash', 'hand', 'gap', 'check'])].reduce((a, b) => a > b ? a : b);
@@ -2519,7 +2521,7 @@ VIEWS.show = f => {
 };
 
 /* ===== New delivery ===== */
-function startWizard() { V.w = {s: 'from', items: [], si: 0, tmp: '', err: '', label: ''}; push({v: 'newcar'}); }
+function startWizard() { V.w = {s: simple() ? 'photo' : 'from', items: simple() ? [newKind()] : [], si: 0, tmp: '', err: '', label: ''}; push({v: 'newcar'}); }
 /* the words on a button that waits for a kind to be tapped: a photo, or a bag when the kinds are drawn */
 const tapWord = car => { const c = car || (V.g && carById(V.g.carId)) || (V.cs && carById(V.cs.carId)) || givingCar(); return 'Tap a ' + (c && c.items.some(i => i.photo) ? 'photo' : 'bag'); };
 const newKind = () => ({id: uid(), name: '', count: 0, price: 0, photo: '', col: ''});
@@ -2696,12 +2698,14 @@ function openClose(cid, o) { V.cl = Object.assign({cid, choice: null, thenNew: f
 function closeCarSheet() {
   const car = carById(V.cl.cid); const st = carStats(car.id); const held = heldOn(car.id); const gaps = gapsOn(car.id); const left = Math.max(0, st.free);
   const opts = [['next', 'For the next load'], ['back', 'Sent back'], ['bad', 'Spoiled or lost'], ['cash', 'Sold for cash'], ['count', 'The count was wrong']];
+  if (simple() && !held.length && !gaps.length && left > 0 && !V.cl.choice && !V.cl.more) V.cl.choice = 'next';
   const can = !held.length && !gaps.length && (left <= 0 || V.cl.choice);
   sheet(`<i class="grab"></i><h3>${V.cl.thenNew ? 'First close ' : 'Close '}${esc(carName(car))}</h3>
     <div class="sum4"><div><b>${bagsNum(st.loaded)}</b><small>loaded</small></div><div><b>${bagsNum(st.given)}</b><small>given</small></div><div class="${held.length ? 'w' : 'ok'}"><b>${bagsNum(st.wait)}</b><small>kept${held.length ? '' : ' ✓'}</small></div><div><b>${bagsNum(left)}</b><small>left</small></div></div>
     ${held.length ? `<p><b>Still kept for her:</b> ${held.map(e => esc((person(e.pid) || {}).name || '?') + ' ' + bagsNum(e.bags)).join(', ')}. Hand them over or release them first.</p><div class="bar"><button class="btn ghost redtext" data-act="releaseall" data-id="${car.id}">Release all</button><button class="btn ink" data-act="handall" data-id="${car.id}">Hand over all</button></div>` : ''}
     ${gaps.length ? `<p><b>No name yet:</b> ${bagsTxt(sum(gaps, e => e.bags))}. Name them, or write them off, before closing.</p><div class="bar"><button class="btn ghost redtext" data-act="gaplostall" data-id="${car.id}">They are lost</button><button class="btn ink" data-act="sheetclose">Name them</button></div>` : ''}
-    ${!held.length && !gaps.length && left > 0 ? `<p><b>What happened to the ${bagsTxt(left)} left?</b></p><div class="radio">${opts.map(([k, l]) => `<button class="${V.cl.choice === k ? 'on' : ''}" data-act="clopt" data-k="${k}">${l}</button>`).join('')}</div>` : ''}
+    ${!held.length && !gaps.length && left > 0 && simple() && !V.cl.more ? `<p><b>${bagsTxt(left)} left.</b> They go to the next load.</p><button class="btn ghost" data-act="clmore">Something else</button>` : ''}
+    ${!held.length && !gaps.length && left > 0 && !(simple() && !V.cl.more) ? `<p><b>What happened to the ${bagsTxt(left)} left?</b></p><div class="radio">${opts.map(([k, l]) => `<button class="${V.cl.choice === k ? 'on' : ''}" data-act="clopt" data-k="${k}">${l}</button>`).join('')}</div>` : ''}
     <button class="btn ink tall" data-act="cldo" ${can ? '' : 'disabled'}>Close load</button>
     <button class="btn ghost" data-act="sheetclose">Not now</button>`);
   V.sheetKind = 'close';
@@ -2766,7 +2770,7 @@ VIEWS.setup = () => {
   const back = `<button class="sq" data-act="suback" aria-label="Back">${svg('back')}</button>`;
   const cls = `supage su${st}` + (dir ? ' slide-' + dir : '');
   if (st === 0) return {top: dots, mid: `<div class="suwel">${ILL}<div class="brand">StallBook</div><p class="sus">${esc(S.settings.item || 'Bags')}, money, people. In one book.</p>${SYNC_OK ? `<button class="lnk" data-act="cloudjoin" style="font-size:1rem">${svg('users', 18)} Already have a book? Join it</button>` : ''}</div>`, cls,
-    dock: `<div class="bar"><button class="btn ghost" data-act="demo">See an example</button><button class="btn ink tall" data-act="sunext">Start ${svg('fwd', 20)}</button></div>`};
+    dock: `<div class="bar"><button class="btn ghost" data-act="demo">Example</button><button class="btn ghost" data-act="sunext">Set up</button></div><div class="bar"><button class="btn ink tall" data-act="sustart">Start ${svg('fwd', 20)}</button></div>`};
   if (st === 1) {
     const items = ['Onions', 'Yams', 'Tomatoes', 'Plantain', 'Rice'], units = ['bag', 'sack', 'crate', 'box'];
     return {top: dots, mid: `<div class="suq">What do you sell?</div>
@@ -2797,7 +2801,7 @@ VIEWS.settings = () => {
   const days = S.lastBackup ? Math.floor((Date.now() - Date.parse(S.lastBackup)) / 864e5) : -1;
   const saved = days < 0 ? '<span class="savestat r">Never saved</span>' : `<span class="savestat ${days <= 7 ? 'ok' : 'w'}">${days === 0 ? 'Saved today' : days === 1 ? 'Saved yesterday' : 'Saved ' + days + ' days ago'}</span>`;
   const few = s.simple && !V.setMore;
-  const mid = card('check', '#12804A', 'Easy to use', sw('togglesimple', s.simple, 'Simple app') + `<p class="small swnote">${s.simple ? 'Fewer buttons. The rest is under More.' : 'Every button shows.'}</p>` + sw('togglebig', s.big, 'Big text'))
+  const mid = card('check', '#12804A', 'Easy to use', sw('togglesimple', s.simple, 'Simple app') + `<p class="small swnote">${s.simple ? 'Fewer buttons. Hold a button to hear it.' : 'Every button shows.'}</p>` + sw('togglebig', s.big, 'Big text') + `<div class="setbox"><div class="field"><label>Hand that holds the phone</label>${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div></div>`)
     + card('bag', '#1D3FBB', 'Your business', `<div class="setbox">${setInp('item', 'What you sell', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}${setInp('seller', 'Your name (on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (on reminders)', '055 000 0000', 'tel')}</div>${sw('togglehalf', s.half !== false, 'Half ' + esc(unit()) + 's')}${sw('togglefaces', s.faces, 'Photos of customers')}<p class="small swnote">${s.faces ? 'Tap her circle on her page. Ask her first.' : 'Off: no camera, no photos.'}</p>`)
     + card('pin', '#0F766E', 'Places', townsBlock(), placesSorted().length ? String(placesSorted().length) : '')
     + (few ? `<button class="btn ghost setmore" data-act="setmore">More settings ${svg('down', 16)}</button>` : card('buy', '#B4541A', 'Buying', sw('togglebuy', s.buy, 'Buying trips (Buy ' + esc(unit()) + 's tab)'))
@@ -2808,7 +2812,7 @@ VIEWS.settings = () => {
         <div class="field"><label for="sms_from">Sender name (up to 11 letters, approved by Arkesel)</label><input id="sms_from" maxlength="11" autocomplete="off" spellcheck="false" value="${esc(SMS.from)}" placeholder="StallBook"></div>
         <p class="small" id="sms_status">${esc(smsStatus())}</p>
         ${S.settings.momo ? `<button class="btn ghost" data-act="smstest">Send a test to ${esc(S.settings.momo)}</button>` : ''}</div>` : ''))
-    + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz') + `<div class="setbox"><div class="field"><label>Hand that holds the phone</label>${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div></div>`))
+    + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz')))
     + (SYNC_OK && !V.demo ? card('cloud', '#0284C7', 'Cloud book', CB.on
       ? `<div class="setbox"><span class="savestat ${cbStatus().cls}" id="cb_status">${esc(cbStatus().text)}</span><p class="small">One book on every phone. Each line is scrambled before it leaves this phone.</p>
         <button class="btn ink" data-act="cloudinvite">${svg('users')} Invite another phone</button><button class="btn ghost" data-act="cloudsync">Send and get now</button><button class="btn ghost redtext" data-act="clouddrop">Disconnect this phone</button></div>`
@@ -3131,6 +3135,7 @@ function act(a, d, el) {
 
   /* deliveries */
   case 'newcar': { closeSheet(); const open = givingCar(); if (open) return openClose(open.id, {thenNew: true}); return startWizard(); }
+  case 'clmore': V.cl.more = true; V.cl.choice = null; return closeCarSheet();
   case 'closecar': return openClose(d.id || givingCar().id);
   case 'clopt': V.cl.choice = d.k; return closeCarSheet();
   case 'cldo': return closeCar();
@@ -3230,6 +3235,7 @@ function act(a, d, el) {
   case 'togglebig': S.settings.big = !S.settings.big; commit(); fit(); return render();
   case 'togglesound': S.settings.sound = S.settings.sound === false; commit(); if (S.settings.sound) sfx('cash'); return render();
   case 'togglehalf': S.settings.half = S.settings.half === false; commit(); return render();
+  case 'sustart': { S.settings.does = {credit: true, cash: true, buy: false}; S.settings.buy = false; S.settings.simple = true; S.setup = true; V.su = 0; commit(); sfx('page'); return toRoot('give'); }
   case 'setupdone': { const d = S.settings.does; if (d) S.settings.buy = !!d.buy; S.setup = true; V.su = 0; commit(); sfx('page'); return toRoot(S.settings.buy ? 'buy' : 'give'); }
   case 'sunext': V.su = Math.min(3, (V.su || 0) + 1); V.suDir = 'l'; sfx('key'); return render();
   case 'suback': V.su = Math.max(0, (V.su || 0) - 1); V.suDir = 'r'; return render();
@@ -3270,6 +3276,21 @@ document.addEventListener('pointerdown', e => {
   if (holdFired) setTimeout(() => { holdFired = false; }, 60);
 }));
 document.addEventListener('touchstart', () => {}, {passive: true}); /* lets iPhone show the pressed colour */
+/* Simple app: hold a button for a moment and the phone says what it does, and the button does not act */
+let hearT = null, hearHit = null, hearAt = null;
+const hearEl = e => (simple() && e.target.closest) ? e.target.closest('[data-act]:not(.key[data-k="del"]):not(.switch)') : null;
+const hearStop = () => { clearTimeout(hearT); hearT = null; };
+document.addEventListener('pointerdown', e => {
+  hearStop(); const el = hearEl(e); if (!el || el.closest('.counter, .ctr')) return; hearAt = [e.clientX, e.clientY];
+  hearT = setTimeout(() => {
+    const raw = (el.getAttribute('aria-label') || el.textContent || '').replace(/\s+/g, ' ').trim().replace(/₵\s?([\d,.]+)/g, '$1 cedis').replace(/[·›‹]/g, ',').slice(0, 70);
+    if (!raw) return; hearHit = el; el.classList.add('heard'); setTimeout(() => el.classList.remove('heard'), 900); buzz(20); say(raw, true);
+  }, 650);
+}, true);
+['pointerup', 'pointercancel', 'scroll'].forEach(t => document.addEventListener(t, () => { hearStop(); setTimeout(() => { hearHit = null; }, 450); }, true));
+document.addEventListener('pointermove', e => { if (hearT && hearAt && Math.hypot(e.clientX - hearAt[0], e.clientY - hearAt[1]) > 12) hearStop(); }, true);
+document.addEventListener('click', e => { if (hearHit && e.target.closest && e.target.closest('[data-act]') === hearHit) { e.stopPropagation(); e.preventDefault(); hearHit = null; } }, true);
+document.addEventListener('contextmenu', e => { if (hearEl(e)) e.preventDefault(); });
 document.addEventListener('click', e => {
   const t = e.target;
   if (delHeld && t.closest && t.closest('[data-k="del"]')) { delHeld = false; return; }

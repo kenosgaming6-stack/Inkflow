@@ -15,7 +15,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   // welcome
   ok((await txt('.brand')) === 'StallBook' && !!(await p.$('.hero-ill')) && await dot() === 0, 'welcome: the picture, "StallBook", the first dot');
   ok(await p.evaluate(() => getComputedStyle(document.querySelector('.hero-ill .onion')).animationName) === 'bob', 'the onion gently moves');
-  ok(!!(await p.$('[data-act="demo"]')) && (await txt('[data-act="sunext"]')).startsWith('Start'), '"See an example" and "Start"');
+  ok(!!(await p.$('[data-act="demo"]')) && (await txt('[data-act="sustart"]')).startsWith('Start') && (await txt('[data-act="sunext"]')) === 'Set up', '"Example", "Set up" and a big "Start"');
   await shot('1-welcome');
   // what do you sell
   await act('sunext');
