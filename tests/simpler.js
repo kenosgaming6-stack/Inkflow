@@ -22,7 +22,8 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   // 2. a new load: no "where from" screen in Simple
   await act('newcar');
   ok((await txt('.q')).includes('Take a photo') && await has('[data-act="wnophoto"]'), 'a new load starts at the bag (no "Where is it from?" first)');
-  await act('wnophoto'); await act('wcolor', '[data-c="red"]'); await keys('20'); await act('wnext'); await keys('650'); await act('wnext'); await act('wdone'); await act('wfinish', '[data-skip]'); await p.waitForTimeout(250);
+  await act('wnophoto'); await act('wcolor', '[data-c="red"]'); await keys('20'); await act('wnext'); await keys('650'); await act('wnext'); await act('wdone'); await p.waitForTimeout(250);
+  ok(!(await has('[data-act="wfinish"]')), 'a new load in Simple: no cost question');
   ok(await p.evaluate(() => S.cars.length === 1 && S.cars[0].items[0].count === 20 && S.cars[0].items[0].col === 'red' && S.cars[0].label === ''), 'colour, how many, price, done: a load of 20 red bags');
   // give to a new name with no place yet
   await p.fill('#gq', 'Ama'); await p.waitForTimeout(150); await act('pick', '[data-name="Ama"]'); await p.waitForTimeout(250);
@@ -60,6 +61,13 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   ok(await p.evaluate(() => checkDue() === true), 'every button: the count reminder is due');
   await p.evaluate(() => { S.settings.simple = true; commit(); });
   ok(await p.evaluate(() => checkDue() === false), 'Simple app: no count reminder');
+  // one place: no place tabs on Give bags, no place chips on Take money; two places: they come back
+  await p.evaluate(() => { S.locs = [{id: 'l1', town: 'Koko Shell', spot: '', c: 0}]; S.lastLoc = 'l1'; V.stack = []; V.tab = 'give'; commit(); render(); });
+  ok(!(await has('.ptabs')), 'one place: no place tabs on Give bags');
+  await p.evaluate(() => { V.tab = 'collect'; render(); });
+  ok(!(await has('[data-act="ftown"]')), 'one place: no place chips on Take money');
+  await p.evaluate(() => { S.locs.push({id: 'l2', town: 'Bechem', spot: '', c: 1}); V.tab = 'give'; commit(); render(); });
+  ok(await has('.ptabs'), 'two places: the tabs are back');
   ok(errs.length === 0, 'no script errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   console.log(fails ? `${fails} FAILED` : 'ALL PASSED');
   await b.close(); process.exit(fails ? 1 : 0);

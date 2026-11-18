@@ -20,7 +20,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   await act('newcar'); await act('wfrom');
   ok((await txt('.q')).includes('Take a photo') && await has('[data-act="wcam"]') && (await txt('[data-act="wnophoto"]')) === 'No photo', 'the photo step: the camera, and "No photo"');
   await act('wnophoto');
-  ok((await txt('.q')) === 'What colour is the bag?' && (await p.$$('.colgrid .colbtn')).length === 8, '"No photo" asks "What colour is the bag?" with 8 colours');
+  ok((await txt('.q')) === 'What colour is the bag?' && (await p.$$('.colgrid .colbtn')).length === 4 && (await p.$$eval('.colgrid .colbtn', els => els.map(e => e.textContent.trim()).join(' '))) === 'Red Yellow Brown Other', '"No photo" asks "What colour is the bag?": Red, Yellow, Brown, Other');
   await p.screenshot({path: OUT + '/1-colours.png'});
   await act('wcolor', '[data-c="red"]');
   ok((await txt('.q')).startsWith('How many') && await has('.kimg.none svg path[fill="#C62828"]'), 'red: on to "How many", and the bag is drawn red');
