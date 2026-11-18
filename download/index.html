@@ -46,6 +46,7 @@ html[data-mode="collect"]{--bar:#12804A}html[data-mode="book"]{--bar:#14161C}
    green ink for Take money, cream ledger paper and dark ink for Book. Panels (sheets) stay white so they stand out. */
 html[data-mode="buy"]{--bar:#B4541A;--paper:#FFF6EC;--page:#FFF6EC;--key:#FBE6D2;--line:#F0D6BD;--rule:#EDCFB2;--ink:#8A3A0C;--pen-wash:#FBE6D2}
 html[data-mode="set"]{--bar:#475569;--paper:#F7F8FB;--page:#EEF1F6;--key:#EEF1F6;--line:#DDE2EA;--rule:#DDE2EA;--ink:#24307A}
+html[data-mode="home"]{--bar:#24307A;--paper:#FBF7EE;--page:#FBF7EE;--key:#F0E8D7;--line:#E2D7C0;--rule:#E3D6BB;--ink:#24307A;--pen-wash:#F0E8D7}
 html[data-mode="give"]{--paper:#F5F8FF;--page:#F5F8FF;--key:#E5ECFD;--line:#D3DDF4}
 html[data-mode="collect"]{--paper:#F2FAF5;--page:#F2FAF5;--key:#DCF0E3;--line:#C8E4D3;--rule:#BCDDC9;--ink:#0A5C35;--pen-wash:#DCF0E3}
 html[data-mode="book"]{--paper:#FBF7EE;--page:#FBF7EE;--key:#F0E8D7;--line:#E2D7C0;--rule:#E3D6BB;--ink:#262A33;--pen-wash:#F0E8D7}
@@ -332,7 +333,26 @@ html.lh .ktiles,html.lh .notes,html.lh .kpick,html.lh .faces{direction:ltr}
 .q{font-size:1.625rem;font-weight:700;color:var(--ink);text-align:center;line-height:1.25}
 /* bag kinds: the photo is the button */
 .kimg{display:block;width:3rem;height:3rem;border-radius:.5rem;object-fit:cover;background:var(--key);border:.125rem solid var(--text);flex:none}
-.kimg.none{display:flex;align-items:center;justify-content:center;background:#F3ECDD;padding:.1875rem;overflow:hidden}
+.kimg.none{display:flex;align-items:center;justify-content:center;background:#F3ECDD;padding:.125rem;overflow:hidden}
+.mid.home{display:flex;flex-direction:column;gap:.875rem;padding:.875rem .75rem}
+.hcard{display:flex;flex-direction:column;gap:.625rem;padding:.875rem;border-radius:1.25rem;border:.125rem solid var(--hc);background:var(--hw)}
+.hcard.take{--hc:#BFE3CD;--hw:#EEF8F2;--hn:var(--owe)}
+.hcard.give{--hc:#CBD8FB;--hw:#EEF3FF;--hn:var(--ink)}
+.hcard .hh{display:flex;align-items:center;gap:.875rem;min-width:0}
+.hcard small{display:block;font-weight:800;color:var(--muted);font-size:1rem}
+.hcard .hn{display:block;font:800 2.5rem/1.05 var(--num);color:var(--hn);font-variant-numeric:tabular-nums}
+.hcard .hn.ok{color:var(--paid);font-size:1.875rem}
+.hico{flex:none;width:4rem;height:4rem;display:flex;align-items:center;justify-content:center}
+.hico svg{display:block;width:100%;height:100%}
+.hico.cedi{border-radius:50%;background:var(--paid);color:#fff;font:800 2.25rem/1 var(--num);box-shadow:0 .1875rem 0 #0B5E35}
+.hico.cedi.ok{background:var(--paid-bg);color:var(--paid);box-shadow:none}
+.hlate{align-self:flex-start;background:var(--owe);color:#fff;font-weight:800;font-size:.9375rem;padding:.1875rem .625rem;border-radius:.5rem}
+.htoday{display:flex;justify-content:space-between;align-items:baseline;padding:.5rem .875rem;border-radius:1rem;background:var(--key);font-weight:800;color:var(--muted)}
+.htoday b{font:800 1.625rem/1 var(--num);color:var(--paid)}
+.emptybag{width:8rem;height:8rem;margin:0 auto .5rem}
+.emptybag svg{display:block;width:100%;height:100%}
+.empty:has(.emptybag){text-align:center}
+.empty:has(.emptybag) .btn{margin-inline:auto}
 .kimg.none svg{display:block;height:100%;width:auto;max-width:100%}
 .kimg.xs.none{padding:.0625rem}
 .colgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;width:100%;margin:.25rem 0}
@@ -588,6 +608,7 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .row.editing{background:var(--key)}
 /* cash: a big green button, a green panel, and a big green line for every sale */
 .cashbtn{flex:none;min-width:4.75rem;min-height:3.5rem;border-radius:.875rem;background:var(--paid);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.0625rem;font-weight:800;font-size:.875rem;box-shadow:0 .1875rem 0 #0B5E35}
+.btn.ink:active,.btn.take:active{transform:translateY(.1875rem);box-shadow:0 0 0 transparent;transition:transform .05s,box-shadow .05s}
 .cashbtn:active{transform:translateY(.125rem) scale(.97);box-shadow:0 .0625rem 0 #0B5E35}
 .cashhead{display:flex;align-items:center;gap:.5rem;color:var(--paid)}
 .cashhead b{font:800 1.75rem/1 var(--num);letter-spacing:.04em;text-transform:uppercase}
@@ -677,6 +698,16 @@ a.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;text-deco
 .eod>span:not(.mi){flex:1;min-width:0}
 .eod small{display:block;font-weight:700;color:var(--muted);font-size:.875rem}
 .eod small.ok{color:var(--paid)}.eod small.r{color:var(--owe)}.eod small.w{color:var(--warn)}
+.dayend{text-align:center;padding:.25rem 0 .5rem}
+.dayend small{font-weight:700;color:var(--muted);font-size:1rem}
+.dayend .dayroll{display:block;font:800 3.25rem/1.05 var(--num);color:var(--paid);font-variant-numeric:tabular-nums}
+.daybar{display:flex;gap:.1875rem;height:.875rem;border-radius:.4375rem;overflow:hidden;background:var(--key);margin:.625rem 0 .5rem}
+.daybar i{flex:0 1 0;min-width:0;transition:flex-grow .8s cubic-bezier(.2,.8,.2,1)}
+.dayleg{display:flex;flex-wrap:wrap;justify-content:center;gap:.25rem .875rem;font-weight:700;font-size:.9375rem;color:var(--muted)}
+.dayleg span{display:inline-flex;align-items:center;gap:.3125rem}
+.dayleg i{width:.75rem;height:.75rem;border-radius:50%;display:inline-block}
+.dayleg b{color:var(--text);font-family:var(--num)}
+.dayfacts{margin-top:.375rem;font-weight:700;color:var(--muted);font-size:.9375rem}
 .tillres{text-align:center;padding:.5rem 0}
 .tillres b{display:block;font:800 2.5rem/1.1 var(--num)}
 .tillres.ok b{color:var(--paid)}.tillres.r b{color:var(--owe)}.tillres.w b{color:var(--warn)}
@@ -797,7 +828,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '9.2';
+const APP_VERSION = '9.3';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -820,6 +851,7 @@ function noteStack(ex) {
 const IC = {
   back:'<path d="M15 18l-6-6 6-6"/>', fwd:'<path d="M9 18l6-6-6-6"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>', plus:'<path d="M12 5v14M5 12h14"/>',
   down:'<path d="M6 9l6 6 6-6"/>', check:'<path d="M5 12l5 5 9-10"/>',
+  home:'<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>',
   cam:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
   phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
   msg:'<path d="M4 5h16v11H9l-5 4z"/>',
@@ -1010,6 +1042,8 @@ function bkRecover() {
 let S = null;
 let V = {tab: 'give', stack: [], gq: '', bq: '', cq: '', fTown: '', fLoc: '', sort: 'new', bseg: 'people', pay: null};
 S = load();
+/* the Simple app opens on Today once there is a book */
+if (S.settings.simple && S.setup && (S.people.length || S.cars.length)) V.tab = 'home';
 
 /* Derived data is cached per change. */
 let VER = 0, CACHE = null;
@@ -1093,9 +1127,14 @@ function avc(name) { let h = 0; for (const ch of String(name || '').trim().toLow
 const KCOL = {red: '#C62828', yellow: '#F2B705', white: '#FFFFFF', brown: '#8D5A2B', green: '#2E7D32', blue: '#1565C0', black: '#1F2229', orange: '#EF6C00', purple: '#6A1B9A', pink: '#D81B60', grey: '#8A8F98', gray: '#8A8F98'};
 /* the bag colours a trader can pick, and a drawn onion bag in any colour */
 const BAG_COLS = [['red', 'Red'], ['white', 'White'], ['yellow', 'Yellow'], ['brown', 'Brown'], ['green', 'Green'], ['blue', 'Blue'], ['orange', 'Orange'], ['black', 'Black']];
+let bagN = 0;
+const mixHex = (hex, to, t) => { const a = hex.replace('#', ''), b = to.replace('#', ''); const f = k => Math.round(parseInt(a.substr(k, 2), 16) * (1 - t) + parseInt(b.substr(k, 2), 16) * t).toString(16).padStart(2, '0'); return '#' + f(0) + f(2) + f(4); };
 function bagSvg(c) {
-  const light = c === '#FFFFFF' || c === '#F2B705', ink = '#14161C', mesh = light ? ink : '#FFFFFF';
-  return `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 8c2-3 4-4 7-4s5 1 7 4l2 6c5 4 8 10 8 18 0 7-6 12-17 12S7 39 7 32c0-8 3-14 8-18z" fill="${c}" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round"/><path d="M15 14.5c6 2 12 2 18 0" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/><path d="M11 25c8 3 18 3 26 0M10 33c9 3 19 3 28 0M19 17c-5 9-5 19 0 27M29 17c5 9 5 19 0 27" fill="none" stroke="${mesh}" stroke-opacity=".4" stroke-width="1.4"/></svg>`;
+  const light = c === '#FFFFFF' || c === '#F2B705', ink = '#14161C', id = 'bgc' + (++bagN);
+  const net = light ? ink : '#FFFFFF', bulb = mixHex(c, light ? '#C9A56B' : '#FFFFFF', .3), bulb2 = mixHex(c, '#FFFFFF', light ? 0 : .45);
+  const body = 'M18 12Q24 10 30 12L33 17C41 20 45 28 45 35C45 43 36 46 24 46C12 46 3 43 3 35C3 28 7 20 15 17Z';
+  let mesh = ''; for (let k = -40; k <= 60; k += 6.5) mesh += `M${k} 8L${k + 50} 58M${k + 50} 8L${k} 58`;
+  return `<svg viewBox="0 0 48 48" aria-hidden="true"><defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs><path d="${body}" fill="${c}"/><g clip-path="url(#${id})"><circle cx="14" cy="36" r="8" fill="${bulb}"/><circle cx="31" cy="37" r="8.5" fill="${bulb}"/><circle cx="23" cy="28" r="7.5" fill="${bulb2}"/><circle cx="23" cy="40" r="6" fill="${bulb}" opacity=".7"/><path d="${mesh}" fill="none" stroke="${net}" stroke-opacity=".28" stroke-width=".9"/></g><path d="${body}" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round"/><path d="M17 15.5Q24 18.5 31 15.5" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/><path d="M24 11.5C22.5 7 19.5 5.5 17 6M24 11.5C25.5 7 28.5 5.5 31 6M24 11.5V5" fill="none" stroke="${light ? '#2E7D32' : ink}" stroke-width="2.1" stroke-linecap="round"/></svg>`;
 }
 const colGrid = (act, on) => `<div class="colgrid">${BAG_COLS.map(([k, l]) => `<button class="colbtn ${on === k ? 'on' : ''}" data-act="${act}" data-c="${k}" aria-label="${l}"><span class="colbag">${bagSvg(KCOL[k])}</span>${l}</button>`).join('')}</div>`;
 function kindCol(it) {
@@ -1532,7 +1571,8 @@ function tabBar() {
   const n = debtors().filter(x => x.st.sev >= 3).length;
   const t = (id, ic, label, badge, dot) => `<button class="tab ${V.tab === id ? 'on' : ''} ${V.tabPop === id ? 'pop' : ''}" data-act="tab" data-t="${id}" ${V.tab === id ? 'aria-current="page"' : ''}>${svg(ic, 24)}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}${dot ? '<span class="tabdot" aria-label="Backup needed"></span>' : ''}</button>`;
   const buy = S.settings.buy;
-  return `<nav class="tabs${buy ? ' four' : ''}">${buy ? t('buy', 'buy', 'Buy ' + unit() + 's') : ''}${t('give', 'bag', 'Give ' + unit() + 's')}${t('collect', 'cash', 'Take money', n)}${t('book', 'book', 'Book', 0, needsBackup())}</nav>`;
+  const home = simple();
+  return `<nav class="tabs${buy || home ? ' four' : ''}">${home ? t('home', 'home', 'Today') : ''}${buy ? t('buy', 'buy', 'Buy ' + unit() + 's') : ''}${t('give', 'bag', 'Give ' + unit() + 's')}${t('collect', 'cash', 'Take money', n)}${t('book', 'book', 'Book', 0, needsBackup())}</nav>`;
 }
 /* one chip per place */
 function filterChips(count) {
@@ -1578,7 +1618,7 @@ function rollNums(same) {
 function render() {
   const f = cur();
   let key, o;
-  if (!f) { key = 'tab:' + V.tab + (V.tab === 'book' ? V.bseg : V.tab === 'give' ? ':' + S.lastLoc : ''); if (V.tab === 'buy' && !S.settings.buy) V.tab = 'give'; o = V.tab === 'collect' ? viewCollect() : V.tab === 'book' ? viewBook() : V.tab === 'buy' ? viewBuy() : viewGive(); }
+  if (!f) { key = 'tab:' + V.tab + (V.tab === 'book' ? V.bseg : V.tab === 'give' ? ':' + S.lastLoc : ''); if (V.tab === 'buy' && !S.settings.buy) V.tab = 'give'; if (V.tab === 'home' && !simple()) V.tab = 'give'; o = V.tab === 'home' ? viewHome() : V.tab === 'collect' ? viewCollect() : V.tab === 'book' ? viewBook() : V.tab === 'buy' ? viewBuy() : viewGive(); }
   else { key = f.v + ':' + (f.pid || f.cid || ''); o = VIEWS[f.v](f); if (!o) return; }
   const old = document.getElementById('mid');
   const same = key === lastKey && old;
@@ -1605,6 +1645,7 @@ function render() {
 function band() {
   const car = givingCar(); const pageNo = car ? 'No ' + String(carsNewest().slice().reverse().indexOf(car) + 1).padStart(3, '0') : '';
   if (V.tab === 'buy') { const T = buyTrip(); return `<div class="band">${svg('buy')}<b>Buy ${esc(unit())}s</b>${T ? `<span class="pageno">${esc(T.place || dmy(T.date))}</span>` : ''}</div>`; }
+  if (V.tab === 'home') return `<div class="band">${svg('home')}<b>Today</b><span class="pageno">${dmy(new Date())}</span></div>`;
   if (V.tab === 'collect') return `<div class="band">${svg('cash')}<b>Take money</b><span class="pageno">${dmy(new Date())}</span></div>`;
   if (V.tab === 'book') return `<div class="band">${svg('book')}<b>Book</b><span class="pageno dark">${S.people.length} ${S.people.length === 1 ? 'name' : 'names'}</span></div>`;
   return `<div class="band">${svg('bag')}<b>Give ${esc(unit())}s</b>${pageNo ? `<span class="pageno">${pageNo}</span>` : ''}</div>`;
@@ -1834,7 +1875,7 @@ function giveEmpty() {
   const fresh = !S.people.length && !S.cars.length;
   const top = `    <div class="csum"><div class="cl"><small>No load open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting' : 'No load yet'}</b></div></div>`;
   let mid;
-  if (fresh) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Your book is empty</h2><p>Tap <b>New load</b> when the vehicle comes.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">Example</button></div>`;
+  if (fresh) mid = `<div class="empty" style="padding-top:1.25rem"><div class="emptybag">${bagSvg(KCOL.red)}</div><h2>Your book is empty</h2><p>Tap <b>New load</b> when the vehicle comes.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">Example</button></div>`;
   else { const cars = carsNewest().slice(0, 6); mid = cars.length ? `<div class="sect"><span>Loads</span></div>` + cars.map(carRow).join('') : ''; }
   const way = tripsOnWay()[0];
   const dock = way ? `<div class="bar"><button class="btn ink tall carhere" data-act="tripcar" data-id="${way.id}">${svg('truck')} Car is here · ${esc(way.place || dmy(way.date))} · ${bagsTxt(tripStats(way).bags)}</button></div><div class="bar"><button class="btn ghost" data-act="newcar">${svg('plus')} Another new load</button></div>`
@@ -1925,6 +1966,26 @@ function tillToday() {
   const sales = r2(sum(S.entries.filter(e => e.type === 'cash' && live(e) && dayKey(e.date) === t), e => e.amount));
   return {pays, sales, expected: r2(pays + sales)};
 }
+/* everything that came in today, split: cash from women, MoMo from women, cash sales */
+function dayTotals() {
+  const t = todayK(), today = e => live(e) && dayKey(e.date) === t;
+  const pays = S.entries.filter(e => e.type === 'pay' && today(e));
+  const cash = r2(sum(pays.filter(e => e.method !== 'momo'), e => e.amount)), momo = r2(sum(pays.filter(e => e.method === 'momo'), e => e.amount));
+  const sales = r2(sum(S.entries.filter(e => e.type === 'cash' && today(e)), e => e.amount));
+  const women = new Set(pays.map(e => e.pid)).size, bags = sum(S.entries.filter(e => e.type === 'give' && today(e)), e => e.bags);
+  const parts = [{label: 'Cash', v: cash, col: '#12804A'}, {label: 'MoMo', v: momo, col: '#1D3FBB'}, {label: 'Cash sales', v: sales, col: '#0F766E'}].filter(x => x.v > 0);
+  return {total: r2(cash + momo + sales), parts, women, bags};
+}
+/* a number that counts up to its value, and bars that grow */
+function dayAnimate() {
+  const el = document.querySelector('.dayroll'); if (!el) return; const to = Number(el.dataset.to) || 0;
+  const bars = [...document.querySelectorAll('.daybar i')];
+  const grow = () => bars.forEach(i => { i.style.flexGrow = i.dataset.v; });
+  if (RM() || !to) { el.textContent = money(to); grow(); return; }
+  const t0 = performance.now(), ms = 900;
+  const step = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3); if (!el.isConnected) return; el.textContent = money(Math.round(to * e)); if (k < 1) requestAnimationFrame(step); else el.textContent = money(to); };
+  requestAnimationFrame(step); setTimeout(grow, 40);
+}
 function lastTill() { const ts = S.entries.filter(e => e.type === 'till' && live(e)); return ts.length ? ts[ts.length - 1] : null; }
 function tillWord(e) { const d = r2(e.counted - e.expected); return d === 0 ? ['All there ✓', 'ok'] : d < 0 ? ['Short ' + money(-d), 'r'] : [money(d) + ' extra', 'w']; }
 function eodButton() {
@@ -1937,10 +1998,15 @@ function tillSheet() {
   const T = tillToday(), Q = V.till; const c = exprNum(Q.ex);
   V.sheetKind = 'till';
   if (Q.done) {
-    const w = tillWord(Q.done);
-    return sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>End of day</b></div>
+    const w = tillWord(Q.done), D = dayTotals();
+    sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>Day closed</b></div>
+      <div class="dayend"><small>You took today</small><b class="dayroll" data-to="${D.total}">${money(RM() ? D.total : 0)}</b>
+        <div class="daybar">${D.parts.map(x => `<i style="background:${x.col};flex-grow:${RM() ? x.v : 0}" data-v="${x.v}"></i>`).join('')}</div>
+        <div class="dayleg">${D.parts.map(x => `<span><i style="background:${x.col}"></i>${x.label} <b>${money(x.v)}</b></span>`).join('')}</div>
+        <div class="dayfacts">${D.women ? D.women + (D.women === 1 ? ' woman paid' : ' women paid') : ''}${D.women && D.bags ? ' · ' : ''}${D.bags ? bagsTxt(D.bags) + ' given' : ''}</div></div>
       <div class="tillres ${w[1]}"><b>${esc(w[0])}</b><small>You counted ${money(Q.done.counted)}. You should have ${money(Q.done.expected)}.</small></div>
       <button class="btn take tall" data-act="sheetclose">Done</button>`, 'cashsheet');
+    return dayAnimate();
   }
   sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>End of day</b></div>
     <div class="tillres ok" style="padding:0"><small>You should have</small><b>${money(T.expected)}</b><small>${money(T.pays)} paid in cash · ${money(T.sales)} cash sales</small></div>
@@ -2406,6 +2472,24 @@ function promiseSheet(pid) {
 }
 
 /* ===== Book ===== */
+/* ===== Today (Simple app): the two jobs, big ===== */
+function viewHome() {
+  const all = debtors(), owed = r2(sum(all, x => x.L.bal)), late = all.filter(x => x.st.sev >= 3).length;
+  const car = givingCar(), st = car ? carStats(car.id) : null, D = dayTotals();
+  const h = new Date().getHours(), hi = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + (S.settings.seller ? ', ' + S.settings.seller : '');
+  const top = `<div class="hrow"><div class="title"><b>${esc(hi)}</b><small>${esc(dayWord(todayK()).replace(/^./, c => c.toUpperCase()))}, ${dmy(new Date())}</small></div>${backupBtn()}${gearBtn()}</div>`;
+  const take = all.length
+    ? `<section class="hcard take"><div class="hh"><span class="hico cedi">₵</span><div><small>${all.length} ${all.length === 1 ? 'woman owes' : 'women owe'} you</small><b class="hn" data-roll="homeowed" data-v="${owed}" data-f="m">${money(owed)}</b></div></div>
+        ${late ? `<span class="hlate">${late} late</span>` : ''}<button class="btn take tall huge" data-act="homeround">${svg('fwd', 26)} Start round</button></section>`
+    : `<section class="hcard take"><div class="hh"><span class="hico cedi ok">${svg('check', 34)}</span><div><small>Take money</small><b class="hn ok">Nobody owes you</b></div></div></section>`;
+  const give = car
+    ? `<section class="hcard give"><div class="hh"><span class="hico">${bagSvg(kindCol(car.items[0]))}</span><div><small>${esc(carName(car))}</small><b class="hn">${bagsNum(Math.max(0, st.free))} left</b></div></div>
+        <button class="btn ink tall huge" data-act="tab" data-t="give">${svg('bag', 26)} Give ${esc(unit())}s</button></section>`
+    : `<section class="hcard give"><div class="hh"><span class="hico">${bagSvg(KCOL.red)}</span><div><small>Give ${esc(unit())}s</small><b class="hn">No load yet</b></div></div>
+        <button class="btn ink tall huge" data-act="newcar">${svg('truck', 26)} New load</button></section>`;
+  const mid = `${take}${give}<div class="htoday"><span>In today</span><b>${money(D.total)}</b></div>`;
+  return {top, mid, cls: 'plain home', tabs: true, anchor: 'top'};
+}
 function viewBook() {
   const all = debtors(); const out = sum(all, x => x.L.bal);
   const wk = new Date(Date.now() - 7 * 864e5).toISOString();
@@ -3091,7 +3175,7 @@ function act(a, d, el) {
   case 'tnote': { const Q = V.till; Q.ex = !Q.ex ? String(d.n) : OPS.includes(Q.ex.slice(-1)) ? Q.ex + d.n : Q.ex + '+' + d.n; buzz(8); return tillSheet(); }
   case 'tilldone': { const Q = V.till; const T = tillToday(); const counted = r2(exprNum(Q.ex));
     const e = add({type: 'till', expected: T.expected, counted}); Q.done = e; const w = tillWord(e);
-    sfx(w[1] === 'r' ? 'thud' : 'cash'); buzz(25); render(); tillSheet(); if (w[1] === 'ok') savedPop('All there', '#12804A'); return; }
+    sfx(w[1] === 'r' ? 'thud' : w[1] === 'ok' ? 'win' : 'cash'); buzz(w[1] === 'ok' ? [30, 60, 30, 60, 90] : 25); render(); tillSheet(); if (w[1] === 'ok') { coins(18); setTimeout(() => savedPop('All there', '#12804A'), 1000); } return; }
   case 'pover': V.pay.over = d.v; V.pay.err = ''; return paySheet();
   case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.ex = String(Math.round(b)); V.pay.err = ''; V.pay.over = ''; return paySheet(); }
   case 'paydone': { if (!savePay()) return; return proofSheet(null); }
@@ -3190,6 +3274,7 @@ function act(a, d, el) {
     toast('Sending a test…'); sent.then(r => { const el = document.getElementById('sms_status'); toast(r === 'ok' ? 'Test sent. Check your phone.' : r.err ? 'Not sent: ' + r.err : 'No signal. Try again.'); if (el) el.textContent = smsStatus(); }); return; }
   case 'togglevoice': S.settings.voice = !S.settings.voice; commit(); say('Speak is on.'); return render();
   case 'hintsreset': lsSet('stallbook_hints', '[]'); toast('The hints are back. Go to Give bags.'); return;
+  case 'homeround': { V.fCar = ''; V.fTown = ''; V.fLoc = ''; V.cq = ''; return act('round', {}); }
   case 'round': { const ids = collectLists().order.map(x => x.p.id); if (!ids.length) return toast('Nobody owes here'); V.round = {ids, i: 0, res: {}, carId: V.fCar && carById(V.fCar) ? V.fCar : '', method: 'cash'}; sfx('page'); return push({v: 'round'}); }
   case 'roundstop': { V.round = null; return pop(); }
   case 'rmethod': V.round.method = d.m; return render();

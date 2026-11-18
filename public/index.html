@@ -49,6 +49,7 @@ html[data-mode="collect"]{--bar:#12804A}html[data-mode="book"]{--bar:#14161C}
    green ink for Take money, cream ledger paper and dark ink for Book. Panels (sheets) stay white so they stand out. */
 html[data-mode="buy"]{--bar:#B4541A;--paper:#FFF6EC;--page:#FFF6EC;--key:#FBE6D2;--line:#F0D6BD;--rule:#EDCFB2;--ink:#8A3A0C;--pen-wash:#FBE6D2}
 html[data-mode="set"]{--bar:#475569;--paper:#F7F8FB;--page:#EEF1F6;--key:#EEF1F6;--line:#DDE2EA;--rule:#DDE2EA;--ink:#24307A}
+html[data-mode="home"]{--bar:#24307A;--paper:#FBF7EE;--page:#FBF7EE;--key:#F0E8D7;--line:#E2D7C0;--rule:#E3D6BB;--ink:#24307A;--pen-wash:#F0E8D7}
 html[data-mode="give"]{--paper:#F5F8FF;--page:#F5F8FF;--key:#E5ECFD;--line:#D3DDF4}
 html[data-mode="collect"]{--paper:#F2FAF5;--page:#F2FAF5;--key:#DCF0E3;--line:#C8E4D3;--rule:#BCDDC9;--ink:#0A5C35;--pen-wash:#DCF0E3}
 html[data-mode="book"]{--paper:#FBF7EE;--page:#FBF7EE;--key:#F0E8D7;--line:#E2D7C0;--rule:#E3D6BB;--ink:#262A33;--pen-wash:#F0E8D7}
@@ -336,6 +337,21 @@ html.lh .ktiles,html.lh .notes,html.lh .kpick,html.lh .faces{direction:ltr}
 /* bag kinds: the photo is the button */
 .kimg{display:block;width:3rem;height:3rem;border-radius:.5rem;object-fit:cover;background:var(--key);border:.125rem solid var(--text);flex:none}
 .kimg.none{display:flex;align-items:center;justify-content:center;background:#F3ECDD;padding:.125rem;overflow:hidden}
+.mid.home{display:flex;flex-direction:column;gap:.875rem;padding:.875rem .75rem}
+.hcard{display:flex;flex-direction:column;gap:.625rem;padding:.875rem;border-radius:1.25rem;border:.125rem solid var(--hc);background:var(--hw)}
+.hcard.take{--hc:#BFE3CD;--hw:#EEF8F2;--hn:var(--owe)}
+.hcard.give{--hc:#CBD8FB;--hw:#EEF3FF;--hn:var(--ink)}
+.hcard .hh{display:flex;align-items:center;gap:.875rem;min-width:0}
+.hcard small{display:block;font-weight:800;color:var(--muted);font-size:1rem}
+.hcard .hn{display:block;font:800 2.5rem/1.05 var(--num);color:var(--hn);font-variant-numeric:tabular-nums}
+.hcard .hn.ok{color:var(--paid);font-size:1.875rem}
+.hico{flex:none;width:4rem;height:4rem;display:flex;align-items:center;justify-content:center}
+.hico svg{display:block;width:100%;height:100%}
+.hico.cedi{border-radius:50%;background:var(--paid);color:#fff;font:800 2.25rem/1 var(--num);box-shadow:0 .1875rem 0 #0B5E35}
+.hico.cedi.ok{background:var(--paid-bg);color:var(--paid);box-shadow:none}
+.hlate{align-self:flex-start;background:var(--owe);color:#fff;font-weight:800;font-size:.9375rem;padding:.1875rem .625rem;border-radius:.5rem}
+.htoday{display:flex;justify-content:space-between;align-items:baseline;padding:.5rem .875rem;border-radius:1rem;background:var(--key);font-weight:800;color:var(--muted)}
+.htoday b{font:800 1.625rem/1 var(--num);color:var(--paid)}
 .emptybag{width:8rem;height:8rem;margin:0 auto .5rem}
 .emptybag svg{display:block;width:100%;height:100%}
 .empty:has(.emptybag){text-align:center}
@@ -815,7 +831,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '9.2';
+const APP_VERSION = '9.3';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -838,6 +854,7 @@ function noteStack(ex) {
 const IC = {
   back:'<path d="M15 18l-6-6 6-6"/>', fwd:'<path d="M9 18l6-6-6-6"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>', plus:'<path d="M12 5v14M5 12h14"/>',
   down:'<path d="M6 9l6 6 6-6"/>', check:'<path d="M5 12l5 5 9-10"/>',
+  home:'<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>',
   cam:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
   phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
   msg:'<path d="M4 5h16v11H9l-5 4z"/>',
@@ -1028,6 +1045,8 @@ function bkRecover() {
 let S = null;
 let V = {tab: 'give', stack: [], gq: '', bq: '', cq: '', fTown: '', fLoc: '', sort: 'new', bseg: 'people', pay: null};
 S = load();
+/* the Simple app opens on Today once there is a book */
+if (S.settings.simple && S.setup && (S.people.length || S.cars.length)) V.tab = 'home';
 
 /* Derived data is cached per change. */
 let VER = 0, CACHE = null;
@@ -1555,7 +1574,8 @@ function tabBar() {
   const n = debtors().filter(x => x.st.sev >= 3).length;
   const t = (id, ic, label, badge, dot) => `<button class="tab ${V.tab === id ? 'on' : ''} ${V.tabPop === id ? 'pop' : ''}" data-act="tab" data-t="${id}" ${V.tab === id ? 'aria-current="page"' : ''}>${svg(ic, 24)}<span>${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}${dot ? '<span class="tabdot" aria-label="Backup needed"></span>' : ''}</button>`;
   const buy = S.settings.buy;
-  return `<nav class="tabs${buy ? ' four' : ''}">${buy ? t('buy', 'buy', 'Buy ' + unit() + 's') : ''}${t('give', 'bag', 'Give ' + unit() + 's')}${t('collect', 'cash', 'Take money', n)}${t('book', 'book', 'Book', 0, needsBackup())}</nav>`;
+  const home = simple();
+  return `<nav class="tabs${buy || home ? ' four' : ''}">${home ? t('home', 'home', 'Today') : ''}${buy ? t('buy', 'buy', 'Buy ' + unit() + 's') : ''}${t('give', 'bag', 'Give ' + unit() + 's')}${t('collect', 'cash', 'Take money', n)}${t('book', 'book', 'Book', 0, needsBackup())}</nav>`;
 }
 /* one chip per place */
 function filterChips(count) {
@@ -1601,7 +1621,7 @@ function rollNums(same) {
 function render() {
   const f = cur();
   let key, o;
-  if (!f) { key = 'tab:' + V.tab + (V.tab === 'book' ? V.bseg : V.tab === 'give' ? ':' + S.lastLoc : ''); if (V.tab === 'buy' && !S.settings.buy) V.tab = 'give'; o = V.tab === 'collect' ? viewCollect() : V.tab === 'book' ? viewBook() : V.tab === 'buy' ? viewBuy() : viewGive(); }
+  if (!f) { key = 'tab:' + V.tab + (V.tab === 'book' ? V.bseg : V.tab === 'give' ? ':' + S.lastLoc : ''); if (V.tab === 'buy' && !S.settings.buy) V.tab = 'give'; if (V.tab === 'home' && !simple()) V.tab = 'give'; o = V.tab === 'home' ? viewHome() : V.tab === 'collect' ? viewCollect() : V.tab === 'book' ? viewBook() : V.tab === 'buy' ? viewBuy() : viewGive(); }
   else { key = f.v + ':' + (f.pid || f.cid || ''); o = VIEWS[f.v](f); if (!o) return; }
   const old = document.getElementById('mid');
   const same = key === lastKey && old;
@@ -1628,6 +1648,7 @@ function render() {
 function band() {
   const car = givingCar(); const pageNo = car ? 'No ' + String(carsNewest().slice().reverse().indexOf(car) + 1).padStart(3, '0') : '';
   if (V.tab === 'buy') { const T = buyTrip(); return `<div class="band">${svg('buy')}<b>Buy ${esc(unit())}s</b>${T ? `<span class="pageno">${esc(T.place || dmy(T.date))}</span>` : ''}</div>`; }
+  if (V.tab === 'home') return `<div class="band">${svg('home')}<b>Today</b><span class="pageno">${dmy(new Date())}</span></div>`;
   if (V.tab === 'collect') return `<div class="band">${svg('cash')}<b>Take money</b><span class="pageno">${dmy(new Date())}</span></div>`;
   if (V.tab === 'book') return `<div class="band">${svg('book')}<b>Book</b><span class="pageno dark">${S.people.length} ${S.people.length === 1 ? 'name' : 'names'}</span></div>`;
   return `<div class="band">${svg('bag')}<b>Give ${esc(unit())}s</b>${pageNo ? `<span class="pageno">${pageNo}</span>` : ''}</div>`;
@@ -2454,6 +2475,24 @@ function promiseSheet(pid) {
 }
 
 /* ===== Book ===== */
+/* ===== Today (Simple app): the two jobs, big ===== */
+function viewHome() {
+  const all = debtors(), owed = r2(sum(all, x => x.L.bal)), late = all.filter(x => x.st.sev >= 3).length;
+  const car = givingCar(), st = car ? carStats(car.id) : null, D = dayTotals();
+  const h = new Date().getHours(), hi = (h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening') + (S.settings.seller ? ', ' + S.settings.seller : '');
+  const top = `<div class="hrow"><div class="title"><b>${esc(hi)}</b><small>${esc(dayWord(todayK()).replace(/^./, c => c.toUpperCase()))}, ${dmy(new Date())}</small></div>${backupBtn()}${gearBtn()}</div>`;
+  const take = all.length
+    ? `<section class="hcard take"><div class="hh"><span class="hico cedi">₵</span><div><small>${all.length} ${all.length === 1 ? 'woman owes' : 'women owe'} you</small><b class="hn" data-roll="homeowed" data-v="${owed}" data-f="m">${money(owed)}</b></div></div>
+        ${late ? `<span class="hlate">${late} late</span>` : ''}<button class="btn take tall huge" data-act="homeround">${svg('fwd', 26)} Start round</button></section>`
+    : `<section class="hcard take"><div class="hh"><span class="hico cedi ok">${svg('check', 34)}</span><div><small>Take money</small><b class="hn ok">Nobody owes you</b></div></div></section>`;
+  const give = car
+    ? `<section class="hcard give"><div class="hh"><span class="hico">${bagSvg(kindCol(car.items[0]))}</span><div><small>${esc(carName(car))}</small><b class="hn">${bagsNum(Math.max(0, st.free))} left</b></div></div>
+        <button class="btn ink tall huge" data-act="tab" data-t="give">${svg('bag', 26)} Give ${esc(unit())}s</button></section>`
+    : `<section class="hcard give"><div class="hh"><span class="hico">${bagSvg(KCOL.red)}</span><div><small>Give ${esc(unit())}s</small><b class="hn">No load yet</b></div></div>
+        <button class="btn ink tall huge" data-act="newcar">${svg('truck', 26)} New load</button></section>`;
+  const mid = `${take}${give}<div class="htoday"><span>In today</span><b>${money(D.total)}</b></div>`;
+  return {top, mid, cls: 'plain home', tabs: true, anchor: 'top'};
+}
 function viewBook() {
   const all = debtors(); const out = sum(all, x => x.L.bal);
   const wk = new Date(Date.now() - 7 * 864e5).toISOString();
@@ -3238,6 +3277,7 @@ function act(a, d, el) {
     toast('Sending a test…'); sent.then(r => { const el = document.getElementById('sms_status'); toast(r === 'ok' ? 'Test sent. Check your phone.' : r.err ? 'Not sent: ' + r.err : 'No signal. Try again.'); if (el) el.textContent = smsStatus(); }); return; }
   case 'togglevoice': S.settings.voice = !S.settings.voice; commit(); say('Speak is on.'); return render();
   case 'hintsreset': lsSet('stallbook_hints', '[]'); toast('The hints are back. Go to Give bags.'); return;
+  case 'homeround': { V.fCar = ''; V.fTown = ''; V.fLoc = ''; V.cq = ''; return act('round', {}); }
   case 'round': { const ids = collectLists().order.map(x => x.p.id); if (!ids.length) return toast('Nobody owes here'); V.round = {ids, i: 0, res: {}, carId: V.fCar && carById(V.fCar) ? V.fCar : '', method: 'cash'}; sfx('page'); return push({v: 'round'}); }
   case 'roundstop': { V.round = null; return pop(); }
   case 'rmethod': V.round.method = d.m; return render();
