@@ -13,7 +13,7 @@ Three tabs at the bottom: **Give bags**, **Take money** and **Book**, and a four
   - The card shows bags bought, money spent, each kind with its photo, and, if you put in the money you came with, what is left.
   - **Done buying** (card menu ⌄) puts the trip **On the way**. When the car arrives, **Car is here** (on Buy bags, or on Give bags when no load is open) turns the trip into a new load with the kinds, photos and counts filled in: you only type the selling price of each kind (it shows what you paid), and the load cost starts with what you paid for the goods (add the driver with +).
 - **Give bags**: the open load. A card with the bags left, given and kept, then one tab per place (Koko Shell, Market…) and **+** to add a place. Each tab lists only that place, top to bottom in the order you gave. Swipe left or right to move between places; the list follows your finger.
-  - **Starting a load:** **New load** asks one thing at a time: where it is from, a photo of each kind of bag, how many, the price, then what the load cost.
+  - **Starting a load:** **New load** asks one thing at a time: where it is from (not in the Simple app), the bag, how many, the price, then what the load cost (Skip is one tap). For the bag, take a photo, or press **No photo** and pick its **colour**: each kind is then a drawn onion bag in that colour, so two kinds never look alike. Buying has the same colour pick.
   - **Recording someone:** type two letters or tap her name. Under the list are big name buttons for the regulars who have not taken from this load yet: the women of the place you are at first, then whoever comes most often. Tap one and her usual number of bags is already set; one more tap gives. Set the number of bags with − and + (tap the number to type it). With several kinds, tap the photo of each kind she takes; she gets one line with each kind's photo and count side by side (more kinds wrap inside the line). Tap a photo on her line to change that kind's count, or her name to pick which kind to open. Switch on **Keep for her** (in the Simple app it is under **More**) to keep bags for her: she owes nothing until they're handed over. A new name only asks for a phone number, and that is optional. She goes into the tab you are on.
   - **Cash sales:** the big green **Cash** button (right of the name box) opens a green panel: − 1 + for one kind, or tap the photos for several kinds, then **Sold · ₵1,300**. Every cash sale is its own big green CASH line among the women's lines; tap it to change it or remove it. The load card counts cash in green, and Take money's **In today** and Book's **This week** include cash sales.
   - **Correcting a line:** tap the number in her row to change it. Tap her name to hand over kept bags, release them, pick the right customer or change the place.
@@ -37,11 +37,11 @@ Nothing is ever overwritten. Corrections, handovers, releases and moves are new 
 
 **Closing a load:** you can only close once no bags are kept for anyone. Then choose what happened to what's left: for the next load, sent back, spoiled or lost, sold for cash, or the count was wrong.
 
-**First open:** four short steps with a moving picture: welcome, what you sell, what you do (I buy · I give on credit · I sell for cash; "I buy" turns on Buy bags) and which hand holds the phone, and where you sell.
+**First open:** one big **Start** uses the usual answers (onions, bags, selling on credit and for cash, right hand) and goes straight in; **Set up** is the four short steps with a moving picture: welcome, what you sell, what you do (I buy · I give on credit · I sell for cash; "I buy" turns on Buy bags) and which hand holds the phone, and where you sell.
 
 **Settings** is its own page of coloured cards (Easy to use, Your business, Places, Buying, Counting, Receipts, Sound and voice, Cloud book, Keep your book safe, Help, Delete) with real switches and a coloured backup status (red Never saved, green Saved 2 days ago).
 
-**Simple app** (Settings › Easy to use; on for a new phone, off for a book already in use): fewer buttons. The extras are one tap away under **More**: Keep for her on the give panel; Counter, Add a cost, Load report and the load's name in the card menu ⌄ (Count the car, Price and Close load stay); Remind and End of day on Take money; and the Buying, Counting, Receipts and Sound and voice settings. The Book has no Show Mom or sort button. Big text sits next to the switch. Each phone has its own setting.
+**Simple app** (Settings › Easy to use; on for a new phone, off for a book already in use): fewer buttons. **Hold any button** for a moment and the phone says what it does (the button does not act). A new load starts at the bag, with no name question. **Close load** says "N bags left. They go to the next load." and is one tap (**Something else** shows the other choices). There is no 10 minute count reminder. The hand setting sits here too. The extras are one tap away under **More**: Keep for her on the give panel; Counter, Add a cost, Load report and the load's name in the card menu ⌄ (Count the car, Price and Close load stay); Remind and End of day on Take money; and the Buying, Counting, Receipts and Sound and voice settings. The Book has no Show Mom or sort button. Big text sits next to the switch. Each phone has its own setting.
 
 **Photos of customers** (Settings › Your business; off at first, each phone its own): while it is off no camera shows anywhere and nobody is asked for a photo. When it is on, tap her circle on her own page (it has a small camera) to take her photo, only if she says yes. Her photo then shows wherever her circle is: the Book, Take money, the round, the give panel. Tap it again for a new photo or **Remove photo**. Photos go in the backup and, with a cloud book, to your other phones (scrambled like everything else). Turn the switch off and the letters come back.
 
@@ -143,6 +143,13 @@ By default the book lives on one phone. The **cloud book** keeps the same book o
 
 The tables are made by themselves the first time the Worker is used. If you use the wrangler command line instead, `worker/wrangler.toml` has the same setup.
 
+**Never losing the book**
+- The book is saved on the phone **twice**: the usual place, and a second copy kept apart from it. If the first is empty or older, the second brings it back ("Your book is back").
+- If saving ever fails, a red bar says **Not saved!** with **Back up now**.
+- In Safari (not the Home Screen icon) the Home Screen reminder returns every 3 days.
+- If the app cannot open, the screen says so in short words, with **Save my book**, which makes the backup file without the app. See `docs/if-it-breaks.md`.
+- A new cloud book says **Write this code on paper**, and once a month asks **Do you still have your book code?**
+
 **Good to know**
 - **Keep the book code safe** (and still make a file backup now and then). If every phone and the code are lost, the online copy cannot be opened by anyone, not even you.
 - **Disconnect this phone** stops syncing but keeps this phone's book. **Delete everything** only empties this phone: the online book stays, and you can join again.
@@ -194,6 +201,10 @@ After that, a customer with a phone number gets a receipt about 20 seconds after
 | `regulars.js` | The regulars on Give bags: this place first, then who comes most often; her usual bags set |
 | `faces.js` | Photos of customers: off with no camera anywhere, taking, showing, replacing, removing, backup |
 | `simple.js` | The Simple app: on for a new phone, what is under More, the switch |
+| `safe.js` | The red Not saved bar, the second copy and bringing the book back |
+| `rescue.js` | The could-not-open screen with Save my book; the monthly book code check |
+| `colours.js` | Bag colours: No photo asks the colour, drawn bags, buying |
+| `simpler.js` | First open in one tap, a new load in Simple, closing in one tap, hold to hear, no count reminder |
 
 ## Your data
 

@@ -190,7 +190,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   await act('releaseall');
   ok((await txt('.sheet')).includes('What happened to the 4 bags left'), 'after release: asks about the 4 left');
   await act('clopt', '[data-k="next"]'); await shot('08-close'); await act('cldo');
-  ok((await txt('#app')).includes('4 bags waiting for the next one'), 'closed: 4 bags waiting for the next delivery');
+  ok((await txt('#app')).includes('4 bags waiting'), 'closed: 4 bags waiting for the next delivery');
   await act('newcar'); await act('wfrom'); await act('wnophoto'); await act('wcolor', '[data-c="red"]');
   ok((await txt('.disp')).includes('4'), 'next delivery starts with 4 counted');
   await act('wback'); await act('wback'); await act('wback');

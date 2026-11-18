@@ -669,6 +669,8 @@ a.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;text-deco
 .lbar i{display:block;height:100%;background:var(--paid)}
 .cacts{display:flex;gap:.5rem;margin-top:.5rem}
 .cacts>*{flex:1;justify-content:center;min-height:2.75rem}
+.cacts.one{justify-content:center;margin-top:.125rem}
+.cacts.one>*{flex:none;min-height:2.25rem;padding:0 1rem;background:transparent;color:var(--muted)}
 .eod{display:flex;align-items:center;gap:.5rem;padding:.375rem .75rem;border-radius:.625rem;background:var(--paper);border:.125rem solid var(--paid);color:var(--paid);font-weight:800;text-align:left;font-size:.9375rem}
 .eod small{font-size:.8125rem!important}
 .morebtn{display:flex;align-items:center;gap:.5rem;width:100%;padding:1rem .75rem 1rem 2.5rem;color:var(--ink);font-weight:800;text-align:left;border-bottom:.09375rem solid var(--rule)}
@@ -798,7 +800,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '9.1';
+const APP_VERSION = '9.2';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -1774,7 +1776,7 @@ function viewBuy() {
     const wait = tripsOnWay(), past = (S.trips || []).filter(t => t.carId).slice(-5).reverse();
     const top = `<div class="csum"><div class="cl"><small>No buying trip open</small><b style="font-size:1.25rem;color:var(--ink)">Start one at the market</b></div></div>`;
     let mid = (wait.length ? `<div class="sect"><span>On the way</span></div>` + wait.map(tripRow).join('') : '') + (past.length ? `<div class="sect"><span>Trips</span></div>` + past.map(tripRow).join('') : '');
-    if (!mid) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Buying</h2><p>At the market, put down each buy: a photo, how many, what you paid.</p></div>`;
+    if (!mid) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Buying</h2><p>Tap <b>Bought</b> for each buy.</p></div>`;
     return {top, mid, cls: 'book', dock: `<div class="bar"><button class="btn ink tall" data-act="tripnew">${svg('buy')} Start buying</button></div>`, tabs: true, anchor: 'top'};
   }
   const st = tripStats(T);
@@ -1797,7 +1799,7 @@ function buySheet() {
   const it = T.items.find(i => i.id === B.itemId); const u = unit();
   V.sheetKind = 'buy';
   if (B.step === 'kind') return sheet(`<i class="grab"></i><h3>Which kind?</h3><div class="ktiles bk">${T.items.map(i => `<button data-act="bkind" data-i="${i.id}">${kindImg(i)}${esc(i.name || '')}</button>`).join('')}<button class="newk" data-act="bnew">${svg('cam')}New kind</button></div>`);
-  if (B.step === 'photo') return sheet(`<i class="grab"></i><h3>Photo of this kind</h3><p>The photo becomes its button.</p><button class="camera" data-act="bcam">${svg('cam', 48)}<span>Take a photo</span></button><input type="file" id="bcamin" accept="image/*" capture="environment" hidden><div class="bar"><button class="btn ghost" data-act="bnophoto">No photo</button></div>`)
+  if (B.step === 'photo') return sheet(`<i class="grab"></i><h3>Photo of this kind</h3><button class="camera" data-act="bcam">${svg('cam', 48)}<span>Take a photo</span></button><input type="file" id="bcamin" accept="image/*" capture="environment" hidden><div class="bar"><button class="btn ghost" data-act="bnophoto">No photo</button></div>`)
     && document.getElementById('bcamin').addEventListener('change', onBuyCamera);
   if (B.step === 'color') return sheet(`<i class="grab"></i><h3>What colour is the bag?</h3>${colGrid('bcolor', '')}`);
   const money_ = B.step === 'price';
@@ -1833,9 +1835,9 @@ function tripToLoad(id) {
 }
 function giveEmpty() {
   const fresh = !S.people.length && !S.cars.length;
-  const top = `    <div class="csum"><div class="cl"><small>No load open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting for the next one' : 'Start one when the vehicle arrives'}</b></div></div>`;
+  const top = `    <div class="csum"><div class="cl"><small>No load open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting' : 'No load yet'}</b></div></div>`;
   let mid;
-  if (fresh) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Your book is empty</h2><p>When a vehicle arrives, tap <b>New load</b>. Then give ${esc(unit())}s one customer at a time.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">See an example first</button></div>`;
+  if (fresh) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Your book is empty</h2><p>Tap <b>New load</b> when the vehicle comes.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">Example</button></div>`;
   else { const cars = carsNewest().slice(0, 6); mid = cars.length ? `<div class="sect"><span>Loads</span></div>` + cars.map(carRow).join('') : ''; }
   const way = tripsOnWay()[0];
   const dock = way ? `<div class="bar"><button class="btn ink tall carhere" data-act="tripcar" data-id="${way.id}">${svg('truck')} Car is here · ${esc(way.place || dmy(way.date))} · ${bagsTxt(tripStats(way).bags)}</button></div><div class="bar"><button class="btn ghost" data-act="newcar">${svg('plus')} Another new load</button></div>`
@@ -1892,7 +1894,7 @@ function openGive(pid, name) {
 }
 function noCarSheet() {
   const last = carsNewest()[0];
-  sheet(`<i class="grab"></i><h3>No load open</h3><p>Start a new load, or give more from the last one.</p>
+  sheet(`<i class="grab"></i><h3>No load open</h3>
     <button class="btn ink" data-act="newcar">${svg('truck')} New load</button>
     ${last ? `<button class="btn ghost" data-act="reopen" data-id="${last.id}">Give more from ${esc(carName(last))}</button>` : ''}
     <button class="btn ghost" data-act="sheetclose">Close</button>`);
@@ -2250,7 +2252,7 @@ function viewCollect() {
   const others = fcar ? debtors().filter(x => inFilter(x.p) && sum(x.L.loads.filter(l => l.carId !== fcar.id), l => l.left) > 0.001) : [];
   const othersAmt = r2(sum(others, x => sum(x.L.loads.filter(l => l.carId !== fcar.id), l => l.left)));
   const top = `<div class="csum"><div class="cl"><small>Still owed${fcar ? ' · ' + pageNo(fcar) + ' · ' + esc(carName(fcar)) : ''}${V.fTown ? ' · ' + esc(V.fLoc ? locTxt(V.fLoc) : V.fTown) : ''}</small><b class="${total > 0.001 ? '' : 'ok'}" data-roll="owed:${esc(V.fCar || '')}:${esc(V.fTown)}:${esc(V.fLoc)}" data-v="${total}" data-f="m">${money(total)}</b></div>
-    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}</div></div>${remindN || eodButton() ? `<div class="cacts">${simple() && !V.cMore ? `<button class="mini" data-act="cmore">More ${svg('down', 16)}</button>` : `${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}${eodButton()}`}</div>` : ''}${loadRow}`;
+    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}</div></div>${remindN || eodButton() ? `<div class="cacts ${simple() && !V.cMore ? 'one' : ''}">${simple() && !V.cMore ? `<button class="mini" data-act="cmore">More ${svg('down', 16)}</button>` : `${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}${eodButton()}`}</div>` : ''}${loadRow}`;
   const mid = mid0 + (others.length ? `<button class="morebtn" data-act="fcar" data-id="">${svg('truck', 18)} ${others.length} more ${others.length === 1 ? 'woman owes' : 'women owe'} ${money(othersAmt)} on other loads · See all</button>` : '');
   const dock = `${filterChips(id => debtors().filter(x => x.p.loc === id).length)}
     <div class="bar"><label class="find ink">${svg('search')}<input id="cq" type="search" placeholder="Find a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name" value="${esc(V.cq)}"></label>${all.length ? `<button class="roundbtn" data-act="round" aria-label="Start a round: one woman at a time">${svg('fwd', 26)}<span>Round</span></button>` : ''}</div>`;
@@ -2436,7 +2438,7 @@ function bookList() {
   const owe = info.filter(x => x.L.bal > 0.001), kept = info.filter(x => x.L.bal <= 0.001 && x.w > 0), clear = info.filter(x => x.L.bal <= 0.001 && !x.w);
   kept.sort((a, b) => cmp(a.p.name.toLowerCase(), b.p.name.toLowerCase())); clear.sort((a, b) => cmp(a.p.name.toLowerCase(), b.p.name.toLowerCase()));
   const row = (x, k) => {
-    const where = [V.fLoc ? '' : locTxt(x.p.loc), x.p.note].filter(Boolean).join(' · ');
+    const where = [V.fLoc ? '' : locTxt(x.p.loc), simple() ? '' : x.p.note].filter(Boolean).join(' · ');
     const tag = k === 'owe' ? statusTag(x.st) : k === 'kept' ? `<span class="tag w">${bagsTxt(x.w)} kept</span>` : '';
     const right = k === 'owe' ? `<span class="amt">${money(x.L.bal)}</span>` : k === 'clear' ? `<span class="amt ok">${x.L.bal < -0.001 ? money(-x.L.bal) + '<small>credit</small>' : 'Paid ✓'}</span>` : '';
     return `<button class="row brow ${k}" data-act="person" data-id="${x.p.id}">${av(x.p, x.p.name)}<div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${where ? (V.fLoc ? '' : pdot(x.p.loc)) + esc(where) : ''}${where && tag ? ' · ' : ''}${tag}</div></div>${right}</button>`;
@@ -2744,7 +2746,7 @@ VIEWS.mom = () => {
 /* ===== Settings and first-run setup ===== */
 function townsBlock() {
   const all = placesSorted();
-  return (all.length ? `<div class="setbox"><div class="chips wrap">${all.map(l => `<span class="chip">${pdot(l.id)}${esc(locTxt(l.id))}</span>`).join('')}</div></div>` : '<div class="setbox"><p class="small">No places yet. Add each place you deliver to as its own name, for example Bekwai, Bekwai Market or Koko Shell. Skip this if you only go to one place.</p></div>')
+  return (all.length ? `<div class="setbox"><div class="chips wrap">${all.map(l => `<span class="chip">${pdot(l.id)}${esc(locTxt(l.id))}</span>`).join('')}</div></div>` : '<div class="setbox"><p class="small">No places yet. Add each market you sell at.</p></div>')
     + `<div class="setbox"><button class="btn ghost" data-act="addloc">${svg('plus')} Add a place</button></div>`;
 }
 function smsInputs() {
@@ -2814,9 +2816,9 @@ VIEWS.settings = () => {
         ${S.settings.momo ? `<button class="btn ghost" data-act="smstest">Send a test to ${esc(S.settings.momo)}</button>` : ''}</div>` : ''))
     + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz')))
     + (SYNC_OK && !V.demo ? card('cloud', '#0284C7', 'Cloud book', CB.on
-      ? `<div class="setbox"><span class="savestat ${cbStatus().cls}" id="cb_status">${esc(cbStatus().text)}</span><p class="small">One book on every phone. Each line is scrambled before it leaves this phone.</p>
+      ? `<div class="setbox"><span class="savestat ${cbStatus().cls}" id="cb_status">${esc(cbStatus().text)}</span><p class="small">One book on every phone. Scrambled before it leaves.</p>
         <button class="btn ink" data-act="cloudinvite">${svg('users')} Invite another phone</button><button class="btn ghost" data-act="cloudsync">Send and get now</button><button class="btn ghost redtext" data-act="clouddrop">Disconnect this phone</button></div>`
-      : `<div class="setbox"><p class="small">One book on every phone, saved online. Needs your own free Cloudflare database (steps in the README).</p>
+      : `<div class="setbox"><p class="small">One book on every phone, saved online.</p>
         <button class="btn ink" data-act="cloudnew">${svg('cloud')} Start a cloud book</button><button class="btn ghost" data-act="cloudjoin">${svg('users')} Join a book</button></div>`) : '')
     + (V.demo ? '' : card('cloud', '#24307A', 'Keep your book safe', `<div class="setbox">${saved}<p class="small">If this phone is lost, the backup file brings the book back.</p>
       <button class="btn ink" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" hidden></div>`))
@@ -2852,10 +2854,10 @@ function doBackup() {
   try { const url = URL.createObjectURL(new Blob([json], {type: 'application/json'})); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); done(); } catch (x) { toast('Backup did not work on this phone'); }
 }
 function backupSheet() {
-  if (SYNC_OK && CB.on) { const st = cbStatus(); sheet(`<i class="grab"></i><h3>${svg('cloud', 22)} Cloud book</h3><p><span class="savestat ${st.cls}" id="cb_status">${esc(st.text)}</span></p><p>Your book is kept online and on every phone that joined. You can also save a file.</p>
+  if (SYNC_OK && CB.on) { const st = cbStatus(); sheet(`<i class="grab"></i><h3>${svg('cloud', 22)} Cloud book</h3><p><span class="savestat ${st.cls}" id="cb_status">${esc(st.text)}</span></p><p>Kept online and on every phone that joined.</p>
     <button class="btn ink tall" data-act="cloudsync">Send and get now</button><button class="btn ghost" data-act="backup">${svg('cloud')} Back up a file too</button><button class="btn ghost" data-act="sheetclose">Close</button>`); return; }
   const need = needsBackup();
-  sheet(`<i class="grab"></i><h3>${need ? 'Back up your book' : 'Book is backed up ✓'}</h3><p>${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) + '.' : 'No backup yet.'} ${need ? 'Some changes are only on this phone.' : ''} Send the file to your own WhatsApp, or save it in Files. If the phone is lost, it brings everything back.</p>
+  sheet(`<i class="grab"></i><h3>${need ? 'Back up your book' : 'Book is backed up ✓'}</h3><p>${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) + '.' : 'No backup yet.'} Send the file to your own WhatsApp.</p>
     <button class="btn ink tall" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="sheetclose">Close</button>`);
 }
 
@@ -3222,7 +3224,7 @@ function act(a, d, el) {
   case 'cjgo': { const t = (document.getElementById('cj_in') || {}).value; cbSheetWait('Looking for the book…');
     cbCheck(t).then(r => {
       if (r.err) return cbSheetJoin(r.err);
-      if (S.people.length || S.entries.length) { V.cj = r; return sheet(`<i class="grab"></i><h3>This phone has its own book</h3><p>${S.people.length} ${S.people.length === 1 ? 'name' : 'names'} and ${S.entries.length} ${S.entries.length === 1 ? 'line' : 'lines'} on this phone will be added to the shared book. Nothing is deleted.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Cancel</button><button class="btn ink" data-act="cjyes">Add and join</button></div>`); }
+      if (S.people.length || S.entries.length) { V.cj = r; return sheet(`<i class="grab"></i><h3>This phone has its own book</h3><p>${S.people.length} ${S.people.length === 1 ? 'name' : 'names'} and ${S.entries.length} ${S.entries.length === 1 ? 'line' : 'lines'} here join the shared book. Nothing is deleted.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Cancel</button><button class="btn ink" data-act="cjyes">Add and join</button></div>`); }
       V.cj = r; act('cjyes', {});
     }); return; }
   case 'cjyes': { const r = V.cj; if (!r) return closeSheet(); V.cj = null; cbSheetWait('Getting your book…'); cbConnect(r.url, r.code, r.keys, true); S.setup = true; save();
@@ -3230,7 +3232,7 @@ function act(a, d, el) {
   case 'cloudinvite': return cbSheetCode(false);
   case 'cbcopy': cbCopy(cbInvite()); return toast('Copied. Paste it in WhatsApp.');
   case 'cloudsync': toast('Sending and getting…'); return cbSync();
-  case 'clouddrop': return sheet(`<i class="grab"></i><h3>Disconnect this phone?</h3><p>This phone stops sending and getting. Its book stays here, and the online book stays online. You can join again with the code.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="clouddropyes">Disconnect</button></div>`);
+  case 'clouddrop': return sheet(`<i class="grab"></i><h3>Disconnect this phone?</h3><p>Both books stay. You can join again with the code.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="clouddropyes">Disconnect</button></div>`);
   case 'clouddropyes': cbDrop(); closeSheet(); return render();
   case 'togglebig': S.settings.big = !S.settings.big; commit(); fit(); return render();
   case 'togglesound': S.settings.sound = S.settings.sound === false; commit(); if (S.settings.sound) sfx('cash'); return render();
@@ -3245,7 +3247,7 @@ function act(a, d, el) {
   case 'backup': closeSheet(); return doBackup();
   case 'restore': { const rf = document.getElementById('restorefile'); if (rf) rf.click(); return; }
   case 'restoreyes': { if (V.restorePhotos) { Object.keys(V.restorePhotos).forEach(id => { if (/^data:image\//.test(V.restorePhotos[id])) phPut(id, V.restorePhotos[id]); }); V.restorePhotos = null; } if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; cbAfterReplace(); } closeSheet(); toast('Your book is back'); return toRoot('give'); }
-  case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be reversed. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
+  case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be undone. Back up first.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
   case 'wipeyes': cbDrop(); S = blank(); V.su = 0; commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
   case 'reload': location.reload(); return;
   case 'installok': lsSet('stallbook_install_hint', String(Date.now())); return closeSheet();
@@ -3599,7 +3601,7 @@ function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 function installSheet() {
   sheet(`<i class="grab"></i><h3>Put StallBook on your Home Screen</h3>
     <ol class="steps3"><li>Tap the <b>Share</b> button in Safari.</li><li>Choose <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open StallBook from the new icon.</li></ol>
-    <p>It then opens full screen and works with no data. Always use the icon: a book started in Safari stays in Safari.</p>
+    <p>Always open StallBook from the new icon.</p>
     <button class="btn ink tall" data-act="installok">Got it</button>`);
 }
 if (IOS && !STANDALONE && /^https?:$/.test(location.protocol) && !(Date.now() - Number(lsGet('stallbook_install_hint') || 0) < 3 * 864e5)) setTimeout(installSheet, 600);

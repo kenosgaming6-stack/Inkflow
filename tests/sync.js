@@ -134,7 +134,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await sync(A); ok(await A.p.evaluate(() => S.entries.filter(e => e.type === 'pay' && e.amount === 50).length === 0), 'a disconnected phone sends nothing');
   // join again: no copies, and its own line goes up
   await B.p.evaluate(() => { toRoot('book'); }); await act(B, 'settings'); await act(B, 'cloudjoin'); await B.p.fill('#cj_in', invite); await act(B, 'cjgo'); await B.p.waitForTimeout(500);
-  ok((await txt(B, '.sheet h3')) === 'This phone has its own book' && (await txt(B, '.sheet p')).includes('will be added'), 'joining with a book already on the phone asks first');
+  ok((await txt(B, '.sheet h3')) === 'This phone has its own book' && (await txt(B, '.sheet p')).includes('join the shared book'), 'joining with a book already on the phone asks first');
   const countB = await B.p.evaluate(() => S.entries.length);
   await act(B, 'cjyes'); await B.p.waitForFunction(() => !document.querySelector('.ov'), null, {timeout: 15000}); await sync(B); await sync(A);
   const r1 = await snap(A), r2 = await snap(B);

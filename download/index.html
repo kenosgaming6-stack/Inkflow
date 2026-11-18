@@ -145,6 +145,8 @@ a{color:inherit;text-decoration:none}
 @keyframes sdraw{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
 /* the paper changes colour softly when you switch tabs */
 #shell{transition:background-color .25s ease}
+#savebar{position:absolute;left:0;right:0;top:0;z-index:99;display:flex;align-items:center;justify-content:center;gap:.75rem;padding:.5rem .75rem;padding-top:calc(.5rem + env(safe-area-inset-top,0px));margin-top:calc(-1 * env(safe-area-inset-top,0px));background:#B3261E;color:#fff;font-size:1rem}
+#savebar button{min-height:2.5rem;padding:0 1rem;border-radius:.625rem;background:#fff;color:#B3261E;font-weight:800}
 /* the notes look like paper money */
 .nstack{display:flex;justify-content:center;flex-wrap:wrap;gap:.1875rem;min-height:1rem;margin-top:.25rem}
 .nstack i{width:1.75rem;height:1rem;border-radius:.1875rem;background:var(--nt);border:.09375rem solid var(--nb);font:800 .5625rem/.85rem var(--num);color:var(--nb);text-align:center;font-style:normal}
@@ -330,7 +332,14 @@ html.lh .ktiles,html.lh .notes,html.lh .kpick,html.lh .faces{direction:ltr}
 .q{font-size:1.625rem;font-weight:700;color:var(--ink);text-align:center;line-height:1.25}
 /* bag kinds: the photo is the button */
 .kimg{display:block;width:3rem;height:3rem;border-radius:.5rem;object-fit:cover;background:var(--key);border:.125rem solid var(--text);flex:none}
-.kimg.none{display:flex;align-items:center;justify-content:center;font:800 1.5rem/1 var(--num);color:var(--ink);background:var(--pen-wash)}
+.kimg.none{display:flex;align-items:center;justify-content:center;background:#F3ECDD;padding:.1875rem;overflow:hidden}
+.kimg.none svg{display:block;height:100%;width:auto;max-width:100%}
+.kimg.xs.none{padding:.0625rem}
+.colgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;width:100%;margin:.25rem 0}
+.colbtn{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.375rem .125rem;border-radius:.875rem;border:.125rem solid var(--line);background:var(--paper);font-weight:800;font-size:.9375rem;color:var(--ink)}
+.colbtn.on{border-color:var(--ink);background:var(--key)}
+.colbtn .colbag{display:block;width:3.5rem;height:3.5rem}
+.colbtn .colbag svg{display:block;width:100%;height:100%}
 .kimg.xs{width:1.375rem;height:1.375rem;border-width:.09375rem;border-radius:.3rem;font-size:.8125rem;display:inline-flex;vertical-align:middle}
 .kimg.sm{width:2.25rem;height:2.25rem;font-size:1.125rem}
 .kimg.big{width:100%;height:6.75rem;border:0;border-radius:0;font-size:2.75rem}
@@ -521,6 +530,8 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .srow>span{font-weight:700;min-width:0}
 .btn.setmore{align-self:center;width:auto;padding:0 1.25rem;margin:.25rem 0}
 .tog.more{color:var(--muted);border-style:dashed}
+[data-act]{-webkit-touch-callout:none}
+.heard{outline:.1875rem solid var(--ink);outline-offset:.125rem}
 .swnote{margin:-.375rem 0 0;padding:0 .875rem .625rem;font-size:.875rem}
 .switch{flex:none;position:relative;width:3.375rem;height:2.0625rem;border-radius:1.03rem;background:#C9CFDD}
 .switch i{position:absolute;top:.1875rem;left:.1875rem;width:1.6875rem;height:1.6875rem;border-radius:50%;background:#FFFFFF;box-shadow:0 .0625rem .25rem rgba(0,0,0,.28)}
@@ -655,6 +666,8 @@ a.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;text-deco
 .lbar i{display:block;height:100%;background:var(--paid)}
 .cacts{display:flex;gap:.5rem;margin-top:.5rem}
 .cacts>*{flex:1;justify-content:center;min-height:2.75rem}
+.cacts.one{justify-content:center;margin-top:.125rem}
+.cacts.one>*{flex:none;min-height:2.25rem;padding:0 1rem;background:transparent;color:var(--muted)}
 .eod{display:flex;align-items:center;gap:.5rem;padding:.375rem .75rem;border-radius:.625rem;background:var(--paper);border:.125rem solid var(--paid);color:var(--paid);font-weight:800;text-align:left;font-size:.9375rem}
 .eod small{font-size:.8125rem!important}
 .morebtn{display:flex;align-items:center;gap:.5rem;width:100%;padding:1rem .75rem 1rem 2.5rem;color:var(--ink);font-weight:800;text-align:left;border-bottom:.09375rem solid var(--rule)}
@@ -737,11 +750,25 @@ a.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;text-deco
 <script>
 'use strict';
 /* if something breaks while opening, say so on screen instead of showing a blank page */
+/* the book as a file, without the app: from the main copy, or else the second copy */
+function rescueBook(done) {
+  const finish = raw => {
+    let book; try { book = JSON.parse(raw); } catch (e) { return done(false); }
+    const name = 'StallBook-backup-' + new Date().toISOString().slice(0, 10) + '.json', json = JSON.stringify({stallbook: book, savedAt: new Date().toISOString(), version: 3, photos: {}});
+    try { const file = new File([json], name, {type: 'application/json'}); if (navigator.canShare && navigator.canShare({files: [file]})) { navigator.share({files: [file], title: 'StallBook backup'}).then(() => done(true), () => done(false)); return; } } catch (e) {}
+    try { const url = URL.createObjectURL(new Blob([json], {type: 'application/json'})); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); done(true); } catch (e) { done(false); }
+  };
+  let raw = null; try { raw = localStorage.getItem('stallbook_v2'); } catch (e) {}
+  if (raw) return finish(raw);
+  try { const r = indexedDB.open('stallbook-book', 1); r.onupgradeneeded = () => r.result.createObjectStore('b'); r.onsuccess = () => { try { const q = r.result.transaction('b').objectStore('b').get('book'); q.onsuccess = () => q.result ? finish(q.result) : done(false); q.onerror = () => done(false); } catch (e) { done(false); } }; r.onerror = () => done(false); }
+  catch (e) { done(false); }
+}
 window.addEventListener('error', ev => {
   const a = document.getElementById('app'); if (!a || a.querySelector('.top')) return;
-  a.innerHTML = '<div style="padding:1.5rem 1.125rem;display:flex;flex-direction:column;gap:.75rem"><h2 style="margin:0">StallBook could not open</h2><p style="margin:0">Your book is still saved on this phone. Take a screenshot of this and send it.</p><p style="margin:0;color:#BE2329;word-break:break-word"></p><button style="padding:.875rem;border-radius:.75rem;background:#24307A;color:#fff;font-weight:700">Try again</button></div>';
-  a.querySelectorAll('p')[1].textContent = String(ev.message || ev.error || 'Unknown error') + (ev.lineno ? ' (line ' + ev.lineno + ')' : '');
-  a.querySelector('button').addEventListener('click', () => location.reload());
+  a.innerHTML = '<div id="rescue" style="padding:1.5rem 1.125rem;display:flex;flex-direction:column;gap:.875rem"><h2 style="margin:0">StallBook could not open</h2><p style="margin:0;font-size:1.125rem">Your book is safe on this phone.</p><button data-r="save" style="text-align:center;padding:1.125rem;border-radius:.875rem;background:#12804A;color:#fff;font-weight:800;font-size:1.125rem">Save my book</button><p data-r="said" style="margin:0;font-weight:700"></p><button data-r="again" style="text-align:center;padding:.875rem;border-radius:.75rem;background:#24307A;color:#fff;font-weight:700">Try again</button><p data-r="why" style="margin:0;color:#BE2329;word-break:break-word;font-size:.875rem"></p></div>';
+  a.querySelector('[data-r="why"]').textContent = String(ev.message || ev.error || 'Unknown error') + (ev.lineno ? ' (line ' + ev.lineno + ')' : '');
+  a.querySelector('[data-r="again"]').addEventListener('click', () => location.reload());
+  a.querySelector('[data-r="save"]').addEventListener('click', () => rescueBook(ok => { a.querySelector('[data-r="said"]').textContent = ok ? 'Saved. Keep the file in WhatsApp.' : 'No book found on this phone.'; }));
 });
 /*
   StallBook v4: a credit book for market traders.
@@ -770,7 +797,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '9.1';
+const APP_VERSION = '9.2';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -940,7 +967,45 @@ function load() {
   try { const r = localStorage.getItem(V1KEY); if (r) { const s = normalize(fromV1(JSON.parse(r))); s.migrated = true; return s; } } catch (e) {}
   return blank();
 }
-function save() { if (V.demo) return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+/* a second copy of the whole book, kept apart from the first, in case the first fails or is wiped */
+let bkDB = null, bkLast = null;
+function bkFlush() { try { if (bkDB && bkLast !== null) bkDB.transaction('b', 'readwrite').objectStore('b').put(bkLast, 'book'); } catch (e) {} }
+function bkPut(json) { bkLast = json; bkFlush(); }
+function bkOpen() {
+  return new Promise(res => {
+    try { const r = indexedDB.open('stallbook-book', 1); r.onupgradeneeded = () => r.result.createObjectStore('b'); r.onsuccess = () => { bkDB = r.result; bkFlush(); res(bkDB); }; r.onerror = () => res(null); }
+    catch (e) { res(null); }
+  });
+}
+function bkGet() {
+  return bkOpen().then(db => db && new Promise(res => {
+    try { const q = db.transaction('b', 'readonly').objectStore('b').get('book'); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }
+    catch (e) { res(null); }
+  }));
+}
+const hasData = o => !!(o && ((o.people && o.people.length) || (o.cars && o.cars.length) || (o.entries && o.entries.length)));
+function save() {
+  if (V.demo) return;
+  let json; try { json = JSON.stringify(S); } catch (e) { return; }
+  let ok = true; try { localStorage.setItem(KEY, json); } catch (e) { ok = false; }
+  bkPut(json);
+  if (ok !== V.saveOk) { V.saveOk = ok; saveBar(); }
+}
+/* a red bar across the top while the book cannot be saved */
+function saveBar() {
+  let b = document.getElementById('savebar');
+  if (V.saveOk !== false) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement('div'); b.id = 'savebar'; b.setAttribute('role', 'alert'); document.getElementById('shell').appendChild(b); }
+  b.innerHTML = `<b>Not saved!</b><button data-act="backup">Back up now</button>`;
+}
+/* the book comes back from the second copy when the first is empty or older */
+function bkRecover() {
+  bkGet().then(json => {
+    if (!json || (navigator.webdriver && !window.RECOVER_FORCE)) return; let raw; try { raw = JSON.parse(json); } catch (e) { return; }
+    if (!hasData(raw) || (hasData(S) && String(raw.changedAt || '') <= String(S.changedAt || ''))) return;
+    S = normalize(raw); VER++; save(); V.stack = []; V.tab = 'give'; render(); toast('Your book is back');
+  });
+}
 
 let S = null;
 let V = {tab: 'give', stack: [], gq: '', bq: '', cq: '', fTown: '', fLoc: '', sort: 'new', bseg: 'people', pay: null};
@@ -1026,7 +1091,15 @@ const AV = [['#1D3FBB', '#E3EAFD'], ['#0F766E', '#DDF3EF'], ['#A21CAF', '#F7E2F9
 function avc(name) { let h = 0; for (const ch of String(name || '').trim().toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0; const c = AV[h % AV.length]; return `background:${c[1]};color:${c[0]}`; }
 /* a kind of bag with no photo takes the colour in its name ("Red net"), or one of its own */
 const KCOL = {red: '#C62828', yellow: '#F2B705', white: '#FFFFFF', brown: '#8D5A2B', green: '#2E7D32', blue: '#1565C0', black: '#1F2229', orange: '#EF6C00', purple: '#6A1B9A', pink: '#D81B60', grey: '#8A8F98', gray: '#8A8F98'};
+/* the bag colours a trader can pick, and a drawn onion bag in any colour */
+const BAG_COLS = [['red', 'Red'], ['white', 'White'], ['yellow', 'Yellow'], ['brown', 'Brown'], ['green', 'Green'], ['blue', 'Blue'], ['orange', 'Orange'], ['black', 'Black']];
+function bagSvg(c) {
+  const light = c === '#FFFFFF' || c === '#F2B705', ink = '#14161C', mesh = light ? ink : '#FFFFFF';
+  return `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 8c2-3 4-4 7-4s5 1 7 4l2 6c5 4 8 10 8 18 0 7-6 12-17 12S7 39 7 32c0-8 3-14 8-18z" fill="${c}" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round"/><path d="M15 14.5c6 2 12 2 18 0" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/><path d="M11 25c8 3 18 3 26 0M10 33c9 3 19 3 28 0M19 17c-5 9-5 19 0 27M29 17c5 9 5 19 0 27" fill="none" stroke="${mesh}" stroke-opacity=".4" stroke-width="1.4"/></svg>`;
+}
+const colGrid = (act, on) => `<div class="colgrid">${BAG_COLS.map(([k, l]) => `<button class="colbtn ${on === k ? 'on' : ''}" data-act="${act}" data-c="${k}" aria-label="${l}"><span class="colbag">${bagSvg(KCOL[k])}</span>${l}</button>`).join('')}</div>`;
 function kindCol(it) {
+  if (it && it.col && KCOL[it.col]) return KCOL[it.col];
   const w = String(it && it.name || '').toLowerCase().match(/[a-z]+/g) || []; const k = w.find(x => KCOL[x]);
   if (k) return KCOL[k];
   const car = S.cars.find(c => c.items.includes(it)) || (S.trips || []).find(t => t.items.includes(it)); return PAL[(car ? Math.max(0, car.items.indexOf(it)) : 0) % PAL.length];
@@ -1342,8 +1415,8 @@ function pullEnd() {
 layer.addEventListener('touchend', pullEnd, {passive: true});
 layer.addEventListener('touchcancel', pullEnd, {passive: true});
 /* the phone says it out loud when Speak is on: "Ama, 2 bags. 35 left." Off by default. */
-function say(text) {
-  if (!S.settings.voice || V.demo || !('speechSynthesis' in window)) return;
+function say(text, force) {
+  if ((!S.settings.voice && !force) || (V.demo && !force) || !('speechSynthesis' in window)) return;
   try {
     const ss = window.speechSynthesis; ss.cancel();
     const u = new SpeechSynthesisUtterance(String(text).replace(/(\d)½/g, '$1 and a half').replace(/½/g, 'half'));
@@ -1567,8 +1640,7 @@ const kindLabel = it => it.name || money(it.price);
 function kindImg(it, cls) {
   const src = it && it.photo && PH[it.photo];
   if (src) return `<img class="kimg ${cls || ''}" src="${src}" alt="">`;
-  const c = kindCol(it), light = c === '#FFFFFF' || c === '#F2B705';
-  return `<span class="kimg none ${cls || ''}" style="background:${c};color:${light ? '#14161C' : '#FFFFFF'}">${esc(it && it.name ? it.name.slice(0, 1) : '₵')}</span>`;
+  return `<span class="kimg none ${cls || ''}" role="img" aria-label="${esc((BAG_COLS.find(x => x[0] === (it && it.col)) || ['', 'Bag'])[1])}">${bagSvg(kindCol(it))}</span>`;
 }
 
 /* ===== Give ===== */
@@ -1701,7 +1773,7 @@ function viewBuy() {
     const wait = tripsOnWay(), past = (S.trips || []).filter(t => t.carId).slice(-5).reverse();
     const top = `<div class="csum"><div class="cl"><small>No buying trip open</small><b style="font-size:1.25rem;color:var(--ink)">Start one at the market</b></div></div>`;
     let mid = (wait.length ? `<div class="sect"><span>On the way</span></div>` + wait.map(tripRow).join('') : '') + (past.length ? `<div class="sect"><span>Trips</span></div>` + past.map(tripRow).join('') : '');
-    if (!mid) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Buying</h2><p>At the market, put down each buy: a photo, how many, what you paid.</p></div>`;
+    if (!mid) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Buying</h2><p>Tap <b>Bought</b> for each buy.</p></div>`;
     return {top, mid, cls: 'book', dock: `<div class="bar"><button class="btn ink tall" data-act="tripnew">${svg('buy')} Start buying</button></div>`, tabs: true, anchor: 'top'};
   }
   const st = tripStats(T);
@@ -1724,8 +1796,9 @@ function buySheet() {
   const it = T.items.find(i => i.id === B.itemId); const u = unit();
   V.sheetKind = 'buy';
   if (B.step === 'kind') return sheet(`<i class="grab"></i><h3>Which kind?</h3><div class="ktiles bk">${T.items.map(i => `<button data-act="bkind" data-i="${i.id}">${kindImg(i)}${esc(i.name || '')}</button>`).join('')}<button class="newk" data-act="bnew">${svg('cam')}New kind</button></div>`);
-  if (B.step === 'photo') return sheet(`<i class="grab"></i><h3>Photo of this kind</h3><p>The photo becomes its button.</p><button class="camera" data-act="bcam">${svg('cam', 48)}<span>Take a photo</span></button><input type="file" id="bcamin" accept="image/*" capture="environment" hidden><div class="bar"><button class="btn ghost" data-act="bnophoto">No photo</button></div>`)
+  if (B.step === 'photo') return sheet(`<i class="grab"></i><h3>Photo of this kind</h3><button class="camera" data-act="bcam">${svg('cam', 48)}<span>Take a photo</span></button><input type="file" id="bcamin" accept="image/*" capture="environment" hidden><div class="bar"><button class="btn ghost" data-act="bnophoto">No photo</button></div>`)
     && document.getElementById('bcamin').addEventListener('change', onBuyCamera);
+  if (B.step === 'color') return sheet(`<i class="grab"></i><h3>What colour is the bag?</h3>${colGrid('bcolor', '')}`);
   const money_ = B.step === 'price';
   const last = money_ ? [...T.buys].reverse().find(b => b.itemId === B.itemId && b.id !== B.edit) : null;
   sheet(`<div class="hrow">${kindImg(it || {}, 'sm')}<div class="title"><b>${money_ ? `Paid for one ${esc(u)}?` : `How many ${esc(u)}s?`}</b><small>${money_ ? bagsTxt(exprNum(B.n)) : (it && it.name) || ''}</small></div></div>
@@ -1752,16 +1825,16 @@ function tripToLoad(id) {
   const T = tripById(id); if (!T) return;
   if (givingCar()) return toast('Close the open load first');
   const st = tripStats(T);
-  const items = st.items.filter(x => x.bags > 0).map(x => ({id: x.it.id, name: x.it.name || '', count: x.bags, price: 0, photo: x.it.photo || '', paid: x.avg}));
+  const items = st.items.filter(x => x.bags > 0).map(x => ({id: x.it.id, name: x.it.name || '', count: x.bags, price: 0, photo: x.it.photo || '', col: x.it.col || '', paid: x.avg}));
   if (!items.length) return toast('Nothing was bought on this trip');
   V.w = {s: 'price', items, si: 0, tmp: '', err: '', label: T.place || '', fromTrip: T.id, cost: st.spent};
   V.tab = 'give'; push({v: 'newcar'});
 }
 function giveEmpty() {
   const fresh = !S.people.length && !S.cars.length;
-  const top = `    <div class="csum"><div class="cl"><small>No load open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting for the next one' : 'Start one when the vehicle arrives'}</b></div></div>`;
+  const top = `    <div class="csum"><div class="cl"><small>No load open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting' : 'No load yet'}</b></div></div>`;
   let mid;
-  if (fresh) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Your book is empty</h2><p>When a vehicle arrives, tap <b>New load</b>. Then give ${esc(unit())}s one customer at a time.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">See an example first</button></div>`;
+  if (fresh) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Your book is empty</h2><p>Tap <b>New load</b> when the vehicle comes.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">Example</button></div>`;
   else { const cars = carsNewest().slice(0, 6); mid = cars.length ? `<div class="sect"><span>Loads</span></div>` + cars.map(carRow).join('') : ''; }
   const way = tripsOnWay()[0];
   const dock = way ? `<div class="bar"><button class="btn ink tall carhere" data-act="tripcar" data-id="${way.id}">${svg('truck')} Car is here · ${esc(way.place || dmy(way.date))} · ${bagsTxt(tripStats(way).bags)}</button></div><div class="bar"><button class="btn ghost" data-act="newcar">${svg('plus')} Another new load</button></div>`
@@ -1818,7 +1891,7 @@ function openGive(pid, name) {
 }
 function noCarSheet() {
   const last = carsNewest()[0];
-  sheet(`<i class="grab"></i><h3>No load open</h3><p>Start a new load, or give more from the last one.</p>
+  sheet(`<i class="grab"></i><h3>No load open</h3>
     <button class="btn ink" data-act="newcar">${svg('truck')} New load</button>
     ${last ? `<button class="btn ghost" data-act="reopen" data-id="${last.id}">Give more from ${esc(carName(last))}</button>` : ''}
     <button class="btn ghost" data-act="sheetclose">Close</button>`);
@@ -1841,7 +1914,7 @@ function giveSheet() {
     : `<div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><button class="num" data-act="gqmore" aria-label="Type how many">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></button><button class="key" data-act="gplus" aria-label="One more">+</button></div>
     ${S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="ghalf">± ½</button></div>` : ''}`}
     <div class="togs">${simple() && !g.hold && !g.more ? `<button class="tog more" data-act="gmore">More ${svg('down', 16)}</button>` : `<button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Keep for her</button>`}</div>
-    <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave" ${g.bags > 0 ? '' : 'disabled'}>${g.bags > 0 ? (g.hold ? 'Hold ' : 'Give ') + bagsTxt(g.bags) : 'Tap a photo'}</button>`);
+    <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave" ${g.bags > 0 ? '' : 'disabled'}>${g.bags > 0 ? (g.hold ? 'Hold ' : 'Give ') + bagsTxt(g.bags) : tapWord()}</button>`);
   V.sheetKind = 'give';
   const ph = document.getElementById('gph'); if (ph) ph.addEventListener('input', e => { V.g.phone = e.target.value; });
 }
@@ -1890,7 +1963,7 @@ function cashSheet() {
     : `<div class="step"><button class="key" data-act="csless" data-i="${car.items[0].id}" aria-label="One less">−</button><button class="num" data-act="csn" data-i="${car.items[0].id}" aria-label="Type how many">${bagsNum(n)}<small>${esc(unit())}${n === 1 ? '' : 's'}</small></button><button class="key" data-act="csk" data-i="${car.items[0].id}" aria-label="One more">+</button></div>`;
   sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>${C.edit ? 'Change cash sale' : 'Cash sale'}</b></div>${body}
     <div class="ktot cash"><b>${money(total)}</b>${multi ? `<small>${bagsTxt(n)}</small>` : ""}</div>
-    <button class="btn take tall" data-act="cssave" ${n > 0 ? '' : 'disabled'}>${n > 0 ? (C.edit ? 'Save · ' : 'Sold · ') + money(total) : 'Tap a photo'}</button>`, 'cashsheet');
+    <button class="btn take tall" data-act="cssave" ${n > 0 ? '' : 'disabled'}>${n > 0 ? (C.edit ? 'Save · ' : 'Sold · ') + money(total) : tapWord()}</button>`, 'cashsheet');
   V.sheetKind = 'cash';
 }
 function saveCash() {
@@ -2046,7 +2119,7 @@ function gapLose(g, n) {
 /* the count reminder: while the Give screen is open, ask for a count every few minutes */
 const lastOf = (car, types) => S.entries.reduce((m, e) => e.carId === car.id && types.includes(e.type) && live(e) && e.date > m ? e.date : m, '');
 function checkDue() {
-  const car = givingCar(); const mins = Number(S.settings.checkMins) || 0;
+  const car = givingCar(); const mins = simple() ? 0 : Number(S.settings.checkMins) || 0;
   if (!car || !mins) return false;
   const since = [car.date, car.checkedAt || '', lastOf(car, ['check'])].reduce((a, b) => a > b ? a : b);
   const act = [car.date, lastOf(car, ['give', 'cash', 'hand', 'gap', 'check'])].reduce((a, b) => a > b ? a : b);
@@ -2176,7 +2249,7 @@ function viewCollect() {
   const others = fcar ? debtors().filter(x => inFilter(x.p) && sum(x.L.loads.filter(l => l.carId !== fcar.id), l => l.left) > 0.001) : [];
   const othersAmt = r2(sum(others, x => sum(x.L.loads.filter(l => l.carId !== fcar.id), l => l.left)));
   const top = `<div class="csum"><div class="cl"><small>Still owed${fcar ? ' · ' + pageNo(fcar) + ' · ' + esc(carName(fcar)) : ''}${V.fTown ? ' · ' + esc(V.fLoc ? locTxt(V.fLoc) : V.fTown) : ''}</small><b class="${total > 0.001 ? '' : 'ok'}" data-roll="owed:${esc(V.fCar || '')}:${esc(V.fTown)}:${esc(V.fLoc)}" data-v="${total}" data-f="m">${money(total)}</b></div>
-    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}</div></div>${remindN || eodButton() ? `<div class="cacts">${simple() && !V.cMore ? `<button class="mini" data-act="cmore">More ${svg('down', 16)}</button>` : `${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}${eodButton()}`}</div>` : ''}${loadRow}`;
+    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}</div></div>${remindN || eodButton() ? `<div class="cacts ${simple() && !V.cMore ? 'one' : ''}">${simple() && !V.cMore ? `<button class="mini" data-act="cmore">More ${svg('down', 16)}</button>` : `${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}${eodButton()}`}</div>` : ''}${loadRow}`;
   const mid = mid0 + (others.length ? `<button class="morebtn" data-act="fcar" data-id="">${svg('truck', 18)} ${others.length} more ${others.length === 1 ? 'woman owes' : 'women owe'} ${money(othersAmt)} on other loads · See all</button>` : '');
   const dock = `${filterChips(id => debtors().filter(x => x.p.loc === id).length)}
     <div class="bar"><label class="find ink">${svg('search')}<input id="cq" type="search" placeholder="Find a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name" value="${esc(V.cq)}"></label>${all.length ? `<button class="roundbtn" data-act="round" aria-label="Start a round: one woman at a time">${svg('fwd', 26)}<span>Round</span></button>` : ''}</div>`;
@@ -2362,7 +2435,7 @@ function bookList() {
   const owe = info.filter(x => x.L.bal > 0.001), kept = info.filter(x => x.L.bal <= 0.001 && x.w > 0), clear = info.filter(x => x.L.bal <= 0.001 && !x.w);
   kept.sort((a, b) => cmp(a.p.name.toLowerCase(), b.p.name.toLowerCase())); clear.sort((a, b) => cmp(a.p.name.toLowerCase(), b.p.name.toLowerCase()));
   const row = (x, k) => {
-    const where = [V.fLoc ? '' : locTxt(x.p.loc), x.p.note].filter(Boolean).join(' · ');
+    const where = [V.fLoc ? '' : locTxt(x.p.loc), simple() ? '' : x.p.note].filter(Boolean).join(' · ');
     const tag = k === 'owe' ? statusTag(x.st) : k === 'kept' ? `<span class="tag w">${bagsTxt(x.w)} kept</span>` : '';
     const right = k === 'owe' ? `<span class="amt">${money(x.L.bal)}</span>` : k === 'clear' ? `<span class="amt ok">${x.L.bal < -0.001 ? money(-x.L.bal) + '<small>credit</small>' : 'Paid ✓'}</span>` : '';
     return `<button class="row brow ${k}" data-act="person" data-id="${x.p.id}">${av(x.p, x.p.name)}<div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${where ? (V.fLoc ? '' : pdot(x.p.loc)) + esc(where) : ''}${where && tag ? ' · ' : ''}${tag}</div></div>${right}</button>`;
@@ -2447,8 +2520,11 @@ VIEWS.show = f => {
 };
 
 /* ===== New delivery ===== */
-function startWizard() { V.w = {s: 'from', items: [], si: 0, tmp: '', err: '', label: ''}; push({v: 'newcar'}); }
-const newKind = () => ({id: uid(), name: '', count: 0, price: 0, photo: ''});
+function startWizard() { V.w = {s: simple() ? 'photo' : 'from', items: simple() ? [newKind()] : [], si: 0, tmp: '', err: '', label: ''}; push({v: 'newcar'}); }
+/* the words on a button that waits for a kind to be tapped: a photo, or a bag when the kinds are drawn */
+const tapWord = car => { const c = car || (V.g && carById(V.g.carId)) || (V.cs && carById(V.cs.carId)) || givingCar(); return 'Tap a ' + (c && c.items.some(i => i.photo) ? 'photo' : 'bag'); };
+const newKind = () => ({id: uid(), name: '', count: 0, price: 0, photo: '', col: ''});
+function wToCount() { const W = V.w, it = W.items[W.si]; W.s = 'count'; W.tmp = it.count ? String(it.count) : W.si === 0 && S.carry ? String(S.carry) : ''; W.err = ''; return render(); }
 VIEWS.newcar = () => {
   const W = V.w; const u = unit(); const it = W.items[W.si];
   const strip = W.items.length && W.s !== 'from' ? `<div class="kstrip">${W.items.map((x, i) => `<button class="kthumb ${i === W.si && !['more', 'cost'].includes(W.s) ? 'on' : ''}" data-act="wedit" data-i="${i}" aria-label="Kind ${i + 1}">${kindImg(x, 'sm')}</button>`).join('')}</div>` : '';
@@ -2461,12 +2537,14 @@ VIEWS.newcar = () => {
       `<div class="bar">${backSq('wback')}<button class="btn ink tall" data-act="wfrom">Next</button></div>`,
       () => { const i = document.getElementById('w_label'); if (i) i.addEventListener('input', () => { V.w.label = i.value; }); });
   }
+  if (W.s === 'color') return view(kn, 'What colour is the bag?', '', colGrid('wcolor', it.col), `<div class="bar">${backSq('wback')}</div>`);
   if (W.s === 'photo') {
     const src = it.photo && PH[it.photo];
     const body = src ? `<div class="photowrap">${kindImg(it, 'hero')}<button class="retake" data-act="wcam" aria-label="Take the photo again">${svg('cam', 24)}</button></div>`
+      : it.col ? `<div class="photowrap">${kindImg(it, 'hero')}<button class="retake" data-act="wcam" aria-label="Take a photo">${svg('cam', 24)}</button></div>`
       : `<button class="camera" data-act="wcam">${svg('cam', 48)}<span>Take a photo</span></button>`;
-    return view(kn, src ? 'Is this the right bag?' : 'Take a photo of one kind of bag', src ? '' : 'The photo becomes its button when you give.', body + `<input type="file" id="camin" accept="image/*" capture="environment" hidden>`,
-      `<div class="bar">${backSq('wback')}${src ? `${W.items.length > 1 ? `<button class="btn ghost redtext" data-act="wdel">Remove</button>` : ''}<button class="btn ink tall" data-act="wphoto">Yes, next</button>` : `<button class="btn ghost" data-act="wphoto">No photo</button>`}</div>`,
+    return view(kn, src || it.col ? 'Is this the right bag?' : 'Take a photo of one kind of bag', '', body + `<input type="file" id="camin" accept="image/*" capture="environment" hidden>`,
+      `<div class="bar">${backSq('wback')}${src ? `${W.items.length > 1 ? `<button class="btn ghost redtext" data-act="wdel">Remove</button>` : ''}<button class="btn ink tall" data-act="wphoto">Yes, next</button>` : it.col ? `<button class="btn ghost" data-act="wnophoto">Colour</button><button class="btn ink tall" data-act="wphoto">Yes, next</button>` : `<button class="btn ghost" data-act="wnophoto">No photo</button>`}</div>`,
       () => { const c = document.getElementById('camin'); if (c) c.addEventListener('change', onCamera); });
   }
   if (W.s === 'count') return view(kn, `How many of these ${esc(u)}s?`, W.si === 0 && S.carry ? `${bagsNum(S.carry)} from the last load are counted in` : '', `<div class="photowrap">${kindImg(it, 'sm')}</div>${exprDisp(W.tmp, false, esc(u) + 's')}`,
@@ -2492,6 +2570,7 @@ function wizBack() {
   const W = V.w; W.err = ''; W.tmp = '';
   if (W.s === 'from') return pop();
   if (W.s === 'photo') { const it = W.items[W.si]; if (!it.count && !it.price) { W.items.splice(W.si, 1); W.si = Math.max(0, W.items.length - 1); } W.s = W.items.length ? 'more' : 'from'; return render(); }
+  if (W.s === 'color') { W.s = 'photo'; return render(); }
   if (W.s === 'count') { W.s = 'photo'; return render(); }
   if (W.s === 'price') { W.s = 'count'; W.tmp = String(W.items[W.si].count || ''); return render(); }
   if (W.s === 'more') { W.si = W.items.length - 1; W.s = 'price'; W.tmp = String(W.items[W.si].price || ''); return render(); }
@@ -2618,12 +2697,14 @@ function openClose(cid, o) { V.cl = Object.assign({cid, choice: null, thenNew: f
 function closeCarSheet() {
   const car = carById(V.cl.cid); const st = carStats(car.id); const held = heldOn(car.id); const gaps = gapsOn(car.id); const left = Math.max(0, st.free);
   const opts = [['next', 'For the next load'], ['back', 'Sent back'], ['bad', 'Spoiled or lost'], ['cash', 'Sold for cash'], ['count', 'The count was wrong']];
+  if (simple() && !held.length && !gaps.length && left > 0 && !V.cl.choice && !V.cl.more) V.cl.choice = 'next';
   const can = !held.length && !gaps.length && (left <= 0 || V.cl.choice);
   sheet(`<i class="grab"></i><h3>${V.cl.thenNew ? 'First close ' : 'Close '}${esc(carName(car))}</h3>
     <div class="sum4"><div><b>${bagsNum(st.loaded)}</b><small>loaded</small></div><div><b>${bagsNum(st.given)}</b><small>given</small></div><div class="${held.length ? 'w' : 'ok'}"><b>${bagsNum(st.wait)}</b><small>kept${held.length ? '' : ' ✓'}</small></div><div><b>${bagsNum(left)}</b><small>left</small></div></div>
     ${held.length ? `<p><b>Still kept for her:</b> ${held.map(e => esc((person(e.pid) || {}).name || '?') + ' ' + bagsNum(e.bags)).join(', ')}. Hand them over or release them first.</p><div class="bar"><button class="btn ghost redtext" data-act="releaseall" data-id="${car.id}">Release all</button><button class="btn ink" data-act="handall" data-id="${car.id}">Hand over all</button></div>` : ''}
     ${gaps.length ? `<p><b>No name yet:</b> ${bagsTxt(sum(gaps, e => e.bags))}. Name them, or write them off, before closing.</p><div class="bar"><button class="btn ghost redtext" data-act="gaplostall" data-id="${car.id}">They are lost</button><button class="btn ink" data-act="sheetclose">Name them</button></div>` : ''}
-    ${!held.length && !gaps.length && left > 0 ? `<p><b>What happened to the ${bagsTxt(left)} left?</b></p><div class="radio">${opts.map(([k, l]) => `<button class="${V.cl.choice === k ? 'on' : ''}" data-act="clopt" data-k="${k}">${l}</button>`).join('')}</div>` : ''}
+    ${!held.length && !gaps.length && left > 0 && simple() && !V.cl.more ? `<p><b>${bagsTxt(left)} left.</b> They go to the next load.</p><button class="btn ghost" data-act="clmore">Something else</button>` : ''}
+    ${!held.length && !gaps.length && left > 0 && !(simple() && !V.cl.more) ? `<p><b>What happened to the ${bagsTxt(left)} left?</b></p><div class="radio">${opts.map(([k, l]) => `<button class="${V.cl.choice === k ? 'on' : ''}" data-act="clopt" data-k="${k}">${l}</button>`).join('')}</div>` : ''}
     <button class="btn ink tall" data-act="cldo" ${can ? '' : 'disabled'}>Close load</button>
     <button class="btn ghost" data-act="sheetclose">Not now</button>`);
   V.sheetKind = 'close';
@@ -2662,7 +2743,7 @@ VIEWS.mom = () => {
 /* ===== Settings and first-run setup ===== */
 function townsBlock() {
   const all = placesSorted();
-  return (all.length ? `<div class="setbox"><div class="chips wrap">${all.map(l => `<span class="chip">${pdot(l.id)}${esc(locTxt(l.id))}</span>`).join('')}</div></div>` : '<div class="setbox"><p class="small">No places yet. Add each place you deliver to as its own name, for example Bekwai, Bekwai Market or Koko Shell. Skip this if you only go to one place.</p></div>')
+  return (all.length ? `<div class="setbox"><div class="chips wrap">${all.map(l => `<span class="chip">${pdot(l.id)}${esc(locTxt(l.id))}</span>`).join('')}</div></div>` : '<div class="setbox"><p class="small">No places yet. Add each market you sell at.</p></div>')
     + `<div class="setbox"><button class="btn ghost" data-act="addloc">${svg('plus')} Add a place</button></div>`;
 }
 function smsInputs() {
@@ -2688,7 +2769,7 @@ VIEWS.setup = () => {
   const back = `<button class="sq" data-act="suback" aria-label="Back">${svg('back')}</button>`;
   const cls = `supage su${st}` + (dir ? ' slide-' + dir : '');
   if (st === 0) return {top: dots, mid: `<div class="suwel">${ILL}<div class="brand">StallBook</div><p class="sus">${esc(S.settings.item || 'Bags')}, money, people. In one book.</p>${SYNC_OK ? `<button class="lnk" data-act="cloudjoin" style="font-size:1rem">${svg('users', 18)} Already have a book? Join it</button>` : ''}</div>`, cls,
-    dock: `<div class="bar"><button class="btn ghost" data-act="demo">See an example</button><button class="btn ink tall" data-act="sunext">Start ${svg('fwd', 20)}</button></div>`};
+    dock: `<div class="bar"><button class="btn ghost" data-act="demo">Example</button><button class="btn ghost" data-act="sunext">Set up</button></div><div class="bar"><button class="btn ink tall" data-act="sustart">Start ${svg('fwd', 20)}</button></div>`};
   if (st === 1) {
     const items = ['Onions', 'Yams', 'Tomatoes', 'Plantain', 'Rice'], units = ['bag', 'sack', 'crate', 'box'];
     return {top: dots, mid: `<div class="suq">What do you sell?</div>
@@ -2719,7 +2800,7 @@ VIEWS.settings = () => {
   const days = S.lastBackup ? Math.floor((Date.now() - Date.parse(S.lastBackup)) / 864e5) : -1;
   const saved = days < 0 ? '<span class="savestat r">Never saved</span>' : `<span class="savestat ${days <= 7 ? 'ok' : 'w'}">${days === 0 ? 'Saved today' : days === 1 ? 'Saved yesterday' : 'Saved ' + days + ' days ago'}</span>`;
   const few = s.simple && !V.setMore;
-  const mid = card('check', '#12804A', 'Easy to use', sw('togglesimple', s.simple, 'Simple app') + `<p class="small swnote">${s.simple ? 'Fewer buttons. The rest is under More.' : 'Every button shows.'}</p>` + sw('togglebig', s.big, 'Big text'))
+  const mid = card('check', '#12804A', 'Easy to use', sw('togglesimple', s.simple, 'Simple app') + `<p class="small swnote">${s.simple ? 'Fewer buttons. Hold a button to hear it.' : 'Every button shows.'}</p>` + sw('togglebig', s.big, 'Big text') + `<div class="setbox"><div class="field"><label>Hand that holds the phone</label>${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div></div>`)
     + card('bag', '#1D3FBB', 'Your business', `<div class="setbox">${setInp('item', 'What you sell', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}${setInp('seller', 'Your name (on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (on reminders)', '055 000 0000', 'tel')}</div>${sw('togglehalf', s.half !== false, 'Half ' + esc(unit()) + 's')}${sw('togglefaces', s.faces, 'Photos of customers')}<p class="small swnote">${s.faces ? 'Tap her circle on her page. Ask her first.' : 'Off: no camera, no photos.'}</p>`)
     + card('pin', '#0F766E', 'Places', townsBlock(), placesSorted().length ? String(placesSorted().length) : '')
     + (few ? `<button class="btn ghost setmore" data-act="setmore">More settings ${svg('down', 16)}</button>` : card('buy', '#B4541A', 'Buying', sw('togglebuy', s.buy, 'Buying trips (Buy ' + esc(unit()) + 's tab)'))
@@ -2730,11 +2811,11 @@ VIEWS.settings = () => {
         <div class="field"><label for="sms_from">Sender name (up to 11 letters, approved by Arkesel)</label><input id="sms_from" maxlength="11" autocomplete="off" spellcheck="false" value="${esc(SMS.from)}" placeholder="StallBook"></div>
         <p class="small" id="sms_status">${esc(smsStatus())}</p>
         ${S.settings.momo ? `<button class="btn ghost" data-act="smstest">Send a test to ${esc(S.settings.momo)}</button>` : ''}</div>` : ''))
-    + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz') + `<div class="setbox"><div class="field"><label>Hand that holds the phone</label>${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div></div>`))
+    + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz')))
     + (SYNC_OK && !V.demo ? card('cloud', '#0284C7', 'Cloud book', CB.on
-      ? `<div class="setbox"><span class="savestat ${cbStatus().cls}" id="cb_status">${esc(cbStatus().text)}</span><p class="small">One book on every phone. Each line is scrambled before it leaves this phone.</p>
+      ? `<div class="setbox"><span class="savestat ${cbStatus().cls}" id="cb_status">${esc(cbStatus().text)}</span><p class="small">One book on every phone. Scrambled before it leaves.</p>
         <button class="btn ink" data-act="cloudinvite">${svg('users')} Invite another phone</button><button class="btn ghost" data-act="cloudsync">Send and get now</button><button class="btn ghost redtext" data-act="clouddrop">Disconnect this phone</button></div>`
-      : `<div class="setbox"><p class="small">One book on every phone, saved online. Needs your own free Cloudflare database (steps in the README).</p>
+      : `<div class="setbox"><p class="small">One book on every phone, saved online.</p>
         <button class="btn ink" data-act="cloudnew">${svg('cloud')} Start a cloud book</button><button class="btn ghost" data-act="cloudjoin">${svg('users')} Join a book</button></div>`) : '')
     + (V.demo ? '' : card('cloud', '#24307A', 'Keep your book safe', `<div class="setbox">${saved}<p class="small">If this phone is lost, the backup file brings the book back.</p>
       <button class="btn ink" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="restore">Restore from a backup</button><input type="file" id="restorefile" hidden></div>`))
@@ -2770,10 +2851,10 @@ function doBackup() {
   try { const url = URL.createObjectURL(new Blob([json], {type: 'application/json'})); const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000); done(); } catch (x) { toast('Backup did not work on this phone'); }
 }
 function backupSheet() {
-  if (SYNC_OK && CB.on) { const st = cbStatus(); sheet(`<i class="grab"></i><h3>${svg('cloud', 22)} Cloud book</h3><p><span class="savestat ${st.cls}" id="cb_status">${esc(st.text)}</span></p><p>Your book is kept online and on every phone that joined. You can also save a file.</p>
+  if (SYNC_OK && CB.on) { const st = cbStatus(); sheet(`<i class="grab"></i><h3>${svg('cloud', 22)} Cloud book</h3><p><span class="savestat ${st.cls}" id="cb_status">${esc(st.text)}</span></p><p>Kept online and on every phone that joined.</p>
     <button class="btn ink tall" data-act="cloudsync">Send and get now</button><button class="btn ghost" data-act="backup">${svg('cloud')} Back up a file too</button><button class="btn ghost" data-act="sheetclose">Close</button>`); return; }
   const need = needsBackup();
-  sheet(`<i class="grab"></i><h3>${need ? 'Back up your book' : 'Book is backed up ✓'}</h3><p>${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) + '.' : 'No backup yet.'} ${need ? 'Some changes are only on this phone.' : ''} Send the file to your own WhatsApp, or save it in Files. If the phone is lost, it brings everything back.</p>
+  sheet(`<i class="grab"></i><h3>${need ? 'Back up your book' : 'Book is backed up ✓'}</h3><p>${S.lastBackup ? 'Last backup: ' + dmy(S.lastBackup) + '.' : 'No backup yet.'} Send the file to your own WhatsApp.</p>
     <button class="btn ink tall" data-act="backup">${svg('cloud')} Back up (WhatsApp or Files)</button><button class="btn ghost" data-act="sheetclose">Close</button>`);
 }
 
@@ -2855,7 +2936,8 @@ function act(a, d, el) {
   case 'bkind': V.b.itemId = d.i; V.b.step = 'count'; V.b.ex = ''; return buySheet();
   case 'bnew': V.b.step = 'photo'; return buySheet();
   case 'bcam': { const c = document.getElementById('bcamin'); if (c) c.click(); return; }
-  case 'bnophoto': { const T = buyTrip(); const it = {id: uid(), name: '', photo: ''}; T.items.push(it); commit(); V.b.itemId = it.id; V.b.step = 'count'; V.b.ex = ''; return buySheet(); }
+  case 'bnophoto': V.b.step = 'color'; return buySheet();
+  case 'bcolor': { const T = buyTrip(); const it = {id: uid(), name: '', photo: '', col: d.c}; T.items.push(it); commit(); V.b.itemId = it.id; V.b.step = 'count'; V.b.ex = ''; return buySheet(); }
   case 'bnext': { const n = exprNum(V.b.ex); if (!(n > 0)) { V.b.err = 'Type how many.'; return buySheet(); } V.b.n = String(n); V.b.step = 'price'; const e0 = V.b.edit && buyTrip().buys.find(x => x.id === V.b.edit); V.b.ex = e0 ? String(e0.price) : ''; return buySheet(); }
   case 'blast': { const T = buyTrip(); const last = [...T.buys].reverse().find(b => b.itemId === V.b.itemId && b.id !== V.b.edit); if (last) V.b.ex = String(last.price); return saveBuy(); }
   case 'bsave': return saveBuy();
@@ -3052,6 +3134,7 @@ function act(a, d, el) {
 
   /* deliveries */
   case 'newcar': { closeSheet(); const open = givingCar(); if (open) return openClose(open.id, {thenNew: true}); return startWizard(); }
+  case 'clmore': V.cl.more = true; V.cl.choice = null; return closeCarSheet();
   case 'closecar': return openClose(d.id || givingCar().id);
   case 'clopt': V.cl.choice = d.k; return closeCarSheet();
   case 'cldo': return closeCar();
@@ -3081,7 +3164,9 @@ function act(a, d, el) {
   case 'wlabel': V.w.label = d.l; return render();
   case 'wfrom': { const W = V.w; if (!W.items.length) W.items.push(newKind()); W.si = 0; W.s = 'photo'; return render(); }
   case 'wcam': { const c = document.getElementById('camin'); if (c) c.click(); return; }
-  case 'wphoto': { const W = V.w; const it = W.items[W.si]; W.s = 'count'; W.tmp = it.count ? String(it.count) : W.si === 0 && S.carry ? String(S.carry) : ''; W.err = ''; return render(); }
+  case 'wphoto': return wToCount();
+  case 'wnophoto': { V.w.s = 'color'; return render(); }
+  case 'wcolor': { const it = V.w.items[V.w.si]; it.col = d.c; it.photo = ''; return wToCount(); }
   case 'wdel': { const W = V.w; W.items.splice(W.si, 1); W.si = 0; W.s = 'more'; return render(); }
   case 'wedit': { const W = V.w; W.si = +d.i; W.s = 'photo'; W.err = ''; return render(); }
   case 'wmore': { const W = V.w; W.items.push(newKind()); W.si = W.items.length - 1; W.s = 'photo'; W.tmp = ''; return render(); }
@@ -3094,7 +3179,7 @@ function act(a, d, el) {
     if (nx >= 0) { W.si = nx; W.s = 'price'; return render(); } W.s = 'more'; return render(); }
   case 'wfinish': { const W = V.w; const cost = d.skip ? 0 : exprNum(W.tmp);
     if (!W.items.length || W.items.some(i => !(i.count > 0) || !(i.price > 0))) { W.s = 'more'; W.err = 'Every kind needs a number and a price.'; return render(); }
-    const car = {id: uid(), date: nowIso(), label: (W.label || '').trim(), items: W.items.map(i => ({id: i.id, name: i.name || '', count: i.count, price: i.price, photo: i.photo || ''})), costs: cost ? [{id: uid(), name: 'Load', amount: cost}] : [], phase: 'giving'};
+    const car = {id: uid(), date: nowIso(), label: (W.label || '').trim(), items: W.items.map(i => ({id: i.id, name: i.name || '', count: i.count, price: i.price, photo: i.photo || '', col: i.col || ''})), costs: cost ? [{id: uid(), name: 'Load', amount: cost}] : [], phase: 'giving'};
     if (W.fromTrip) { const T = tripById(W.fromTrip); if (T) { T.carId = car.id; car.tripId = T.id; } }
     S.cars.push(car); S.carry = 0; S.settings.price = car.items[0].price; commit(); V.w = null; V.turn = true; return toRoot('give'); }
 
@@ -3127,6 +3212,8 @@ function act(a, d, el) {
   case 'facecam': { const c = document.getElementById('facein'); if (c) c.click(); return; }
   case 'facedel': { const p = person(d.id); if (p && p.photo) { phDel(p.photo); delete p.photo; commit(); } closeSheet(); render(); return toast('Photo removed'); }
   case 'togglefaces': S.settings.faces = !S.settings.faces; commit(); return render();
+  case 'cbwrote': lsSet('stallbook_code_ok', String(Date.now())); return closeSheet();
+  case 'cbshowcode': return cbSheetCode('show');
   case 'cloudnew': return cbSheetNew();
   case 'cnstart': { const u = (document.getElementById('cn_url') || {}).value; cbSheetWait('Starting your book…');
     cbCreate(u).then(err => { if (err) cbSheetNew(err); else { cbSoon(100); cbSheetCode(true); render(); } }); return; }
@@ -3134,7 +3221,7 @@ function act(a, d, el) {
   case 'cjgo': { const t = (document.getElementById('cj_in') || {}).value; cbSheetWait('Looking for the book…');
     cbCheck(t).then(r => {
       if (r.err) return cbSheetJoin(r.err);
-      if (S.people.length || S.entries.length) { V.cj = r; return sheet(`<i class="grab"></i><h3>This phone has its own book</h3><p>${S.people.length} ${S.people.length === 1 ? 'name' : 'names'} and ${S.entries.length} ${S.entries.length === 1 ? 'line' : 'lines'} on this phone will be added to the shared book. Nothing is deleted.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Cancel</button><button class="btn ink" data-act="cjyes">Add and join</button></div>`); }
+      if (S.people.length || S.entries.length) { V.cj = r; return sheet(`<i class="grab"></i><h3>This phone has its own book</h3><p>${S.people.length} ${S.people.length === 1 ? 'name' : 'names'} and ${S.entries.length} ${S.entries.length === 1 ? 'line' : 'lines'} here join the shared book. Nothing is deleted.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Cancel</button><button class="btn ink" data-act="cjyes">Add and join</button></div>`); }
       V.cj = r; act('cjyes', {});
     }); return; }
   case 'cjyes': { const r = V.cj; if (!r) return closeSheet(); V.cj = null; cbSheetWait('Getting your book…'); cbConnect(r.url, r.code, r.keys, true); S.setup = true; save();
@@ -3142,11 +3229,12 @@ function act(a, d, el) {
   case 'cloudinvite': return cbSheetCode(false);
   case 'cbcopy': cbCopy(cbInvite()); return toast('Copied. Paste it in WhatsApp.');
   case 'cloudsync': toast('Sending and getting…'); return cbSync();
-  case 'clouddrop': return sheet(`<i class="grab"></i><h3>Disconnect this phone?</h3><p>This phone stops sending and getting. Its book stays here, and the online book stays online. You can join again with the code.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="clouddropyes">Disconnect</button></div>`);
+  case 'clouddrop': return sheet(`<i class="grab"></i><h3>Disconnect this phone?</h3><p>Both books stay. You can join again with the code.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep it</button><button class="btn danger" data-act="clouddropyes">Disconnect</button></div>`);
   case 'clouddropyes': cbDrop(); closeSheet(); return render();
   case 'togglebig': S.settings.big = !S.settings.big; commit(); fit(); return render();
   case 'togglesound': S.settings.sound = S.settings.sound === false; commit(); if (S.settings.sound) sfx('cash'); return render();
   case 'togglehalf': S.settings.half = S.settings.half === false; commit(); return render();
+  case 'sustart': { S.settings.does = {credit: true, cash: true, buy: false}; S.settings.buy = false; S.settings.simple = true; S.setup = true; V.su = 0; commit(); sfx('page'); return toRoot('give'); }
   case 'setupdone': { const d = S.settings.does; if (d) S.settings.buy = !!d.buy; S.setup = true; V.su = 0; commit(); sfx('page'); return toRoot(S.settings.buy ? 'buy' : 'give'); }
   case 'sunext': V.su = Math.min(3, (V.su || 0) + 1); V.suDir = 'l'; sfx('key'); return render();
   case 'suback': V.su = Math.max(0, (V.su || 0) - 1); V.suDir = 'r'; return render();
@@ -3156,10 +3244,10 @@ function act(a, d, el) {
   case 'backup': closeSheet(); return doBackup();
   case 'restore': { const rf = document.getElementById('restorefile'); if (rf) rf.click(); return; }
   case 'restoreyes': { if (V.restorePhotos) { Object.keys(V.restorePhotos).forEach(id => { if (/^data:image\//.test(V.restorePhotos[id])) phPut(id, V.restorePhotos[id]); }); V.restorePhotos = null; } if (V.restoreData) { S = V.restoreData; S.lastBackup = nowIso(); commit(); V.restoreData = null; cbAfterReplace(); } closeSheet(); toast('Your book is back'); return toRoot('give'); }
-  case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be reversed. Back up first if you are not sure.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
+  case 'wipe': return sheet(`<h3>Delete everything?</h3><p>This cannot be undone. Back up first.</p><div class="bar"><button class="btn ghost" data-act="sheetclose">Keep</button><button class="btn danger" data-act="wipeyes">Delete</button></div>`);
   case 'wipeyes': cbDrop(); S = blank(); V.su = 0; commit(); closeSheet(); toRoot('give'); return push({v: 'setup'});
   case 'reload': location.reload(); return;
-  case 'installok': lsSet('stallbook_install_hint', '1'); return closeSheet();
+  case 'installok': lsSet('stallbook_install_hint', String(Date.now())); return closeSheet();
   case 'installhelp': return installSheet();
   case 'celclose': { const c = layer.querySelector('.celebrate'); if (c) c.remove(); return; }
   case 'demo': closeSheet(); V.realS = S; V.demo = true; S = demoData(); VER++; V.fTown = ''; V.fLoc = ''; return toRoot('give');
@@ -3187,6 +3275,21 @@ document.addEventListener('pointerdown', e => {
   if (holdFired) setTimeout(() => { holdFired = false; }, 60);
 }));
 document.addEventListener('touchstart', () => {}, {passive: true}); /* lets iPhone show the pressed colour */
+/* Simple app: hold a button for a moment and the phone says what it does, and the button does not act */
+let hearT = null, hearHit = null, hearAt = null;
+const hearEl = e => (simple() && e.target.closest) ? e.target.closest('[data-act]:not(.key[data-k="del"]):not(.switch)') : null;
+const hearStop = () => { clearTimeout(hearT); hearT = null; };
+document.addEventListener('pointerdown', e => {
+  hearStop(); const el = hearEl(e); if (!el || el.closest('.counter, .ctr')) return; hearAt = [e.clientX, e.clientY];
+  hearT = setTimeout(() => {
+    const raw = (el.getAttribute('aria-label') || el.textContent || '').replace(/\s+/g, ' ').trim().replace(/₵\s?([\d,.]+)/g, '$1 cedis').replace(/[·›‹]/g, ',').slice(0, 70);
+    if (!raw) return; hearHit = el; el.classList.add('heard'); setTimeout(() => el.classList.remove('heard'), 900); buzz(20); say(raw, true);
+  }, 650);
+}, true);
+['pointerup', 'pointercancel', 'scroll'].forEach(t => document.addEventListener(t, () => { hearStop(); setTimeout(() => { hearHit = null; }, 450); }, true));
+document.addEventListener('pointermove', e => { if (hearT && hearAt && Math.hypot(e.clientX - hearAt[0], e.clientY - hearAt[1]) > 12) hearStop(); }, true);
+document.addEventListener('click', e => { if (hearHit && e.target.closest && e.target.closest('[data-act]') === hearHit) { e.stopPropagation(); e.preventDefault(); hearHit = null; } }, true);
+document.addEventListener('contextmenu', e => { if (hearEl(e)) e.preventDefault(); });
 document.addEventListener('click', e => {
   const t = e.target;
   if (delHeld && t.closest && t.closest('[data-k="del"]')) { delHeld = false; return; }
@@ -3449,12 +3552,21 @@ function cbSheetJoin(err) {
 }
 function cbSheetCode(fresh) {
   const text = 'Join my StallBook. In the app: Settings › Cloud book › Join a book, then paste this:\n\n' + cbInvite();
-  sheet(`<i class="grab"></i><h3>${fresh ? 'Your book is online ✓' : 'Invite another phone'}</h3>
-    <p>On the other phone: <b>Settings › Cloud book › Join a book</b>, then paste the invite.</p>
+  const write = fresh === true || fresh === 'show';
+  sheet(`<i class="grab"></i><h3>${fresh === true ? 'Your book is online ✓' : write ? 'Your book code' : 'Invite another phone'}</h3>
+    ${write ? `<p><b>Write this code on paper.</b> It is the only key.</p>` : `<p>On the other phone: <b>Settings › Cloud book › Join a book</b>, then paste the invite.</p>`}
     <div class="codebig" id="cb_code">${esc(cbPretty(CB.code))}</div>
-    <p class="small center">Keep this code private. Anyone who has it can read your book.</p>
-    <a class="btn ink tall" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_top" data-act="noop">${svg('msg')} Send by WhatsApp</a>
-    <button class="btn ghost" data-act="cbcopy">Copy the invite</button><button class="btn ghost" data-act="sheetclose">Done</button>`);
+    ${write ? `<button class="btn ink tall" data-act="cbwrote">I wrote it down</button>` : ''}
+    <a class="btn ${write ? 'ghost' : 'ink tall'}" href="https://wa.me/?text=${encodeURIComponent(text)}" target="_top" data-act="noop">${svg('msg')} Send by WhatsApp</a>
+    <button class="btn ghost" data-act="cbcopy">Copy the invite</button>${write ? '' : `<button class="btn ghost" data-act="sheetclose">Done</button>`}`);
+}
+/* once a month: do you still have the book code? It is the only key to the online book. */
+function cbCodeCheck() {
+  if (!(SYNC_OK && CB.on) || V.demo || (navigator.webdriver && !window.CODECHECK_FORCE)) return;
+  if (Date.now() - Number(lsGet('stallbook_code_ok') || 0) < 30 * 864e5) return;
+  if (layer.querySelector('.ov') || cur()) return;
+  sheet(`<i class="grab"></i><h3>Do you still have your book code?</h3><p>It is the only key to your online book.</p>
+    <button class="btn ink tall" data-act="cbwrote">Yes, I have it</button><button class="btn ghost" data-act="cbshowcode">Show my code</button>`);
 }
 function cbSheetWait(t) { sheet(`<i class="grab"></i><h3>${esc(t)}</h3><div class="sync-wait" style="text-align:center;padding:1rem">${svg('cloud', 40)}</div>`); }
 function cbAfterReplace() { CB_SIG.clear(); if (CB.on) { cbStamp(); cbSoon(800); } }
@@ -3476,6 +3588,8 @@ if (!S.setup && !S.people.length && !S.cars.length) { V.stack = [{v: 'setup'}]; 
 render();
 smsSoon(4000);
 phLoadAll().then(() => { if (Object.keys(PH).length) render(); });
+bkRecover();
+setTimeout(cbCodeCheck, 4500);
 /* ask the phone not to clear the book when it runs low on space */
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 /* in Safari, explain once how to put the app on the Home Screen, where the book lives */
@@ -3484,10 +3598,10 @@ function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 function installSheet() {
   sheet(`<i class="grab"></i><h3>Put StallBook on your Home Screen</h3>
     <ol class="steps3"><li>Tap the <b>Share</b> button in Safari.</li><li>Choose <b>Add to Home Screen</b>, then <b>Add</b>.</li><li>Open StallBook from the new icon.</li></ol>
-    <p>It then opens full screen, like an app. Always use the icon: a book started in Safari stays in Safari.</p>
+    <p>Always open StallBook from the new icon.</p>
     <button class="btn ink tall" data-act="installok">Got it</button>`);
 }
-if (IOS && !STANDALONE && /^https?:$/.test(location.protocol) && !lsGet('stallbook_install_hint')) setTimeout(installSheet, 600);
+if (IOS && !STANDALONE && /^https?:$/.test(location.protocol) && !(Date.now() - Number(lsGet('stallbook_install_hint') || 0) < 3 * 864e5)) setTimeout(installSheet, 600);
 
 </script>
 </body>

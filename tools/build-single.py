@@ -16,7 +16,6 @@ rep('<link rel="icon" href="icon-192.png">', '<link rel="icon" href="%s">' % uri
 rep('<link rel="apple-touch-icon" href="apple-touch-icon.png">', '<link rel="apple-touch-icon" href="%s">' % uri('apple-touch-icon.png', 'image/png'))
 rep('href="splash-1170x2532.png"', 'href="%s"' % uri('splash-1170x2532.png', 'image/png'))
 rep('/* Atkinson Hyperlegible ships with the app (SIL Open Font License, fonts/OFL.txt), so it works offline.', '/* Atkinson Hyperlegible (SIL Open Font License) is built into this file.')
-rep('It then opens full screen and works with no data.', 'It then opens full screen, like an app.')
 s, n = re.subn(r"/\* updates download in the background; offer a reload when the new version is ready \*/\nif \('serviceWorker' in navigator.*?\n\}\n", '', s, flags=re.S); assert n == 1
 assert 'fonts/' not in s and 'sw.js' not in s and '.png"' not in s
 open(sys.argv[1], 'w', encoding='utf-8').write(s); print(len(s))
