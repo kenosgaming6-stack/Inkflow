@@ -522,6 +522,8 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .scard .chips .chip{background:#FFFFFF}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:3.25rem;padding:.25rem .875rem;border-top:.0625rem solid var(--line)}
 .srow>span{font-weight:700;min-width:0}
+.btn.setmore{align-self:center;width:auto;padding:0 1.25rem;margin:.25rem 0}
+.tog.more{color:var(--muted);border-style:dashed}
 .swnote{margin:-.375rem 0 0;padding:0 .875rem .625rem;font-size:.875rem}
 .switch{flex:none;position:relative;width:3.375rem;height:2.0625rem;border-radius:1.03rem;background:#C9CFDD}
 .switch i{position:absolute;top:.1875rem;left:.1875rem;width:1.6875rem;height:1.6875rem;border-radius:50%;background:#FFFFFF;box-shadow:0 .0625rem .25rem rgba(0,0,0,.28)}
@@ -771,7 +773,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '9.0';
+const APP_VERSION = '9.1';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -860,7 +862,7 @@ function similar(a, b) {
 
 /* ---------- storage ---------- */
 function blank() {
-  return {v: 4, settings: {seller: '', momo: '', item: 'Onions', unit: 'bag', price: 650, cycle: 14, sound: true, voice: false, buy: false, hand: 'right', via: 'sms', half: false, checkMins: 10, faces: false},
+  return {v: 4, settings: {seller: '', momo: '', item: 'Onions', unit: 'bag', price: 650, cycle: 14, sound: true, voice: false, buy: false, hand: 'right', via: 'sms', half: false, checkMins: 10, faces: false, simple: true},
     locs: [], people: [], cars: [], entries: [], trips: [], carry: 0, lastBackup: null, changedAt: null, lastLoc: '', setup: false};
 }
 /* Brings any older book up to v4. Safe to run on every load. */
@@ -884,6 +886,7 @@ function normalize(s) {
     delete c.adjust; delete c.moved; delete c.askedEmpty;
   });
   if (o.people.length || o.cars.length) o.setup = true;
+  if (o.setup && !(src.settings && src.settings.simple !== undefined)) o.settings.simple = false;
   if ((Number(src.v) || 0) < 4) { flatPlaces(o); o.settings.half = false; }
   o.locs.forEach((l, i) => { if (!(l.c >= 0)) l.c = i % PAL.length; });
   o.v = 4; return o;
@@ -1451,6 +1454,7 @@ function exprTape(s) {
 /* the display over a pad: what was typed, small, and the total, big */
 const exprDisp = (s, isMoney, lab) => `<div class="disp"><div class="tape">${exprTape(s) || '&nbsp;'}</div><div class="v">${isMoney ? money(exprNum(s)) : fmt(exprNum(s))}${lab ? ` <span style="font-size:1.25rem;font-family:'Atkinson Hyperlegible',sans-serif">${lab}</span>` : ''}</div></div>`;
 function backupBtn() { const need = needsBackup(); return `<button class="ib ${need ? '' : 'faint'}" data-act="backupsheet" aria-label="${need ? 'Backup needed' : 'Backed up'}">${svg(need ? 'cloud' : 'cloudok')}${need ? '<span class="dot"></span>' : ''}</button>`; }
+const simple = () => !!S.settings.simple;
 const gearBtn = () => `<button class="ib faint" data-act="settings" aria-label="Settings">${svg('set')}</button>`;
 const backSq = act => `<button class="sq" data-act="${act || 'back'}" aria-label="Back">${svg('back')}</button>`;
 function statusTag(st) { return st.k === 'clear' ? '' : `<span class="tag ${st.cls}">${esc(st.label)}</span>`; }
@@ -1839,7 +1843,7 @@ function giveSheet() {
     <div class="ktot"><b>${money(sum(car.items, i => (g.kinds[i.id] || 0) * i.price))}</b><small>${bagsTxt(g.bags)}</small></div>`
     : `<div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><button class="num" data-act="gqmore" aria-label="Type how many">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></button><button class="key" data-act="gplus" aria-label="One more">+</button></div>
     ${S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="ghalf">± ½</button></div>` : ''}`}
-    <div class="togs"><button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Keep for her</button></div>
+    <div class="togs">${simple() && !g.hold && !g.more ? `<button class="tog more" data-act="gmore">More ${svg('down', 16)}</button>` : `<button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Keep for her</button>`}</div>
     <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave" ${g.bags > 0 ? '' : 'disabled'}>${g.bags > 0 ? (g.hold ? 'Hold ' : 'Give ') + bagsTxt(g.bags) : 'Tap a photo'}</button>`);
   V.sheetKind = 'give';
   const ph = document.getElementById('gph'); if (ph) ph.addEventListener('input', e => { V.g.phone = e.target.value; });
@@ -2175,7 +2179,7 @@ function viewCollect() {
   const others = fcar ? debtors().filter(x => inFilter(x.p) && sum(x.L.loads.filter(l => l.carId !== fcar.id), l => l.left) > 0.001) : [];
   const othersAmt = r2(sum(others, x => sum(x.L.loads.filter(l => l.carId !== fcar.id), l => l.left)));
   const top = `<div class="csum"><div class="cl"><small>Still owed${fcar ? ' · ' + pageNo(fcar) + ' · ' + esc(carName(fcar)) : ''}${V.fTown ? ' · ' + esc(V.fLoc ? locTxt(V.fLoc) : V.fTown) : ''}</small><b class="${total > 0.001 ? '' : 'ok'}" data-roll="owed:${esc(V.fCar || '')}:${esc(V.fTown)}:${esc(V.fLoc)}" data-v="${total}" data-f="m">${money(total)}</b></div>
-    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}</div></div>${remindN || eodButton() ? `<div class="cacts">${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}${eodButton()}</div>` : ''}${loadRow}`;
+    <div class="cr"><small>In today</small><b data-roll="intoday" data-v="${inToday}" data-f="m">${money(inToday)}</b>${cashToday ? `<small class="cashsm">${money(cashToday)} cash sales</small>` : ''}</div></div>${remindN || eodButton() ? `<div class="cacts">${simple() && !V.cMore ? `<button class="mini" data-act="cmore">More ${svg('down', 16)}</button>` : `${remindN ? `<button class="mini" data-act="remindall">${svg('bell', 16)} Remind ${remindN}</button>` : ''}${eodButton()}`}</div>` : ''}${loadRow}`;
   const mid = mid0 + (others.length ? `<button class="morebtn" data-act="fcar" data-id="">${svg('truck', 18)} ${others.length} more ${others.length === 1 ? 'woman owes' : 'women owe'} ${money(othersAmt)} on other loads · See all</button>` : '');
   const dock = `${filterChips(id => debtors().filter(x => x.p.loc === id).length)}
     <div class="bar"><label class="find ink">${svg('search')}<input id="cq" type="search" placeholder="Find a name" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name" value="${esc(V.cq)}"></label>${all.length ? `<button class="roundbtn" data-act="round" aria-label="Start a round: one woman at a time">${svg('fwd', 26)}<span>Round</span></button>` : ''}</div>`;
@@ -2336,7 +2340,7 @@ function viewBook() {
   const all = debtors(); const out = sum(all, x => x.L.bal);
   const wk = new Date(Date.now() - 7 * 864e5).toISOString();
   const week = sum(S.entries.filter(e => (e.type === 'pay' || e.type === 'cash') && live(e) && e.date >= wk), e => e.amount);
-  const top = `<div class="hrow"><span class="sp" style="flex:1"></span><button class="pill" data-act="mom">${svg('eye', 18)} Show Mom</button>${backupBtn()}${gearBtn()}</div>
+  const top = `<div class="hrow"><span class="sp" style="flex:1"></span>${simple() ? '' : `<button class="pill" data-act="mom">${svg('eye', 18)} Show Mom</button>`}${backupBtn()}${gearBtn()}</div>
     <div class="csum"><div class="cl"><small>Owed to you · ${all.length} ${all.length === 1 ? 'customer' : 'customers'}</small><b class="${out > 0.001 ? '' : 'ok'}">${money(out)}</b></div><div class="cr"><small>This week</small><b>${money(week)}</b></div></div>
     <div class="bsegs"><button class="${V.bseg === 'people' ? 'on' : ''}" data-act="bseg" data-s="people">${svg('users', 22)} People <em>${S.people.length}</em></button><button class="${V.bseg === 'cars' ? 'on' : ''}" data-act="bseg" data-s="cars">${svg('truck', 22)} Loads <em>${S.cars.length}</em></button></div>
     ${V.bseg === 'people' ? filterChips(id => S.people.filter(p => p.loc === id).length) : ''}`;
@@ -2345,13 +2349,14 @@ function viewBook() {
     const grp = (k, icon, label) => { const cs = cars.filter(c => ph(c) === k); return cs.length ? `<div class="bsect ${k}"><span class="bi">${svg(icon, 16)}</span>${label}<em>${cs.length}</em>${k === 'taking' ? `<span class="br">${money(sum(cs, c => carStats(c.id).out))}</span>` : ''}</div>` + cs.map(carRow).join('') : ''; };
     return {top, mid: `<div class="lines down">${cars.length ? grp('open', 'bag', 'Open') + grp('taking', 'cash', 'Taking money') + grp('done', 'check', 'Done') : '<div class="empty"><h2>No loads yet</h2><p>Start one from Give.</p></div>'}</div>`, cls: 'book', dock: `<div class="bar"><button class="btn ink" data-act="newcar">${svg('truck')} New load</button></div>`, tabs: true, anchor: 'top'};
   }
-  const dock = `<div class="bar"><label class="find ink">${svg('search')}<input id="bq" type="search" placeholder="Find a name or number" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name or number" value="${esc(V.bq)}"></label><button class="sq" data-act="bsort" aria-label="${V.sort === 'az' ? 'Sorted A to Z' : V.sort === 'owes' ? 'Sorted by money owed' : 'Newest first'}">${V.sort === 'new' ? svg('clock', 22) : `<b style="font-size:1.125rem">${V.sort === 'az' ? 'A–Z' : '₵'}</b>`}${svg('down', 16)}</button></div>`;
+  const dock = `<div class="bar"><label class="find ink">${svg('search')}<input id="bq" type="search" placeholder="Find a name or number" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Find a name or number" value="${esc(V.bq)}"></label>${simple() ? '' : `<button class="sq" data-act="bsort" aria-label="${V.sort === 'az' ? 'Sorted A to Z' : V.sort === 'owes' ? 'Sorted by money owed' : 'Newest first'}">${V.sort === 'new' ? svg('clock', 22) : `<b style="font-size:1.125rem">${V.sort === 'az' ? 'A–Z' : '₵'}</b>`}${svg('down', 16)}</button>`}</div>`;
   return {top, mid: `<div class="lines down" id="booklist">${bookList()}</div>`, cls: 'book', dock, tabs: true, anchor: 'top',
     after: () => { const i = document.getElementById('bq'); if (i) i.addEventListener('input', () => { V.bq = i.value; document.getElementById('booklist').innerHTML = bookList(); }); }};
 }
 function bookList() {
   const q = V.bq.trim().toLowerCase(), qd = q.replace(/\D/g, '');
   let ps = S.people.filter(p => inFilter(p) && (!q || p.name.toLowerCase().includes(q) || (qd.length >= 3 && digits(p.phone).includes(qd)) || locTxt(p.loc).toLowerCase().includes(q) || (p.note || '').toLowerCase().includes(q)));
+  if (simple()) V.sort = 'new';
   if (V.sort === 'az') ps.sort((a, b) => cmp(a.name.toLowerCase(), b.name.toLowerCase()));
   else if (V.sort === 'owes') ps.sort((a, b) => ledger(b.id).bal - ledger(a.id).bal || cmp(a.name, b.name));
   else ps.sort((a, b) => cmp(lastTook(b.id), lastTook(a.id)) || cmp(a.name, b.name));
@@ -2593,16 +2598,16 @@ function ctWho() {
     nb.hidden = !v || seen; nb.querySelector('b').textContent = q.value.trim();
   });
 }
-function carMenu(cid) {
-  const car = carById(cid); const open = car.phase === 'giving';
+function carMenu(cid, all) {
+  const car = carById(cid); const open = car.phase === 'giving'; const few = simple() && !all;
   const mi = (icon, col) => `<span class="mi" style="--mc:${col}">${svg(icon, 20)}</span>`;
   sheet(`<i class="grab"></i><h3>${esc(carName(car))}</h3>
-    ${open ? `<button class="btn ghost menu" data-act="counter">${mi('tally', 'var(--held)')} Counter</button>` : ''}
+    ${open && !few ? `<button class="btn ghost menu" data-act="counter">${mi('tally', 'var(--held)')} Counter</button>` : ''}
     ${open ? `<button class="btn ghost menu" data-act="count">${mi('ok', 'var(--held)')} Count the car</button>` : ''}
     ${open ? `<button class="btn ghost menu" data-act="price" data-id="${cid}">${mi('cash', 'var(--paid)')} Price · ${car.items.map(i => (i.name ? i.name + ' ' : '') + money(i.price)).join(', ')}</button>` : ''}
-    <button class="btn ghost menu" data-act="addcost" data-id="${cid}">${mi('cash', 'var(--owe)')} Add a cost</button>
+    ${few ? `<button class="btn ghost menu" data-act="carmore" data-id="${cid}">${mi('down', '#475569')} More</button>` : `<button class="btn ghost menu" data-act="addcost" data-id="${cid}">${mi('cash', 'var(--owe)')} Add a cost</button>
     ${cur() && cur().v === 'report' ? '' : `<button class="btn ghost menu" data-act="report" data-id="${cid}">${mi('book', 'var(--ink)')} Load report</button>`}
-    <button class="btn ghost menu" data-act="label" data-id="${cid}">${mi('edit', '#475569')} ${car.label ? 'Rename: ' + esc(car.label) : 'Name this load'}</button>
+    <button class="btn ghost menu" data-act="label" data-id="${cid}">${mi('edit', '#475569')} ${car.label ? 'Rename: ' + esc(car.label) : 'Name this load'}</button>`}
     ${open ? `<button class="btn ink tall" data-act="closecar" data-id="${cid}">Close load</button>` : `<button class="btn ghost menu" data-act="reopen" data-id="${cid}">${mi('truck', 'var(--ink)')} Reopen to give more</button>`}`);
 }
 function labelSheet(cid) {
@@ -2716,9 +2721,11 @@ VIEWS.settings = () => {
   const sw = (act, on, label) => `<div class="srow"><span>${label}</span><button class="switch ${on ? 'on' : ''} ${V.justSw === act ? 'just' : ''}" data-act="${act}" aria-pressed="${!!on}" aria-label="${esc(label)}"><i></i></button></div>`;
   const days = S.lastBackup ? Math.floor((Date.now() - Date.parse(S.lastBackup)) / 864e5) : -1;
   const saved = days < 0 ? '<span class="savestat r">Never saved</span>' : `<span class="savestat ${days <= 7 ? 'ok' : 'w'}">${days === 0 ? 'Saved today' : days === 1 ? 'Saved yesterday' : 'Saved ' + days + ' days ago'}</span>`;
-  const mid = card('bag', '#1D3FBB', 'Your business', `<div class="setbox">${setInp('item', 'What you sell', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}${setInp('seller', 'Your name (on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (on reminders)', '055 000 0000', 'tel')}</div>${sw('togglehalf', s.half !== false, 'Half ' + esc(unit()) + 's')}${sw('togglefaces', s.faces, 'Photos of customers')}<p class="small swnote">${s.faces ? 'Tap her circle on her page. Ask her first.' : 'Off: no camera, no photos.'}</p>`)
+  const few = s.simple && !V.setMore;
+  const mid = card('check', '#12804A', 'Easy to use', sw('togglesimple', s.simple, 'Simple app') + `<p class="small swnote">${s.simple ? 'Fewer buttons. The rest is under More.' : 'Every button shows.'}</p>` + sw('togglebig', s.big, 'Big text'))
+    + card('bag', '#1D3FBB', 'Your business', `<div class="setbox">${setInp('item', 'What you sell', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}${setInp('seller', 'Your name (on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (on reminders)', '055 000 0000', 'tel')}</div>${sw('togglehalf', s.half !== false, 'Half ' + esc(unit()) + 's')}${sw('togglefaces', s.faces, 'Photos of customers')}<p class="small swnote">${s.faces ? 'Tap her circle on her page. Ask her first.' : 'Off: no camera, no photos.'}</p>`)
     + card('pin', '#0F766E', 'Places', townsBlock(), placesSorted().length ? String(placesSorted().length) : '')
-    + card('buy', '#B4541A', 'Buying', sw('togglebuy', s.buy, 'Buying trips (Buy ' + esc(unit()) + 's tab)'))
+    + (few ? `<button class="btn ghost setmore" data-act="setmore">More settings ${svg('down', 16)}</button>` : card('buy', '#B4541A', 'Buying', sw('togglebuy', s.buy, 'Buying trips (Buy ' + esc(unit()) + 's tab)'))
     + card('tally', '#B4690E', 'Counting', `<div class="setbox"><div class="field"><label>Count the car, every</label>${seg('checkMins', [[0, 'Never'], [5, '5 min'], [10, '10 min'], [15, '15 min']])}</div></div>`)
     + card('msg', '#12804A', 'Receipts', `<div class="setbox"><div class="field"><label>Messages go by</label>${seg('via', [['sms', 'SMS'], ['wa', 'WhatsApp']])}</div></div>`
       + (SMS_OK && !V.demo ? sw('smstoggle', SMS.on, 'Send receipts by themselves') + `<div class="setbox">
@@ -2726,7 +2733,7 @@ VIEWS.settings = () => {
         <div class="field"><label for="sms_from">Sender name (up to 11 letters, approved by Arkesel)</label><input id="sms_from" maxlength="11" autocomplete="off" spellcheck="false" value="${esc(SMS.from)}" placeholder="StallBook"></div>
         <p class="small" id="sms_status">${esc(smsStatus())}</p>
         ${S.settings.momo ? `<button class="btn ghost" data-act="smstest">Send a test to ${esc(S.settings.momo)}</button>` : ''}</div>` : ''))
-    + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz') + sw('togglebig', s.big, 'Big text') + `<div class="setbox"><div class="field"><label>Hand that holds the phone</label>${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div></div>`)
+    + card('bell', '#6D28D9', 'Sound and voice', sw('togglevoice', s.voice, 'Speak out loud') + sw('togglesound', s.sound !== false, 'Sounds and buzz') + `<div class="setbox"><div class="field"><label>Hand that holds the phone</label>${seg('hand', [['right', 'Right'], ['left', 'Left']])}</div></div>`))
     + (SYNC_OK && !V.demo ? card('cloud', '#0284C7', 'Cloud book', CB.on
       ? `<div class="setbox"><span class="savestat ${cbStatus().cls}" id="cb_status">${esc(cbStatus().text)}</span><p class="small">One book on every phone. Each line is scrambled before it leaves this phone.</p>
         <button class="btn ink" data-act="cloudinvite">${svg('users')} Invite another phone</button><button class="btn ghost" data-act="cloudsync">Send and get now</button><button class="btn ghost redtext" data-act="clouddrop">Disconnect this phone</button></div>`
@@ -2789,7 +2796,7 @@ function queueStep() {
 /* ===== Example book ===== */
 function demoData() {
   const s = blank(); s.setup = true; const real = V.realS ? V.realS.settings : {};
-  s.settings.seller = real.seller || ''; s.settings.momo = real.momo || '';
+  s.settings.seller = real.seller || ''; s.settings.momo = real.momo || ''; s.settings.simple = !!real.simple;
   const T = Date.now(), D = (days, mins) => new Date(T - days * 864e5 - (mins || 0) * 6e4).toISOString(), K = n => dayKey(new Date(T + n * 864e5));
   const L = name => { const l = {id: uid(), town: name, spot: ''}; s.locs.push(l); return l.id; };
   const bm = L('Bekwai Market'), bk = L('Koko Shell'), cm = L('Bechem');
@@ -3114,6 +3121,11 @@ function act(a, d, el) {
   case 'rskip': { const R = V.round, pid = R.ids[R.i]; if (!R.res[pid]) R.res[pid] = {kind: 'skip'}; R.i++; return render(); }
   case 'rback': { const R = V.round; R.i = Math.max(0, R.i - 1); return render(); }
   case 'rundo': { const R = V.round, pid = R.ids[R.i], r = R.res[pid]; if (r && r.eid) undoEntry(r.eid); delete R.res[pid]; commit(); render(); return toast('Payment removed', []); }
+  case 'gmore': V.g.more = true; return giveSheet();
+  case 'carmore': return carMenu(d.id, true);
+  case 'cmore': V.cMore = true; return render();
+  case 'setmore': V.setMore = true; return render();
+  case 'togglesimple': S.settings.simple = !S.settings.simple; V.setMore = false; V.cMore = false; commit(); render(); return toast(S.settings.simple ? 'Simple app: fewer buttons' : 'Every button shows');
   case 'face': return faceSheet(d.id);
   case 'facecam': { const c = document.getElementById('facein'); if (c) c.click(); return; }
   case 'facedel': { const p = person(d.id); if (p && p.photo) { phDel(p.photo); delete p.photo; commit(); } closeSheet(); render(); return toast('Photo removed'); }

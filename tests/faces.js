@@ -12,6 +12,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message)); await p.route(/fonts\.g/, r => r.abort());
   const act = async (a, extra = '') => { await p.click(`[data-act="${a}"]${extra}`); await p.waitForTimeout(110); };
   const txt = async sel => ((await p.textContent(sel)) || '').replace(/\s+/g, ' ').trim();
+  const note = () => p.evaluate(() => document.querySelector('[data-act="togglefaces"]').closest('.srow').nextElementSibling.textContent.trim());
   const cams = () => p.evaluate(() => document.querySelectorAll('[data-act="face"], #facein, .avcam').length);
   const herPage = async () => { await p.evaluate(() => { V.stack = []; V.tab = 'book'; render(); push({v: 'person', pid: 'w0'}); }); await p.waitForTimeout(150); };
   await p.goto(URL); await p.waitForTimeout(300);
@@ -31,9 +32,9 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   ok(none, 'off: no camera anywhere, her page shows her letters');
   // Settings: the switch, off, then on
   await p.evaluate(() => { V.stack = []; V.tab = 'book'; render(); }); await act('settings');
-  ok((await p.getAttribute('[data-act="togglefaces"]', 'aria-pressed')) === 'false' && (await txt('.swnote')).startsWith('Off'), 'Settings: "Photos of customers" is off');
+  ok((await p.getAttribute('[data-act="togglefaces"]', 'aria-pressed')) === 'false' && (await note()).startsWith('Off'), 'Settings: "Photos of customers" is off');
   await act('togglefaces');
-  ok(await p.evaluate(() => S.settings.faces === true) && (await txt('.swnote')).includes('Ask her first'), 'switched on: "Tap her circle on her page. Ask her first."');
+  ok(await p.evaluate(() => S.settings.faces === true) && (await note()).includes('Ask her first'), 'switched on: "Tap her circle on her page. Ask her first."');
   await p.screenshot({path: OUT + '/1-setting.png'});
   // her page: the circle with a small camera
   await herPage();

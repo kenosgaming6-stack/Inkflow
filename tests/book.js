@@ -46,6 +46,8 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   await shot('01-setup');
   await act('setupdone');
   ok((await txt('#app')).includes('No load open'), 'after setup: no load open');
+  ok(await p.evaluate(() => S.settings.simple === true), 'a new phone starts as the Simple app');
+  await p.evaluate(() => { S.settings.simple = false; commit(); render(); }); // this test checks every button
 
   // new delivery Wankai, 12 bags at 650
   await act('newcar'); await p.fill('#w_label', 'Wankai'); await act('wfrom'); await act('wphoto'); await keys('12'); await act('wnext'); await keys('650'); await act('wnext'); await act('wdone'); await act('wfinish', '[data-skip]');
