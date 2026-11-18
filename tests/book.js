@@ -30,7 +30,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
     const exist = await p.$(`.suggest [data-act="pick"][data-id]`);
     if (await p.$('.suggest .sg.new')) await act('pick', '[data-name]'); else await act('pick', '[data-id]');
     if (phone && await p.$('#gph')) await p.fill('#gph', phone);
-    if (qty) { await act('gqmore'); await keys(String(qty)); await act('qtyuse'); }
+    if (qty) { await act((await p.$('[data-act="gqmore"]')) ? 'gqmore' : 'gkn'); await keys(String(qty)); await act('qtyuse'); }
     if (hold) await act('ghold');
     await p.waitForTimeout(820); await act('gsave');
   };
@@ -59,12 +59,12 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   ok(await p.evaluate(() => document.querySelector('.stock').getBoundingClientRect().top < document.querySelector('.ptabs').getBoundingClientRect().top), 'the card is above the place tabs');
   await p.fill('#gq', 'Amma'); await p.waitForTimeout(80); await act('pick', '[data-name]');
   const gs = await txt('.sheet');
-  ok(!!(await p.$('#gph')) && !!(await p.$('.sheet [data-act="gplus"]')) && !!(await p.$('.sheet [data-act="gminus"]')) && !!(await p.$('.sheet [data-act="ghold"]')), 'new customer: phone, + and −, Hold for her');
+  ok(!!(await p.$('#gph')) && !!(await p.$('.sheet .ktile .kt')) && !!(await p.$('.sheet [data-act="gkless"]')) && !!(await p.$('.sheet [data-act="ghold"]')), 'new customer: phone, the bag to tap with − on it, Hold for her');
   ok(!(await p.$('.sheet [data-act="gloc"]')) && !(await p.$('.sheet .qty')) && !/Paid cash|Where does she sell|½/.test(gs), 'no place question, no 1-6 row, no Paid cash, no half');
-  await act('gplus'); await act('gplus');
-  ok((await txt('.sheet .step .num')).startsWith('3'), '+ twice from 1: 3 bags');
-  await act('gminus');
-  ok((await txt('.sheet .step .num')).startsWith('2'), '− once: 2 bags');
+  await p.click('.sheet .ktile .kt'); await p.waitForTimeout(100); await p.click('.sheet .ktile .kt'); await p.waitForTimeout(100);
+  ok((await txt('.sheet .ktile .kn')) === '3', 'tap the bag twice from 1: 3 bags on the bag');
+  await act('gkless');
+  ok((await txt('.sheet .ktile .kn')) === '2', '− once: 2 bags');
   await act('sheetclose');
 
   // Scenario 1: hold 3 for Amma at Bakwai Market
@@ -247,7 +247,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   await p.fill('#gq', 'Esi'); await p.waitForTimeout(80); await act('pick', '[data-id]');
   ok(!!(await p.$('.sheet [data-act="ghalf"]')), 'half bags switched on: the give panel offers ± ½');
   await act('ghalf');
-  ok((await txt('.sheet .step .num')).includes('½'), '± ½ adds half a bag');
+  ok((await txt('.sheet .ktile .kn, .sheet .step .num')).includes('½'), '± ½ adds half a bag');
   await act('sheetclose');
 
   ok(!(await p.content()).includes('>Undo<'), 'Undo appears nowhere');

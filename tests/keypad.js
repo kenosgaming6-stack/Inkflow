@@ -55,11 +55,11 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
 
   // bag count on the give sheet: type 2+3
   await p.fill('#gq', 'Ama'); await p.waitForTimeout(100); await p.click('[data-act="pick"][data-name]'); await p.waitForTimeout(150);
-  await p.click('[data-act="gqmore"]'); await p.waitForTimeout(150); await keys('2+3');
+  await p.click('[data-act="gkn"]'); await p.waitForTimeout(150); await keys('2+3');
   ok((await txt('.sheet .disp .tape')).includes('2 + 3') && (await txt('[data-act="qtyuse"]')) === 'Use 5' && await p.evaluate(() => document.querySelector('[data-act="qtyuse"]').classList.contains('ok')), 'bag count: 2 + 3, the bottom-right key says "Use 5"');
   await shot('5-qty');
   await p.click('[data-act="qtyuse"]'); await p.waitForTimeout(150);
-  ok((await txt('.sheet .step .num')).startsWith('5'), 'the give sheet now says 5 bags');
+  ok((await txt('.sheet .ktile .kn')).startsWith('5'), 'the give sheet now says 5 bags');
   await p.evaluate(() => closeSheet());
   await p.evaluate(() => { V.tab = 'book'; render(); }); await p.waitForTimeout(250);
   ok((await txt('.band')).startsWith('Book') && !(await txt('.top')).includes('Book'), 'Book has a black band and no second "Book" title');
