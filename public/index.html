@@ -280,6 +280,10 @@ a{color:inherit;text-decoration:none}
 .face{flex:none;display:flex;align-items:center;gap:.375rem;padding:.1875rem .75rem .1875rem .1875rem;border-radius:62.4375rem;border:.09375rem solid var(--line);font-size:.875rem;font-weight:700;color:var(--ink);min-height:2.625rem}
 .av{flex:none;width:2.125rem;height:2.125rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:700;background:var(--key);color:var(--ink)}
 .av.lg{width:2.875rem;height:2.875rem;font-size:1rem}
+img.av{display:block;object-fit:cover;background:var(--key)}
+.avbtn{position:relative;flex:none;border-radius:50%;padding:0;border:0;background:none}
+.avbtn .avcam{position:absolute;right:-.3125rem;bottom:-.3125rem;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;border:.125rem solid var(--paper)}
+.facebig{display:block;width:11rem;height:11rem;border-radius:50%;object-fit:cover;margin:.25rem auto;background:var(--key)}
 .av.xl{width:4.5rem;height:4.5rem;font-size:1.5625rem}
 .strip{display:flex;align-items:center;gap:.5rem;width:100%;padding:.625rem .75rem;border-radius:.75rem;background:var(--warn-bg);color:var(--warn);font-weight:700;font-size:.9375rem;text-align:left}
 .strip span{flex:1}
@@ -518,6 +522,7 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .scard .chips .chip{background:#FFFFFF}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:3.25rem;padding:.25rem .875rem;border-top:.0625rem solid var(--line)}
 .srow>span{font-weight:700;min-width:0}
+.swnote{margin:-.375rem 0 0;padding:0 .875rem .625rem;font-size:.875rem}
 .switch{flex:none;position:relative;width:3.375rem;height:2.0625rem;border-radius:1.03rem;background:#C9CFDD}
 .switch i{position:absolute;top:.1875rem;left:.1875rem;width:1.6875rem;height:1.6875rem;border-radius:50%;background:#FFFFFF;box-shadow:0 .0625rem .25rem rgba(0,0,0,.28)}
 .switch.on{background:var(--sc,var(--paid))}
@@ -855,7 +860,7 @@ function similar(a, b) {
 
 /* ---------- storage ---------- */
 function blank() {
-  return {v: 4, settings: {seller: '', momo: '', item: 'Onions', unit: 'bag', price: 650, cycle: 14, sound: true, voice: false, buy: false, hand: 'right', via: 'sms', half: false, checkMins: 10},
+  return {v: 4, settings: {seller: '', momo: '', item: 'Onions', unit: 'bag', price: 650, cycle: 14, sound: true, voice: false, buy: false, hand: 'right', via: 'sms', half: false, checkMins: 10, faces: false},
     locs: [], people: [], cars: [], entries: [], trips: [], carry: 0, lastBackup: null, changedAt: null, lastLoc: '', setup: false};
 }
 /* Brings any older book up to v4. Safe to run on every load. */
@@ -1026,7 +1031,10 @@ function kindCol(it) {
   if (k) return KCOL[k];
   const car = S.cars.find(c => c.items.includes(it)) || (S.trips || []).find(t => t.items.includes(it)); return PAL[(car ? Math.max(0, car.items.indexOf(it)) : 0) % PAL.length];
 }
-function av(p, name, cls) { const n = p ? p.name : name; return `<span class="av ${cls || ''}" style="${avc(n)}">${esc(initials(n))}</span>`; }
+function av(p, name, cls) {
+  const n = p ? p.name : name, src = S.settings.faces && p && p.photo && PH[p.photo];
+  return src ? `<img class="av ${cls || ''}" src="${src}" alt="">` : `<span class="av ${cls || ''}" style="${avc(n)}">${esc(initials(n))}</span>`;
+}
 function locTxt(id) { const l = locById(id); if (!l) return ''; return l.spot ? l.town + ' ' + l.spot : l.town; }
 const placesSorted = () => S.locs.slice().sort((a, b) => cmp(locTxt(a.id).toLowerCase(), locTxt(b.id).toLowerCase()));
 function getLoc(town, spot) {
@@ -1783,7 +1791,7 @@ function attachFind() {
   inp.addEventListener('blur', () => setTimeout(hideSuggest, 120));
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const q = inp.value.trim(); if (!q) return; const m = matchPeople(q); const exact = m.find(p => p.name.toLowerCase() === q.toLowerCase()); pickName(exact ? exact.id : null, exact ? '' : q); } });
 }
-function sgRow(p, act) { return `<button class="sg" data-act="${act}" data-id="${p.id}"><span class="av" style="${avc(p.name)}">${esc(initials(p.name))}</span><div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${pdot(p.loc)}${esc([locTxt(p.loc), p.note].filter(Boolean).join(' · ')) || esc(p.phone) || '&nbsp;'}</div></div></button>`; }
+function sgRow(p, act) { return `<button class="sg" data-act="${act}" data-id="${p.id}">${av(p, p.name)}<div class="who"><div class="name">${esc(p.name)}</div><div class="sub">${pdot(p.loc)}${esc([locTxt(p.loc), p.note].filter(Boolean).join(' · ')) || esc(p.phone) || '&nbsp;'}</div></div></button>`; }
 function showSuggest(q) {
   const dock = app.querySelector('.dock'); if (!dock) return;
   let box = dock.querySelector('.suggest');
@@ -1824,7 +1832,7 @@ function giveSheet() {
     const dup = recentDup(p.id, car.id); if (dup) tags.push(`<span class="tag w">Got ${bagsNum(dup.bags)} · ${dup.mins < 1 ? 'just now' : dup.mins + ' min ago'}</span>`);
   }
   sheet(`<i class="grab"></i>
-    <div class="hrow"><span class="av lg" style="${avc(p ? p.name : g.name)}">${esc(initials(p ? p.name : g.name))}</span><div class="title"><b>${esc(p ? p.name : g.name)}</b><small>${p ? esc(p.phone || 'No number yet') : 'New customer'}</small></div>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}<button class="ib" data-act="sheetclose" aria-label="Close">${svg('x')}</button></div>
+    <div class="hrow">${av(p, g.name, 'lg')}<div class="title"><b>${esc(p ? p.name : g.name)}</b><small>${p ? esc(p.phone || 'No number yet') : 'New customer'}</small></div>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}<button class="ib" data-act="sheetclose" aria-label="Close">${svg('x')}</button></div>
     ${tags.length ? `<div class="tags l">${tags.join('')}</div>` : ''}
     ${p ? '' : `<div class="field"><label for="gph">Phone (optional)</label><input id="gph" type="tel" inputmode="tel" autocomplete="off" placeholder="024 000 0000" value="${esc(g.phone)}"></div>`}
     ${g.kinds ? `<div class="ktiles">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); const n = g.kinds[i.id] || 0; return `<div class="ktile ${n ? 'on' : ''}"><button class="kt" data-act="gk" data-i="${i.id}" aria-label="One more at ${money(i.price)}">${kindImg(i, 'big')}<span class="kcap"><b>${fmt(i.price)}</b><small>${bagsNum(Math.max(0, I.free - n))} left</small></span></button>${n ? `<button class="kn" data-act="gkn" data-i="${i.id}" aria-label="Type how many">${bagsNum(n)}</button><button class="kless" data-act="gkless" data-i="${i.id}" aria-label="One less">−</button>` : ''}</div>`; }).join('')}</div>
@@ -2011,7 +2019,7 @@ function gapSheet(id) {
   const faces = S.people.slice().sort((a, b) => ((b.loc === g.loc) - (a.loc === g.loc)) || cmp(last.get(b.id) || '', last.get(a.id) || '')).slice(0, 6);
   sheet(`<i class="grab"></i><h3>Who took ${bagsTxt(n)}?</h3>
     ${g.bags > 1 ? `<div class="step" style="gap:1rem"><button class="key" data-act="gnminus" aria-label="One less">−</button><div class="num" style="font-size:2.5rem;min-width:4rem">${bagsNum(n)}</div><button class="key" data-act="gnplus" aria-label="One more">+</button></div>` : ''}
-    <div class="faces" style="margin:0">${faces.map(p => `<button class="face" data-act="gnpick" data-id="${p.id}"><span class="av" style="${avc(p.name)}">${esc(initials(p.name))}</span>${esc(shortName(p.name))}</button>`).join('')}</div>
+    <div class="faces" style="margin:0">${faces.map(p => `<button class="face" data-act="gnpick" data-id="${p.id}">${av(p, p.name)}${esc(shortName(p.name))}</button>`).join('')}</div>
     <div class="field"><input id="gn_q" placeholder="Type a name" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" aria-label="Customer name"></div><div id="gn_list" style="margin:0 -.875rem"></div>
     <button class="btn ghost" data-act="gnlost">Nobody. They are lost</button>`);
   V.sheetKind = 'gap';
@@ -2067,7 +2075,7 @@ function entrySheet(id) {
   if (e.type === 'give') {
     const at = givenAt(e); const lp = c.linked.get(e.id);
     if (!V.es || V.es.id !== id) V.es = {id, n: e.bags};
-    const head = `<i class="grab"></i><div class="hrow"><span class="av lg" style="${avc(p ? p.name : '?')}">${esc(initials(p ? p.name : '?'))}</span><button class="title" data-act="eswho" style="text-align:left"><b>${esc(p ? p.name : '?')} ${svg('down', 16)}</b><small>${at ? 'Given ' + dmy(at) + ', ' + hm(at) : 'Kept since ' + hm(e.date)}${lp ? ' · paid cash' : ''}</small></button>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}</div>
+    const head = `<i class="grab"></i><div class="hrow">${av(p, '?', 'lg')}<button class="title" data-act="eswho" style="text-align:left"><b>${esc(p ? p.name : '?')} ${svg('down', 16)}</b><small>${at ? 'Given ' + dmy(at) + ', ' + hm(at) : 'Kept since ' + hm(e.date)}${lp ? ' · paid cash' : ''}</small></button>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}</div>
       <button class="locchip" data-act="esloc"${e.loc ? ` style="--pc:${pc(e.loc)}"` : ''}>${svg('pin', 18)} ${e.loc ? esc(locTxt(e.loc)) : 'No place'} ${svg('down', 16)}</button>`;
     const n = V.es.n; const half = S.settings.half;
     const stepper = `<div class="step"><button class="key" data-act="esminus" aria-label="One less">−</button><div class="num">${bagsNum(n)}<small>${esc(unit())}${n > 1 ? 's' : ''}</small></div><button class="key" data-act="esplus" aria-label="One more">+</button></div>
@@ -2142,7 +2150,7 @@ function collectListHtml() {
   const inToday = sum(paysToday, e => e.amount);
   const paidIds = [...new Set(paysToday.map(e => e.pid))].filter(id => { const p = person(id); return p && ledger(id).bal <= 0.001 && inFilter(p); });
   const fp = V.flashPay && Date.now() - V.flashPay.t < 4500 ? V.flashPay : null;
-  const row = x => `<button class="row ${fp && fp.pid === x.p.id ? 'flash' : ''}" data-act="pay" data-id="${x.p.id}"><div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${x.p.loc ? pdot(x.p.loc) + esc(locTxt(x.p.loc)) + ' · ' : ''}${statusTag(x.st)}</div></div><span class="amt">${money(x.owe)}${fp && fp.pid === x.p.id ? `<small class="ok">−${money(fp.amt)} ✓</small>` : ''}</span></button>`;
+  const row = x => `<button class="row ${fp && fp.pid === x.p.id ? 'flash' : ''}" data-act="pay" data-id="${x.p.id}">${S.settings.faces ? av(x.p, x.p.name) : ''}<div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${x.p.loc ? pdot(x.p.loc) + esc(locTxt(x.p.loc)) + ' · ' : ''}${statusTag(x.st)}</div></div><span class="amt">${money(x.owe)}${fp && fp.pid === x.p.id ? `<small class="ok">−${money(fp.amt)} ✓</small>` : ''}</span></button>`;
   const sect = (label, arr, cls) => arr.length ? `<div class="sect ${cls || ''}"><span>${label} · ${arr.length}</span><span style="flex:none">${money(sum(arr, x => x.owe))}</span></div>` + arr.map(row).join('') : '';
   let mid = '';
   if (!all.length && !paidIds.length) mid += `<div class="empty"><h2>${V.cq || V.fTown ? 'Nobody here owes' : 'Nobody owes you'}</h2><p>${V.cq || V.fTown ? 'Try All, or check the spelling.' : 'Money given on credit shows up here.'}</p></div>`;
@@ -2208,6 +2216,21 @@ VIEWS.round = () => {
 };
 /* a payment made from the money pad, a pay date or a refusal during the round counts for the woman on screen */
 function roundMark(pid, res) { const R = V.round; if (R && cur() && cur().v === 'round' && R.ids[R.i] === pid) { R.res[pid] = res; R.i++; return true; } return false; }
+/* ===== Her photo (only when Photos of customers is on) ===== */
+function phDel(id) { delete PH[id]; try { if (phDB) phDB.transaction('p', 'readwrite').objectStore('p').delete(id); } catch (e) {} }
+function faceSheet(pid) {
+  const p = person(pid); if (!p || !S.settings.faces) return; const src = p.photo && PH[p.photo]; V.faceFor = pid;
+  sheet(`<i class="grab"></i><div class="hrow">${av(p, p.name, 'lg')}<div class="title"><b>${esc(p.name)}</b><small>Her photo</small></div><button class="ib" data-act="sheetclose" aria-label="Close">${svg('x')}</button></div>
+    ${src ? `<img class="facebig" src="${src}" alt="">` : ''}<p class="small" style="text-align:center">Only if she says yes.</p>
+    <button class="camera" data-act="facecam">${svg('cam', 48)}<span>${src ? 'New photo' : 'Take a photo'}</span></button>
+    ${src ? `<button class="btn ghost redtext" data-act="facedel" data-id="${p.id}">Remove photo</button>` : ''}
+    <input type="file" id="facein" accept="image/*" capture="environment" hidden>`);
+  const f = document.getElementById('facein'); if (f) f.addEventListener('change', onFaceCamera);
+}
+function onFaceCamera(e) {
+  const f = e.target.files && e.target.files[0], p = person(V.faceFor); if (!f || !p) return;
+  readPhoto(f).then(data => { const old = p.photo, id = uid(); phPut(id, data); p.photo = id; if (old) phDel(old); commit(); sfx('shutter'); closeSheet(); render(); toast('Photo saved'); }, () => toast('That photo did not work. Try again.'));
+}
 function remindList(ids) {
   const t = todayK();
   const pool = ids ? ids.map(id => ({p: person(id), st: status(id), L: ledger(id)})).filter(x => x.p && x.L.bal > 0.001) : debtors().filter(x => inFilter(x.p) && (x.st.sev >= 3 || x.st.k === 'soon'));
@@ -2229,7 +2252,7 @@ function paySheet() {
   const over = a > Math.max(0, L.bal) + 0.001;
   const pv = payPreview(p.id, a, P.loadId, P.carId);
   const next = P.ctx === 'collect' ? nextPayId(p.id) : null;
-  sheet(`<div class="hrow"><span class="av" style="${avc(p.name)}">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${L.bal > 0.001 ? 'Owes ' + money(L.bal) : 'Owes nothing'}${p.loc ? ' · ' + esc(locTxt(p.loc)) : ''}</small></div>${L.bal > 0.001 ? `<button class="lnk" data-act="promise" data-id="${p.id}">Not today</button>` : ''}<button class="lnk" data-act="person" data-id="${p.id}">History ›</button></div>
+  sheet(`<div class="hrow">${av(p, p.name)}<div class="title"><b>${esc(p.name)}</b><small>${L.bal > 0.001 ? 'Owes ' + money(L.bal) : 'Owes nothing'}${p.loc ? ' · ' + esc(locTxt(p.loc)) : ''}</small></div>${L.bal > 0.001 ? `<button class="lnk" data-act="promise" data-id="${p.id}">Not today</button>` : ''}<button class="lnk" data-act="person" data-id="${p.id}">History ›</button></div>
     <div class="disp"><div class="tape">${exprTape(P.ex) || '&nbsp;'}</div><div class="v ${a ? 'g' : ''}">${money(a)}</div>${noteStack(P.ex)}<div class="s">${!a ? 'Tap the notes as she counts' : over ? money(a - Math.max(0, L.bal)) + ' more than she owes' : left > 0.001 ? money(left) + ' left after this' : 'All paid'}</div></div>
     ${over ? `<div class="over">What about the extra ${money(a - Math.max(0, L.bal))}?<div class="bar"><button class="chip ${P.over === 'credit' ? 'on' : ''}" data-act="pover" data-v="credit">Keep as credit</button><button class="chip ${P.over === 'change' ? 'on' : ''}" data-act="pover" data-v="change">Gave change</button></div></div>`
       : `<p class="clears">${a ? pv.map(x => x.cleared ? `Clears <b>${dmy(x.L.date)}</b>` : `${money(x.k)} off ${dmy(x.L.date)}`).join(', ') : '&nbsp;'}</p>`}
@@ -2340,7 +2363,7 @@ function bookList() {
     const where = [V.fLoc ? '' : locTxt(x.p.loc), x.p.note].filter(Boolean).join(' · ');
     const tag = k === 'owe' ? statusTag(x.st) : k === 'kept' ? `<span class="tag w">${bagsTxt(x.w)} kept</span>` : '';
     const right = k === 'owe' ? `<span class="amt">${money(x.L.bal)}</span>` : k === 'clear' ? `<span class="amt ok">${x.L.bal < -0.001 ? money(-x.L.bal) + '<small>credit</small>' : 'Paid ✓'}</span>` : '';
-    return `<button class="row brow ${k}" data-act="person" data-id="${x.p.id}"><span class="av" style="${avc(x.p.name)}">${esc(initials(x.p.name))}</span><div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${where ? (V.fLoc ? '' : pdot(x.p.loc)) + esc(where) : ''}${where && tag ? ' · ' : ''}${tag}</div></div>${right}</button>`;
+    return `<button class="row brow ${k}" data-act="person" data-id="${x.p.id}">${av(x.p, x.p.name)}<div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${where ? (V.fLoc ? '' : pdot(x.p.loc)) + esc(where) : ''}${where && tag ? ' · ' : ''}${tag}</div></div>${right}</button>`;
   };
   const head = (k, icon, label, arr, right) => arr.length ? `<div class="bsect ${k}"><span class="bi">${svg(icon, 16)}</span>${label}<em>${arr.length}</em>${right ? `<span class="br">${right}</span>` : ''}</div>` + arr.map(x => row(x, k)).join('') : '';
   return head('owe', 'cash', 'Owe money', owe, money(sum(owe, x => x.L.bal))) + head('kept', 'clock', 'Kept bags', kept, bagsTxt(sum(kept, x => x.w))) + head('clear', 'check', 'Paid up', clear, '');
@@ -2352,7 +2375,8 @@ VIEWS.person = f => {
   const L = ledger(p.id), st = status(p.id), c = C();
   const heldBags = sum(L.waiting, e => e.bags);
   const tags = [L.bal > 0.001 ? statusTag(st) : '', recordTag(p.id), heldBags ? `<span class="tag w">${bagsTxt(heldBags)} kept</span>` : ''].filter(Boolean);
-  const top = `<div class="hrow"><span class="av lg" style="${avc(p.name)}">${esc(initials(p.name))}</span><div class="title"><b>${esc(p.name)}</b><small>${esc(p.phone) || 'No number yet'}</small></div><button class="ib" data-act="edit" data-id="${p.id}" aria-label="Edit name or number">${svg('edit')}</button></div>
+  const face = S.settings.faces ? `<button class="avbtn" data-act="face" data-id="${p.id}" aria-label="Photo of ${esc(p.name)}">${av(p, p.name, 'lg')}${p.photo && PH[p.photo] ? '' : `<i class="avcam">${svg('cam', 14)}</i>`}</button>` : av(p, p.name, 'lg');
+  const top = `<div class="hrow">${face}<div class="title"><b>${esc(p.name)}</b><small>${esc(p.phone) || 'No number yet'}</small></div><button class="ib" data-act="edit" data-id="${p.id}" aria-label="Edit name or number">${svg('edit')}</button></div>
     <button class="locchip" data-act="ploc" data-id="${p.id}"${p.loc ? ` style="--pc:${pc(p.loc)}"` : ''}>${svg('pin', 18)} ${p.loc ? esc(locTxt(p.loc)) : 'Where does she sell?'} ${svg('down', 16)}</button>${p.note ? `<div class="landmark">${esc(p.note)}</div>` : ''}
     <div class="owes">${L.bal > 0.001 ? `<small>Owes</small><b data-roll="owes:${p.id}" data-v="${L.bal}" data-f="m">${money(L.bal)}</b><div class="hrow" style="justify-content:center"><button class="showher" data-act="show" data-id="${p.id}">${svg('eye', 18)} Show her</button><button class="showher pd" data-act="promise" data-id="${p.id}">${svg('clock', 18)} Pay date</button></div>` : `<small>${L.bal < -0.001 ? 'Credit' : 'Owes'}</small><b class="ok">${L.bal < -0.001 ? money(-L.bal) : 'Nothing'}</b>`}</div>
     ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}`;
@@ -2692,7 +2716,7 @@ VIEWS.settings = () => {
   const sw = (act, on, label) => `<div class="srow"><span>${label}</span><button class="switch ${on ? 'on' : ''} ${V.justSw === act ? 'just' : ''}" data-act="${act}" aria-pressed="${!!on}" aria-label="${esc(label)}"><i></i></button></div>`;
   const days = S.lastBackup ? Math.floor((Date.now() - Date.parse(S.lastBackup)) / 864e5) : -1;
   const saved = days < 0 ? '<span class="savestat r">Never saved</span>' : `<span class="savestat ${days <= 7 ? 'ok' : 'w'}">${days === 0 ? 'Saved today' : days === 1 ? 'Saved yesterday' : 'Saved ' + days + ' days ago'}</span>`;
-  const mid = card('bag', '#1D3FBB', 'Your business', `<div class="setbox">${setInp('item', 'What you sell', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}${setInp('seller', 'Your name (on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (on reminders)', '055 000 0000', 'tel')}</div>${sw('togglehalf', s.half !== false, 'Half ' + esc(unit()) + 's')}`)
+  const mid = card('bag', '#1D3FBB', 'Your business', `<div class="setbox">${setInp('item', 'What you sell', 'Onions')}${setInp('unit', 'Counted in', 'bag')}${setInp('cycle', 'Pay after how many days', '14', 'tel')}${setInp('seller', 'Your name (on receipts)', 'Siddick')}${setInp('momo', 'MoMo number (on reminders)', '055 000 0000', 'tel')}</div>${sw('togglehalf', s.half !== false, 'Half ' + esc(unit()) + 's')}${sw('togglefaces', s.faces, 'Photos of customers')}<p class="small swnote">${s.faces ? 'Tap her circle on her page. Ask her first.' : 'Off: no camera, no photos.'}</p>`)
     + card('pin', '#0F766E', 'Places', townsBlock(), placesSorted().length ? String(placesSorted().length) : '')
     + card('buy', '#B4541A', 'Buying', sw('togglebuy', s.buy, 'Buying trips (Buy ' + esc(unit()) + 's tab)'))
     + card('tally', '#B4690E', 'Counting', `<div class="setbox"><div class="field"><label>Count the car, every</label>${seg('checkMins', [[0, 'Never'], [5, '5 min'], [10, '10 min'], [15, '15 min']])}</div></div>`)
@@ -2735,6 +2759,7 @@ function onRestoreFile(e) {
 function doBackup() {
   const d = new Date(); const name = `StallBook-backup-${dayKey(d)}.json`;
   const photos = {}; S.cars.concat(S.trips || []).forEach(c => c.items.forEach(i => { if (i.photo && PH[i.photo]) photos[i.photo] = PH[i.photo]; }));
+  S.people.forEach(x => { if (x.photo && PH[x.photo]) photos[x.photo] = PH[x.photo]; });
   const json = JSON.stringify({stallbook: S, savedAt: d.toISOString(), version: 3, photos});
   const done = () => { S.lastBackup = nowIso(); save(); render(); toast('Backup ready. Keep it in WhatsApp.'); };
   try { const file = new File([json], name, {type: 'application/json'}); if (navigator.canShare && navigator.canShare({files: [file]})) { navigator.share({files: [file], title: 'StallBook backup', text: 'StallBook backup, ' + dmy(d)}).then(done).catch(() => {}); return; } } catch (x) {}
@@ -3089,6 +3114,10 @@ function act(a, d, el) {
   case 'rskip': { const R = V.round, pid = R.ids[R.i]; if (!R.res[pid]) R.res[pid] = {kind: 'skip'}; R.i++; return render(); }
   case 'rback': { const R = V.round; R.i = Math.max(0, R.i - 1); return render(); }
   case 'rundo': { const R = V.round, pid = R.ids[R.i], r = R.res[pid]; if (r && r.eid) undoEntry(r.eid); delete R.res[pid]; commit(); render(); return toast('Payment removed', []); }
+  case 'face': return faceSheet(d.id);
+  case 'facecam': { const c = document.getElementById('facein'); if (c) c.click(); return; }
+  case 'facedel': { const p = person(d.id); if (p && p.photo) { phDel(p.photo); delete p.photo; commit(); } closeSheet(); render(); return toast('Photo removed'); }
+  case 'togglefaces': S.settings.faces = !S.settings.faces; commit(); return render();
   case 'cloudnew': return cbSheetNew();
   case 'cnstart': { const u = (document.getElementById('cn_url') || {}).value; cbSheetWait('Starting your book…');
     cbCreate(u).then(err => { if (err) cbSheetNew(err); else { cbSoon(100); cbSheetCode(true); render(); } }); return; }
@@ -3267,7 +3296,7 @@ function cbStamp() {
   if (was === undefined ? !S.sU : was !== sg) { S.sU = now; ch = true; } CB_SIG.set('s:main', sg);
   if (ch) save();
 }
-const cbPhotoIds = () => { const ids = new Set(); S.cars.concat(S.trips || []).forEach(c => (c.items || []).forEach(i => { if (i.photo) ids.add(i.photo); })); return ids; };
+const cbPhotoIds = () => { const ids = new Set(); S.cars.concat(S.trips || []).forEach(c => (c.items || []).forEach(i => { if (i.photo) ids.add(i.photo); })); S.people.forEach(x => { if (x.photo) ids.add(x.photo); }); return ids; };
 /* everything this phone has that the server may not */
 function cbDirty() {
   const rows = [];
