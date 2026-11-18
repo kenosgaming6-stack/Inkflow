@@ -335,7 +335,11 @@ html.lh .ktiles,html.lh .notes,html.lh .kpick,html.lh .faces{direction:ltr}
 .q{font-size:1.625rem;font-weight:700;color:var(--ink);text-align:center;line-height:1.25}
 /* bag kinds: the photo is the button */
 .kimg{display:block;width:3rem;height:3rem;border-radius:.5rem;object-fit:cover;background:var(--key);border:.125rem solid var(--text);flex:none}
-.kimg.none{display:flex;align-items:center;justify-content:center;background:#F3ECDD;padding:.1875rem;overflow:hidden}
+.kimg.none{display:flex;align-items:center;justify-content:center;background:#F3ECDD;padding:.125rem;overflow:hidden}
+.emptybag{width:8rem;height:8rem;margin:0 auto .5rem}
+.emptybag svg{display:block;width:100%;height:100%}
+.empty:has(.emptybag){text-align:center}
+.empty:has(.emptybag) .btn{margin-inline:auto}
 .kimg.none svg{display:block;height:100%;width:auto;max-width:100%}
 .kimg.xs.none{padding:.0625rem}
 .colgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;width:100%;margin:.25rem 0}
@@ -1096,9 +1100,14 @@ function avc(name) { let h = 0; for (const ch of String(name || '').trim().toLow
 const KCOL = {red: '#C62828', yellow: '#F2B705', white: '#FFFFFF', brown: '#8D5A2B', green: '#2E7D32', blue: '#1565C0', black: '#1F2229', orange: '#EF6C00', purple: '#6A1B9A', pink: '#D81B60', grey: '#8A8F98', gray: '#8A8F98'};
 /* the bag colours a trader can pick, and a drawn onion bag in any colour */
 const BAG_COLS = [['red', 'Red'], ['white', 'White'], ['yellow', 'Yellow'], ['brown', 'Brown'], ['green', 'Green'], ['blue', 'Blue'], ['orange', 'Orange'], ['black', 'Black']];
+let bagN = 0;
+const mixHex = (hex, to, t) => { const a = hex.replace('#', ''), b = to.replace('#', ''); const f = k => Math.round(parseInt(a.substr(k, 2), 16) * (1 - t) + parseInt(b.substr(k, 2), 16) * t).toString(16).padStart(2, '0'); return '#' + f(0) + f(2) + f(4); };
 function bagSvg(c) {
-  const light = c === '#FFFFFF' || c === '#F2B705', ink = '#14161C', mesh = light ? ink : '#FFFFFF';
-  return `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 8c2-3 4-4 7-4s5 1 7 4l2 6c5 4 8 10 8 18 0 7-6 12-17 12S7 39 7 32c0-8 3-14 8-18z" fill="${c}" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round"/><path d="M15 14.5c6 2 12 2 18 0" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/><path d="M11 25c8 3 18 3 26 0M10 33c9 3 19 3 28 0M19 17c-5 9-5 19 0 27M29 17c5 9 5 19 0 27" fill="none" stroke="${mesh}" stroke-opacity=".4" stroke-width="1.4"/></svg>`;
+  const light = c === '#FFFFFF' || c === '#F2B705', ink = '#14161C', id = 'bgc' + (++bagN);
+  const net = light ? ink : '#FFFFFF', bulb = mixHex(c, light ? '#C9A56B' : '#FFFFFF', .3), bulb2 = mixHex(c, '#FFFFFF', light ? 0 : .45);
+  const body = 'M18 12Q24 10 30 12L33 17C41 20 45 28 45 35C45 43 36 46 24 46C12 46 3 43 3 35C3 28 7 20 15 17Z';
+  let mesh = ''; for (let k = -40; k <= 60; k += 6.5) mesh += `M${k} 8L${k + 50} 58M${k + 50} 8L${k} 58`;
+  return `<svg viewBox="0 0 48 48" aria-hidden="true"><defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs><path d="${body}" fill="${c}"/><g clip-path="url(#${id})"><circle cx="14" cy="36" r="8" fill="${bulb}"/><circle cx="31" cy="37" r="8.5" fill="${bulb}"/><circle cx="23" cy="28" r="7.5" fill="${bulb2}"/><circle cx="23" cy="40" r="6" fill="${bulb}" opacity=".7"/><path d="${mesh}" fill="none" stroke="${net}" stroke-opacity=".28" stroke-width=".9"/></g><path d="${body}" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round"/><path d="M17 15.5Q24 18.5 31 15.5" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/><path d="M24 11.5C22.5 7 19.5 5.5 17 6M24 11.5C25.5 7 28.5 5.5 31 6M24 11.5V5" fill="none" stroke="${light ? '#2E7D32' : ink}" stroke-width="2.1" stroke-linecap="round"/></svg>`;
 }
 const colGrid = (act, on) => `<div class="colgrid">${BAG_COLS.map(([k, l]) => `<button class="colbtn ${on === k ? 'on' : ''}" data-act="${act}" data-c="${k}" aria-label="${l}"><span class="colbag">${bagSvg(KCOL[k])}</span>${l}</button>`).join('')}</div>`;
 function kindCol(it) {
@@ -1837,7 +1846,7 @@ function giveEmpty() {
   const fresh = !S.people.length && !S.cars.length;
   const top = `    <div class="csum"><div class="cl"><small>No load open</small><b style="font-size:1.25rem;color:var(--ink)">${S.carry ? bagsTxt(S.carry) + ' waiting' : 'No load yet'}</b></div></div>`;
   let mid;
-  if (fresh) mid = `<div class="empty" style="padding-top:1.75rem"><h2>Your book is empty</h2><p>Tap <b>New load</b> when the vehicle comes.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">Example</button></div>`;
+  if (fresh) mid = `<div class="empty" style="padding-top:1.25rem"><div class="emptybag">${bagSvg(KCOL.red)}</div><h2>Your book is empty</h2><p>Tap <b>New load</b> when the vehicle comes.</p><button class="btn ghost" style="margin-top:1rem" data-act="demo">Example</button></div>`;
   else { const cars = carsNewest().slice(0, 6); mid = cars.length ? `<div class="sect"><span>Loads</span></div>` + cars.map(carRow).join('') : ''; }
   const way = tripsOnWay()[0];
   const dock = way ? `<div class="bar"><button class="btn ink tall carhere" data-act="tripcar" data-id="${way.id}">${svg('truck')} Car is here · ${esc(way.place || dmy(way.date))} · ${bagsTxt(tripStats(way).bags)}</button></div><div class="bar"><button class="btn ghost" data-act="newcar">${svg('plus')} Another new load</button></div>`

@@ -48,7 +48,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
 
   // kinds with no photo
   await p.evaluate(() => { const c = givingCar(); c.items = [{id: 'k1', name: 'Red net', count: 10, price: 600}, {id: 'k2', name: 'Yellow sack', count: 10, price: 650}, {id: 'k3', name: 'Big', count: 10, price: 700}]; commit(); V.tab = 'give'; render(); });
-  const kinds = await p.$$eval('.stock .leg .kimg', els => els.map(e => [getComputedStyle(e.querySelector('svg path')).fill, 'rgb(20, 22, 28)']));
+  const kinds = await p.$$eval('.stock .leg .kimg', els => els.map(e => [getComputedStyle(e.querySelector('svg > path')).fill, 'rgb(20, 22, 28)']));
   ok(kinds[0] && kinds[0][0] === 'rgb(198, 40, 40)' && kinds[1][0] === 'rgb(242, 183, 5)' && kinds[1][1] === 'rgb(20, 22, 28)' && kinds[2][0] !== kinds[0][0], '"Red net" is red, "Yellow sack" yellow with dark letters, "Big" gets its own colour');
   await shot('5-kinds');
 

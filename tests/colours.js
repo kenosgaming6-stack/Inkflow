@@ -32,7 +32,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   ok(await p.evaluate(() => { const it = S.cars[0].items; return it.length === 2 && it[0].col === 'red' && it[1].col === 'yellow'; }), 'the load keeps each kind\'s colour (red, yellow)');
   // give: two tiles, two different bags
   await p.evaluate(() => { V.stack = []; V.tab = 'give'; render(); }); await act('give', '[data-id="a"]'); await p.waitForTimeout(250);
-  const fills = await p.$$eval('.ktile .kimg svg path:first-child', els => els.map(e => e.getAttribute('fill')));
+  const fills = await p.$$eval('.ktile .kimg svg > path:first-of-type', els => els.map(e => e.getAttribute('fill')));
   ok(fills.length === 2 && fills[0] !== fills[1] && fills.includes('#C62828') && fills.includes('#F2B705'), 'giving: the two kinds are a red bag and a yellow bag');
   await p.screenshot({path: OUT + '/3-give.png'});
   await p.evaluate(() => closeSheet());
