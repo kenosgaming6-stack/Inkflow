@@ -595,6 +595,7 @@ html[data-mode="setup"]{--bar:#24307A;--paper:#FFFFFF;--page:#FFFFFF}
 .row.editing{background:var(--key)}
 /* cash: a big green button, a green panel, and a big green line for every sale */
 .cashbtn{flex:none;min-width:4.75rem;min-height:3.5rem;border-radius:.875rem;background:var(--paid);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.0625rem;font-weight:800;font-size:.875rem;box-shadow:0 .1875rem 0 #0B5E35}
+.btn.ink:active,.btn.take:active{transform:translateY(.1875rem);box-shadow:0 0 0 transparent;transition:transform .05s,box-shadow .05s}
 .cashbtn:active{transform:translateY(.125rem) scale(.97);box-shadow:0 .0625rem 0 #0B5E35}
 .cashhead{display:flex;align-items:center;gap:.5rem;color:var(--paid)}
 .cashhead b{font:800 1.75rem/1 var(--num);letter-spacing:.04em;text-transform:uppercase}
@@ -684,6 +685,16 @@ a.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;text-deco
 .eod>span:not(.mi){flex:1;min-width:0}
 .eod small{display:block;font-weight:700;color:var(--muted);font-size:.875rem}
 .eod small.ok{color:var(--paid)}.eod small.r{color:var(--owe)}.eod small.w{color:var(--warn)}
+.dayend{text-align:center;padding:.25rem 0 .5rem}
+.dayend small{font-weight:700;color:var(--muted);font-size:1rem}
+.dayend .dayroll{display:block;font:800 3.25rem/1.05 var(--num);color:var(--paid);font-variant-numeric:tabular-nums}
+.daybar{display:flex;gap:.1875rem;height:.875rem;border-radius:.4375rem;overflow:hidden;background:var(--key);margin:.625rem 0 .5rem}
+.daybar i{flex:0 1 0;min-width:0;transition:flex-grow .8s cubic-bezier(.2,.8,.2,1)}
+.dayleg{display:flex;flex-wrap:wrap;justify-content:center;gap:.25rem .875rem;font-weight:700;font-size:.9375rem;color:var(--muted)}
+.dayleg span{display:inline-flex;align-items:center;gap:.3125rem}
+.dayleg i{width:.75rem;height:.75rem;border-radius:50%;display:inline-block}
+.dayleg b{color:var(--text);font-family:var(--num)}
+.dayfacts{margin-top:.375rem;font-weight:700;color:var(--muted);font-size:.9375rem}
 .tillres{text-align:center;padding:.5rem 0}
 .tillres b{display:block;font:800 2.5rem/1.1 var(--num)}
 .tillres.ok b{color:var(--paid)}.tillres.r b{color:var(--owe)}.tillres.w b{color:var(--warn)}
@@ -1937,6 +1948,26 @@ function tillToday() {
   const sales = r2(sum(S.entries.filter(e => e.type === 'cash' && live(e) && dayKey(e.date) === t), e => e.amount));
   return {pays, sales, expected: r2(pays + sales)};
 }
+/* everything that came in today, split: cash from women, MoMo from women, cash sales */
+function dayTotals() {
+  const t = todayK(), today = e => live(e) && dayKey(e.date) === t;
+  const pays = S.entries.filter(e => e.type === 'pay' && today(e));
+  const cash = r2(sum(pays.filter(e => e.method !== 'momo'), e => e.amount)), momo = r2(sum(pays.filter(e => e.method === 'momo'), e => e.amount));
+  const sales = r2(sum(S.entries.filter(e => e.type === 'cash' && today(e)), e => e.amount));
+  const women = new Set(pays.map(e => e.pid)).size, bags = sum(S.entries.filter(e => e.type === 'give' && today(e)), e => e.bags);
+  const parts = [{label: 'Cash', v: cash, col: '#12804A'}, {label: 'MoMo', v: momo, col: '#1D3FBB'}, {label: 'Cash sales', v: sales, col: '#0F766E'}].filter(x => x.v > 0);
+  return {total: r2(cash + momo + sales), parts, women, bags};
+}
+/* a number that counts up to its value, and bars that grow */
+function dayAnimate() {
+  const el = document.querySelector('.dayroll'); if (!el) return; const to = Number(el.dataset.to) || 0;
+  const bars = [...document.querySelectorAll('.daybar i')];
+  const grow = () => bars.forEach(i => { i.style.flexGrow = i.dataset.v; });
+  if (RM() || !to) { el.textContent = money(to); grow(); return; }
+  const t0 = performance.now(), ms = 900;
+  const step = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3); if (!el.isConnected) return; el.textContent = money(Math.round(to * e)); if (k < 1) requestAnimationFrame(step); else el.textContent = money(to); };
+  requestAnimationFrame(step); setTimeout(grow, 40);
+}
 function lastTill() { const ts = S.entries.filter(e => e.type === 'till' && live(e)); return ts.length ? ts[ts.length - 1] : null; }
 function tillWord(e) { const d = r2(e.counted - e.expected); return d === 0 ? ['All there ✓', 'ok'] : d < 0 ? ['Short ' + money(-d), 'r'] : [money(d) + ' extra', 'w']; }
 function eodButton() {
@@ -1949,10 +1980,15 @@ function tillSheet() {
   const T = tillToday(), Q = V.till; const c = exprNum(Q.ex);
   V.sheetKind = 'till';
   if (Q.done) {
-    const w = tillWord(Q.done);
-    return sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>End of day</b></div>
+    const w = tillWord(Q.done), D = dayTotals();
+    sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>Day closed</b></div>
+      <div class="dayend"><small>You took today</small><b class="dayroll" data-to="${D.total}">${money(RM() ? D.total : 0)}</b>
+        <div class="daybar">${D.parts.map(x => `<i style="background:${x.col};flex-grow:${RM() ? x.v : 0}" data-v="${x.v}"></i>`).join('')}</div>
+        <div class="dayleg">${D.parts.map(x => `<span><i style="background:${x.col}"></i>${x.label} <b>${money(x.v)}</b></span>`).join('')}</div>
+        <div class="dayfacts">${D.women ? D.women + (D.women === 1 ? ' woman paid' : ' women paid') : ''}${D.women && D.bags ? ' · ' : ''}${D.bags ? bagsTxt(D.bags) + ' given' : ''}</div></div>
       <div class="tillres ${w[1]}"><b>${esc(w[0])}</b><small>You counted ${money(Q.done.counted)}. You should have ${money(Q.done.expected)}.</small></div>
       <button class="btn take tall" data-act="sheetclose">Done</button>`, 'cashsheet');
+    return dayAnimate();
   }
   sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>End of day</b></div>
     <div class="tillres ok" style="padding:0"><small>You should have</small><b>${money(T.expected)}</b><small>${money(T.pays)} paid in cash · ${money(T.sales)} cash sales</small></div>
@@ -3103,7 +3139,7 @@ function act(a, d, el) {
   case 'tnote': { const Q = V.till; Q.ex = !Q.ex ? String(d.n) : OPS.includes(Q.ex.slice(-1)) ? Q.ex + d.n : Q.ex + '+' + d.n; buzz(8); return tillSheet(); }
   case 'tilldone': { const Q = V.till; const T = tillToday(); const counted = r2(exprNum(Q.ex));
     const e = add({type: 'till', expected: T.expected, counted}); Q.done = e; const w = tillWord(e);
-    sfx(w[1] === 'r' ? 'thud' : 'cash'); buzz(25); render(); tillSheet(); if (w[1] === 'ok') savedPop('All there', '#12804A'); return; }
+    sfx(w[1] === 'r' ? 'thud' : w[1] === 'ok' ? 'win' : 'cash'); buzz(w[1] === 'ok' ? [30, 60, 30, 60, 90] : 25); render(); tillSheet(); if (w[1] === 'ok') { coins(18); setTimeout(() => savedPop('All there', '#12804A'), 1000); } return; }
   case 'pover': V.pay.over = d.v; V.pay.err = ''; return paySheet();
   case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.ex = String(Math.round(b)); V.pay.err = ''; V.pay.over = ''; return paySheet(); }
   case 'paydone': { if (!savePay()) return; return proofSheet(null); }
