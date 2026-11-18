@@ -364,6 +364,9 @@ html.lh .ktiles,html.lh .notes,html.lh .kpick,html.lh .faces{direction:ltr}
 .kimg.xs{width:1.375rem;height:1.375rem;border-width:.09375rem;border-radius:.3rem;font-size:.8125rem;display:inline-flex;vertical-align:middle}
 .kimg.sm{width:2.25rem;height:2.25rem;font-size:1.125rem}
 .kimg.big{width:100%;height:6.75rem;border:0;border-radius:0;font-size:2.75rem}
+.kimg.one{width:6.25rem;height:6.25rem;border-radius:1rem;font-size:2.5rem}
+.kt1{display:block;margin:0 auto .625rem;padding:0;border:0;border-radius:1rem;background:none}
+.kt1:active{transform:scale(.95)}
 .kimg.hero{width:12rem;height:9rem;border-radius:.875rem;font-size:4rem}
 .kstrip{display:flex;gap:.375rem;overflow-x:auto;scrollbar-width:none;margin:0 -.75rem;padding:0 .75rem}
 .kthumb{flex:none;border-radius:.625rem;padding:.125rem;border:.125rem solid transparent}
@@ -829,7 +832,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '9.4';
+const APP_VERSION = '9.5';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -1955,7 +1958,7 @@ function giveSheet() {
     ${p ? '' : `<div class="field"><label for="gph">Phone (optional)</label><input id="gph" type="tel" inputmode="tel" autocomplete="off" placeholder="024 000 0000" value="${esc(g.phone)}"></div>`}
     ${g.kinds ? `<div class="ktiles">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); const n = g.kinds[i.id] || 0; return `<div class="ktile ${n ? 'on' : ''}"><button class="kt" data-act="gk" data-i="${i.id}" aria-label="One more at ${money(i.price)}">${kindImg(i, 'big')}<span class="kcap"><b>${fmt(i.price)}</b><small>${bagsNum(Math.max(0, I.free - n))} left</small></span></button>${n ? `<button class="kn" data-act="gkn" data-i="${i.id}" aria-label="Type how many">${bagsNum(n)}</button><button class="kless" data-act="gkless" data-i="${i.id}" aria-label="One less">−</button>` : ''}</div>`; }).join('')}</div>
     <div class="ktot"><b>${money(sum(car.items, i => (g.kinds[i.id] || 0) * i.price))}</b><small>${bagsTxt(g.bags)}</small></div>`
-    : `<div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><button class="num" data-act="gqmore" aria-label="Type how many">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></button><button class="key" data-act="gplus" aria-label="One more">+</button></div>
+    : `${oneKind(item, 'gplus')}<div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><button class="num" data-act="gqmore" aria-label="Type how many">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></button><button class="key" data-act="gplus" aria-label="One more">+</button></div>
     ${S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="ghalf">± ½</button></div>` : ''}`}
     <div class="togs">${simple() && !g.hold && !g.more ? `<button class="tog more" data-act="gmore">More ${svg('down', 16)}</button>` : `<button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Keep for her</button>`}</div>
     <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave" ${g.bags > 0 ? '' : 'disabled'}>${g.bags > 0 ? (g.hold ? 'Hold ' : 'Give ') + bagsTxt(g.bags) : tapWord()}</button>`);
@@ -2029,7 +2032,7 @@ function cashSheet() {
   const own = C.edit ? C.kinds : {};
   const body = multi
     ? `<div class="ktiles">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); const k = C.kinds[i.id] || 0; return `<div class="ktile ${k ? 'on' : ''}"><button class="kt" data-act="csk" data-i="${i.id}" aria-label="One more at ${money(i.price)}">${kindImg(i, 'big')}<span class="kcap"><b>${fmt(i.price)}</b><small>${bagsNum(Math.max(0, I.free + (own[i.id] || 0) - k))} left</small></span></button>${k ? `<button class="kn" data-act="csn" data-i="${i.id}" aria-label="Type how many">${bagsNum(k)}</button><button class="kless" data-act="csless" data-i="${i.id}" aria-label="One less">−</button>` : ''}</div>`; }).join('')}</div>`
-    : `<div class="step"><button class="key" data-act="csless" data-i="${car.items[0].id}" aria-label="One less">−</button><button class="num" data-act="csn" data-i="${car.items[0].id}" aria-label="Type how many">${bagsNum(n)}<small>${esc(unit())}${n === 1 ? '' : 's'}</small></button><button class="key" data-act="csk" data-i="${car.items[0].id}" aria-label="One more">+</button></div>`;
+    : `${oneKind(car.items[0], 'csk', `data-i="${car.items[0].id}"`)}<div class="step"><button class="key" data-act="csless" data-i="${car.items[0].id}" aria-label="One less">−</button><button class="num" data-act="csn" data-i="${car.items[0].id}" aria-label="Type how many">${bagsNum(n)}<small>${esc(unit())}${n === 1 ? '' : 's'}</small></button><button class="key" data-act="csk" data-i="${car.items[0].id}" aria-label="One more">+</button></div>`;
   sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>${C.edit ? 'Change cash sale' : 'Cash sale'}</b></div>${body}
     <div class="ktot cash"><b>${money(total)}</b>${multi ? `<small>${bagsTxt(n)}</small>` : ""}</div>
     <button class="btn take tall" data-act="cssave" ${n > 0 ? '' : 'disabled'}>${n > 0 ? (C.edit ? 'Save · ' : 'Sold · ') + money(total) : tapWord()}</button>`, 'cashsheet');
@@ -2616,6 +2619,8 @@ VIEWS.show = f => {
 function startWizard() { V.w = {s: simple() ? 'photo' : 'from', items: simple() ? [newKind()] : [], si: 0, tmp: '', err: '', label: ''}; push({v: 'newcar'}); }
 /* the words on a button that waits for a kind to be tapped: a photo, or a bag when the kinds are drawn */
 const tapWord = car => { const c = car || (V.g && carById(V.g.carId)) || (V.cs && carById(V.cs.carId)) || givingCar(); return 'Tap a ' + (c && c.items.some(i => i.photo) ? 'photo' : 'bag'); };
+/* a load with one kind: its picture to tap for one more (the photo, or the drawn bag in its colour) */
+const oneKind = (it, act, attrs) => it && ((it.photo && PH[it.photo]) || it.col) ? `<button class="kt1" data-act="${act}" ${attrs || ''} aria-label="One more">${kindImg(it, 'one')}</button>` : '';
 const newKind = () => ({id: uid(), name: '', count: 0, price: 0, photo: '', col: ''});
 function wToCount() { const W = V.w, it = W.items[W.si]; W.s = 'count'; W.tmp = it.count ? String(it.count) : W.si === 0 && S.carry ? String(S.carry) : ''; W.err = ''; return render(); }
 VIEWS.newcar = () => {
