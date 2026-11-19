@@ -701,6 +701,11 @@ a.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;text-deco
 .eod>span:not(.mi){flex:1;min-width:0}
 .eod small{display:block;font-weight:700;color:var(--muted);font-size:.875rem}
 .eod small.ok{color:var(--paid)}.eod small.r{color:var(--owe)}.eod small.w{color:var(--warn)}
+.tog.pricetog{gap:.375rem;color:var(--ink)}
+.tog.pricetog.on{border-color:var(--warn);color:var(--warn);background:#FFF8E8}
+.kcap b.chg{color:var(--warn)}
+.offtag{display:inline-block;margin-left:.375rem;padding:.0625rem .5rem;border-radius:.375rem;background:#FFF1D6;color:#8A5300;font-weight:800;font-size:.8125rem;white-space:nowrap}
+.offtag.more{background:var(--paid-bg);color:var(--paid)}
 .dayend{text-align:center;padding:.25rem 0 .5rem}
 .dayend small{font-weight:700;color:var(--muted);font-size:1rem}
 .dayend .dayroll{display:block;font:800 3.25rem/1.05 var(--num);color:var(--paid);font-variant-numeric:tabular-nums}
@@ -831,7 +836,7 @@ window.addEventListener('error', ev => {
       undo    crosses out a line (kind: release, fix). An undo can itself be undone.
 */
 
-const APP_VERSION = '9.6';
+const APP_VERSION = '9.7';
 const KEY = 'stallbook_v2', V1KEY = 'stallbook_v1';
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const STANDALONE = window.navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
@@ -1093,6 +1098,12 @@ function revive(id) {
 }
 function undoKind(id) { const c = C(); const u = S.entries.find(x => x.type === 'undo' && x.ref === id && c.activeUndo.has(x.id)); return u ? (u.kind || '') : ''; }
 /* A correction keeps the old line (crossed out) and writes a new one with the same time and place. */
+/* a sale below (or above) the load's price: list is the load's price at the time, price is what it was sold at */
+const offAmt = e => e && e.list !== undefined && e.list !== null && Math.abs(e.list - e.price) > 0.001 ? r2(e.list - e.price) : 0;
+const offTotal = es => r2(sum(es, e => offAmt(e) * e.bags));
+const offWord = t => t > 0 ? money(t) + ' off' : t < 0 ? money(-t) + ' more' : '';
+const offTag = es => { const t = offTotal(es); return t ? ` <span class="offtag ${t < 0 ? 'more' : ''}">${es.length === 1 ? esc(money(es[0].price)) + ' · ' : ''}${esc(offWord(t))}</span>` : ''; };
+const priceNote = e => offAmt(e) ? money(e.price) + ' each (list ' + money(e.list) + ')' : '';
 function fixGive(id, ch) {
   const c = C(); const old = c.byId.get(id); if (!old || c.undone.has(id)) return null;
   const at = givenAt(old), lp = c.linked.get(old.id), hand = c.hand.get(old.id);
@@ -1534,7 +1545,7 @@ function hideToast() { if (toastNode) toastNode.remove(); toastNode = null; }
 function keypad(mode, ok) {
   const k = (v, l, cls, aria) => `<button class="key ${cls || ''}" data-act="key" data-k="${v}"${aria ? ` aria-label="${aria}"` : ''}>${l || v}</button>`;
   const okKey = ok ? `<button class="key ok ${ok.cls || ''}" data-act="${ok.act}"${ok.data || ''}>${ok.label}</button>` : '<span></span>';
-  const zero = mode === 'count' ? k('0', '0', 'wide') : k('00') + k('0');
+  const zero = mode === 'count' ? k('0', '0', 'wide') : mode === 'price' ? k('.', '.', '', 'Decimal point') + k('0') : k('00') + k('0');
   return `<div class="kp ${mode === 'pay' ? 'pay' : ''}">${k('7')}${k('8')}${k('9')}${k('*', '×', 'op', 'Times')}${k('4')}${k('5')}${k('6')}${k('-', '−', 'op', 'Minus')}${k('1')}${k('2')}${k('3')}${k('+', '+', 'op', 'Plus')}${zero}${k('del', svg('del', 26), 'del', 'Delete one. Hold to clear all.')}${okKey}</div>`;
 }
 const OPS = '+-*';
@@ -1542,14 +1553,16 @@ function exprAdd(s, k, max) {
   s = s || '';
   if (k === 'c') return '';
   if (k === 'del') return s.slice(0, -1);
-  const last = s.slice(-1), num = (s.match(/\d+$/) || [''])[0];
+  const last = s.slice(-1), num = (s.match(/[\d.]+$/) || [''])[0];
   if (OPS.includes(k)) return !s ? s : OPS.includes(last) ? s.slice(0, -1) + k : s + k;
+  if (k === '.') return num.includes('.') ? s : (num ? s + '.' : s + '0.');   /* one point per number */
+  if (num.includes('.') && (num.split('.')[1].length >= 2 || (k === '00' && num.split('.')[1].length >= 1))) return s;   /* pesewas: two places */
   if (k === '00' && (!num || /^0+$/.test(num))) return s;
   const n = (num + k).replace(/^0+(?=\d)/, '');
   return n.length > (max || 7) ? s : s.slice(0, s.length - num.length) + n;
 }
 function exprVal(s) {
-  const t = String(s || '').match(/\d+|[-+*]/g) || []; while (t.length && OPS.includes(t[t.length - 1])) t.pop();
+  const t = String(s || '').match(/\d+\.?\d*|\.\d+|[-+*]/g) || []; while (t.length && OPS.includes(t[t.length - 1])) t.pop();
   let total = 0, term = 0, sign = 1;
   for (let i = 0; i < t.length; i++) {
     const x = t[i];
@@ -1557,12 +1570,12 @@ function exprVal(s) {
     else if (x === '*') term *= Number(t[++i]);
     else term = Number(x);
   }
-  return total + sign * term;
+  return r2(total + sign * term);
 }
 const exprNum = s => Math.max(0, exprVal(s));
 function exprTape(s) {
-  s = String(s || ''); if (!/[-+*]/.test(s)) return '';
-  return (s.match(/\d+|[-+*]/g) || []).map(x => x === '*' ? '×' : x === '-' ? '−' : x === '+' ? '+' : fmt(Number(x))).join(' ');
+  s = String(s || ''); if (!/[-+*]/.test(s)) return s.includes('.') ? s : '';   /* a price with a point shows as typed: 3. 3.7 3.75 */
+  return (s.match(/\d+\.?\d*|\.\d+|[-+*]/g) || []).map(x => x === '*' ? '×' : x === '-' ? '−' : x === '+' ? '+' : fmt(Number(x))).join(' ');
 }
 /* the display over a pad: what was typed, small, and the total, big */
 const exprDisp = (s, isMoney, lab) => `<div class="disp"><div class="tape">${exprTape(s) || '&nbsp;'}</div><div class="v">${isMoney ? money(exprNum(s)) : fmt(exprNum(s))}${lab ? ` <span style="font-size:1.25rem;font-family:'Atkinson Hyperlegible',sans-serif">${lab}</span>` : ''}</div></div>`;
@@ -1734,7 +1747,7 @@ function viewGive() {
     const p = person(e.pid) || {name: '?'};
     if (V.qe && V.qe.id === e.id) return `<div class="row editing"><button class="who" data-act="qcancel"><div class="name">${esc(p.name)}</div><div class="sub">${esc(locTxt(e.loc)) || '&nbsp;'}</div></button><div class="qstep"><button data-act="qminus" aria-label="One less">−</button><b>${bagsNum(V.qe.n)}</b><button data-act="qplus" aria-label="One more">+</button></div><button class="qok" data-act="qsave" aria-label="Save">${svg('check')}</button></div>`;
     const sub = [tabs.length ? '' : locTxt(e.loc), isHeld ? 'since ' + hm(e.date) : '', linked.has(e.id) ? 'paid cash' : ''].filter(Boolean).join(' · ');
-    return `<div class="row ${isHeld ? 'held' : ''} ${V.flash === e.id ? 'flash new' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="entry" data-id="${e.id}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button>${isHeld ? '<span class="hpill">Kept</span>' : ''}${car.items.length > 1 ? `<div class="kchips"><button class="kc" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${kindImg(car.items.find(x => x.id === e.itemId) || car.items[0], 'sm')}<b>${bagsNum(e.bags)}</b></button></div>` : `<button class="qbox" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${bagsNum(e.bags)}</button>`}</div>`;
+    return `<div class="row ${isHeld ? 'held' : ''} ${V.flash === e.id ? 'flash new' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="entry" data-id="${e.id}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}${offTag([e])}</div></button>${isHeld ? '<span class="hpill">Kept</span>' : ''}${car.items.length > 1 ? `<div class="kchips"><button class="kc" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${kindImg(car.items.find(x => x.id === e.itemId) || car.items[0], 'sm')}<b>${bagsNum(e.bags)}</b></button></div>` : `<button class="qbox" data-act="qedit" data-id="${e.id}" aria-label="Change ${bagsTxt(e.bags)}">${bagsNum(e.bags)}</button>`}</div>`;
   };
   let mid = '<div class="lines down">';
   if (!gives.length && !cashHere && !gapsHere.length) mid += `<div class="empty"><h2>Nobody yet</h2><p>Tap a name below, or type one.</p></div>`;
@@ -1756,12 +1769,12 @@ function viewGive() {
     if (q) return `<div class="row editing"><button class="who" data-act="qcancel"><div class="name">${esc(p.name)}</div><div class="sub">${esc(kindLabel(itemOf(q)))}</div></button>${kindImg(itemOf(q), 'sm')}<div class="qstep"><button data-act="qminus" aria-label="One less">−</button><b>${bagsNum(V.qe.n)}</b><button data-act="qplus" aria-label="One more">+</button></div><button class="qok" data-act="qsave" aria-label="Save">${svg('check')}</button></div>`;
     const sub = [tabs.length ? '' : locTxt(e0.loc), isHeld ? 'kept since ' + hm(e0.date) : '', g.some(x => linked.has(x.id)) ? 'paid cash' : ''].filter(Boolean).join(' · ');
     const chips = g.map(x => `<button class="kc" data-act="qedit" data-id="${x.id}" aria-label="Change ${bagsTxt(x.bags)} of ${esc(kindLabel(itemOf(x)))}">${kindImg(itemOf(x), 'sm')}<b>${bagsNum(x.bags)}</b></button>`).join('');
-    return `<div class="row multi ${isHeld ? 'held' : ''} ${g.some(x => x.id === V.flash) ? 'flash new' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="egroup" data-ids="${g.map(x => x.id).join(',')}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}</div></button><div class="kchips">${chips}</div></div>`;
+    return `<div class="row multi ${isHeld ? 'held' : ''} ${g.some(x => x.id === V.flash) ? 'flash new' : ''}">${isHeld ? `<span class="mk w">${svg('clock', 16)}</span>` : ''}<button class="who" data-act="egroup" data-ids="${g.map(x => x.id).join(',')}"><div class="name">${esc(p.name)}</div><div class="sub">${esc(sub) || '&nbsp;'}${offTag(g)}</div></button><div class="kchips">${chips}</div></div>`;
   };
   const cashRow = g => {
     const n = sum(g, x => x.bags), total = r2(sum(g, x => x.amount));
     const right = car.items.length > 1 ? `<div class="kchips">${g.map(x => `<span class="kc cash">${kindImg(itemOf(x), 'sm')}<b>${bagsNum(x.bags)}</b></span>`).join('')}</div>` : `<span class="qbox cashq">${bagsNum(n)}</span>`;
-    return `<button class="row cashrow ${g.some(x => x.id === V.flash) ? 'flash new' : ''}" data-act="cashline" data-ids="${g.map(x => x.id).join(',')}"><span class="mk cashmk">₵</span><div class="who"><div class="name">Cash</div><div class="sub">${hm(g[0].date)} · ${money(total)}</div></div>${right}</button>`;
+    return `<button class="row cashrow ${g.some(x => x.id === V.flash) ? 'flash new' : ''}" data-act="cashline" data-ids="${g.map(x => x.id).join(',')}"><span class="mk cashmk">₵</span><div class="who"><div class="name">Cash</div><div class="sub">${hm(g[0].date)} · ${money(total)}${offTag(g)}</div></div>${right}</button>`;
   };
   mid += groups.map(g => g[0].type === 'cash' ? cashRow(g) : g.length > 1 ? multiRow(g, !givenAt(g[0])) : row(g[0], g[0].type === 'give' && !givenAt(g[0]))).join('');
   mid += '</div>';
@@ -1850,7 +1863,7 @@ function buySheet() {
   sheet(`<div class="hrow">${kindImg(it || {}, 'sm')}<div class="title"><b>${money_ ? `Paid for one ${esc(u)}?` : `How many ${esc(u)}s?`}</b><small>${money_ ? bagsTxt(exprNum(B.n)) : (it && it.name) || ''}</small></div></div>
     ${exprDisp(B.ex, money_, money_ ? '' : esc(u) + 's')}<div class="err">${esc(B.err || '')}</div>
     ${money_ && last ? `<button class="btn ghost" data-act="blast">Same as before · ${money(last.price)}</button>` : ''}
-    ${keypad(money_ ? 'money' : 'count', {act: money_ ? 'bsave' : 'bnext', label: money_ ? 'Save' : 'Next'})}`);
+    ${keypad(money_ ? 'price' : 'count', {act: money_ ? 'bsave' : 'bnext', label: money_ ? 'Save' : 'Next'})}`);
 }
 function onBuyCamera(e) {
   const f = e.target.files && e.target.files[0]; const T = buyTrip(), B = V.b; if (!f || !T || !B) return;
@@ -1932,7 +1945,7 @@ function openGive(pid, name) {
   const p = pid ? person(pid) : null;
   const loc = locById(S.lastLoc) ? S.lastLoc : (p && p.loc) || '';
   const usual = p ? usualQty(p.id) : 1, solo = car.items.length === 1 && hasPic(car.items[0]);
-  V.g = {pid: p ? p.id : null, name: name || '', phone: '', loc, bags: car.items.length > 1 ? 0 : usual, itemId: car.items[0].id, carId: car.id, dupOk: false, hold: false, kinds: car.items.length > 1 ? {} : solo ? {[car.items[0].id]: usual} : null};
+  V.g = {prices: {}, pid: p ? p.id : null, name: name || '', phone: '', loc, bags: car.items.length > 1 ? 0 : usual, itemId: car.items[0].id, carId: car.id, dupOk: false, hold: false, kinds: car.items.length > 1 ? {} : solo ? {[car.items[0].id]: usual} : null};
   if (V.pend) { const P = V.pend; V.pend = null; if (V.g.kinds) V.g.kinds = {[P.itemId]: P.bags}; V.g.bags = P.bags; }
   giveSheet();
 }
@@ -1945,6 +1958,7 @@ function noCarSheet() {
 }
 function giveSheet() {
   const g = V.g; const car = carById(g.carId); const st = carStats(car.id);
+  const gp = i => g.prices && g.prices[i.id] !== undefined ? g.prices[i.id] : i.price;
   const p = g.pid ? person(g.pid) : null;
   const item = car.items.find(i => i.id === g.itemId) || car.items[0];
   const tags = [];
@@ -1956,12 +1970,12 @@ function giveSheet() {
     <div class="hrow">${av(p, g.name, 'lg')}<div class="title"><b>${esc(p ? p.name : g.name)}</b><small>${p ? esc(p.phone || 'No number yet') : 'New customer'}</small></div>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}<button class="ib" data-act="sheetclose" aria-label="Close">${svg('x')}</button></div>
     ${tags.length ? `<div class="tags l">${tags.join('')}</div>` : ''}
     ${p ? '' : `<div class="field"><label for="gph">Phone (optional)</label><input id="gph" type="tel" inputmode="tel" autocomplete="off" placeholder="024 000 0000" value="${esc(g.phone)}"></div>`}
-    ${g.kinds ? `<div class="ktiles ${car.items.length === 1 ? 'solo' : ''}">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); const n = g.kinds[i.id] || 0; return `<div class="ktile ${n ? 'on' : ''}"><button class="kt" data-act="gk" data-i="${i.id}" aria-label="One more at ${money(i.price)}">${kindImg(i, 'big')}<span class="kcap"><b>${fmt(i.price)}</b><small>${bagsNum(Math.max(0, I.free - n))} left</small></span></button>${n ? `<button class="kn" data-act="gkn" data-i="${i.id}" aria-label="Type how many">${bagsNum(n)}</button><button class="kless" data-act="gkless" data-i="${i.id}" aria-label="One less">−</button>` : ''}</div>`; }).join('')}</div>
-    <div class="ktot"><b>${money(sum(car.items, i => (g.kinds[i.id] || 0) * i.price))}</b><small>${bagsTxt(g.bags)}</small></div>
+    ${g.kinds ? `<div class="ktiles ${car.items.length === 1 ? 'solo' : ''}">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); const n = g.kinds[i.id] || 0; return `<div class="ktile ${n ? 'on' : ''}"><button class="kt" data-act="gk" data-i="${i.id}" aria-label="One more at ${money(i.price)}">${kindImg(i, 'big')}<span class="kcap"><b class="${gp(i) !== i.price ? 'chg' : ''}">${fmt(gp(i))}</b><small>${bagsNum(Math.max(0, I.free - n))} left</small></span></button>${n ? `<button class="kn" data-act="gkn" data-i="${i.id}" aria-label="Type how many">${bagsNum(n)}</button><button class="kless" data-act="gkless" data-i="${i.id}" aria-label="One less">−</button>` : ''}</div>`; }).join('')}</div>
+    <div class="ktot"><b>${money(sum(car.items, i => (g.kinds[i.id] || 0) * gp(i)))}</b><small>${bagsTxt(g.bags)}</small></div>
     ${car.items.length === 1 && S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="ghalf">± ½</button></div>` : ''}`
     : `<div class="step"><button class="key" data-act="gminus" aria-label="One less">−</button><button class="num" data-act="gqmore" aria-label="Type how many">${bagsNum(g.bags)}<small>${esc(unit())}${g.bags > 1 ? 's' : ''}</small></button><button class="key" data-act="gplus" aria-label="One more">+</button></div>
     ${S.settings.half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="ghalf">± ½</button></div>` : ''}`}
-    <div class="togs">${simple() && !g.hold && !g.more ? `<button class="tog more" data-act="gmore">More ${svg('down', 16)}</button>` : `<button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Keep for her</button>`}</div>
+    <div class="togs">${simple() && !g.hold && !g.more ? `<button class="tog more" data-act="gmore">More ${svg('down', 16)}</button>` : `<button class="tog ${g.hold ? 'on w' : ''}" data-act="ghold" aria-pressed="${g.hold}">${g.hold ? svg('check', 18) : ''}Keep for her</button>`}${priceTog(car, g.prices, car.items.length === 1 ? gp(car.items[0]) : null, 'gprice')}</div>
     <button class="btn ${g.hold ? 'hold' : 'ink'} tall" data-act="gsave" ${g.bags > 0 ? '' : 'disabled'}>${g.bags > 0 ? (g.hold ? 'Hold ' : 'Give ') + bagsTxt(g.bags) : tapWord()}</button>`);
   V.sheetKind = 'give';
   const ph = document.getElementById('gph'); if (ph) ph.addEventListener('input', e => { V.g.phone = e.target.value; });
@@ -2024,18 +2038,21 @@ function tillSheet() {
 function openCash(edit) {
   const car = givingCar(); if (!car) return noCarSheet();
   const kinds = {}; if (edit) edit.forEach(e => { kinds[e.itemId] = (kinds[e.itemId] || 0) + e.bags; }); else if (car.items.length === 1) kinds[car.items[0].id] = 1;
-  V.cs = {kinds, edit: edit ? edit.map(e => e.id) : null, date: edit ? edit[0].date : null, loc: edit ? edit[0].loc : null, force: false}; cashSheet();
+  const prices = {}; if (edit) edit.forEach(e => { const it = car.items.find(i => i.id === e.itemId); if (it && Math.abs(e.price - it.price) > 0.001) prices[e.itemId] = e.price; });
+  V.cs = {prices, kinds, edit: edit ? edit.map(e => e.id) : null, date: edit ? edit[0].date : null, loc: edit ? edit[0].loc : null, force: false}; cashSheet();
 }
 function cashSheet() {
   const car = givingCar(), C = V.cs; if (!car || !C) return closeSheet();
   const st = carStats(car.id); const multi = car.items.length > 1 || hasPic(car.items[0]);
-  const n = sum(Object.values(C.kinds), x => x), total = r2(sum(car.items, i => (C.kinds[i.id] || 0) * i.price));
+  const cp = i => C.prices && C.prices[i.id] !== undefined ? C.prices[i.id] : i.price;
+  const n = sum(Object.values(C.kinds), x => x), total = r2(sum(car.items, i => (C.kinds[i.id] || 0) * cp(i)));
   const own = C.edit ? C.kinds : {};
   const body = multi
-    ? `<div class="ktiles ${car.items.length === 1 ? 'solo' : ''}">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); const k = C.kinds[i.id] || 0; return `<div class="ktile ${k ? 'on' : ''}"><button class="kt" data-act="csk" data-i="${i.id}" aria-label="One more at ${money(i.price)}">${kindImg(i, 'big')}<span class="kcap"><b>${fmt(i.price)}</b><small>${bagsNum(Math.max(0, I.free + (own[i.id] || 0) - k))} left</small></span></button>${k ? `<button class="kn" data-act="csn" data-i="${i.id}" aria-label="Type how many">${bagsNum(k)}</button><button class="kless" data-act="csless" data-i="${i.id}" aria-label="One less">−</button>` : ''}</div>`; }).join('')}</div>`
+    ? `<div class="ktiles ${car.items.length === 1 ? 'solo' : ''}">${car.items.map(i => { const I = st.items.find(x => x.id === i.id); const k = C.kinds[i.id] || 0; return `<div class="ktile ${k ? 'on' : ''}"><button class="kt" data-act="csk" data-i="${i.id}" aria-label="One more at ${money(i.price)}">${kindImg(i, 'big')}<span class="kcap"><b class="${cp(i) !== i.price ? 'chg' : ''}">${fmt(cp(i))}</b><small>${bagsNum(Math.max(0, I.free + (own[i.id] || 0) - k))} left</small></span></button>${k ? `<button class="kn" data-act="csn" data-i="${i.id}" aria-label="Type how many">${bagsNum(k)}</button><button class="kless" data-act="csless" data-i="${i.id}" aria-label="One less">−</button>` : ''}</div>`; }).join('')}</div>`
     : `<div class="step"><button class="key" data-act="csless" data-i="${car.items[0].id}" aria-label="One less">−</button><button class="num" data-act="csn" data-i="${car.items[0].id}" aria-label="Type how many">${bagsNum(n)}<small>${esc(unit())}${n === 1 ? '' : 's'}</small></button><button class="key" data-act="csk" data-i="${car.items[0].id}" aria-label="One more">+</button></div>`;
   sheet(`<i class="grab"></i><div class="cashhead">${svg('cash', 28)}<b>${C.edit ? 'Change cash sale' : 'Cash sale'}</b></div>${body}
     <div class="ktot cash"><b>${money(total)}</b>${multi ? `<small>${bagsTxt(n)}</small>` : ""}</div>
+    <div class="togs">${priceTog(car, C.prices, car.items.length === 1 ? cp(car.items[0]) : null, 'csprice')}</div>
     <button class="btn take tall" data-act="cssave" ${n > 0 ? '' : 'disabled'}>${n > 0 ? (C.edit ? 'Save · ' : 'Sold · ') + money(total) : tapWord()}</button>`, 'cashsheet');
   V.sheetKind = 'cash';
 }
@@ -2051,7 +2068,8 @@ function saveCash() {
     const I = st.items.find(x => x.id === short.item.id); V.sheetKind = 'over';
     return sheet(`<h3>${car.items.length > 1 ? kindImg(short.item, 'sm') + ' ' : ''}Only ${bagsTxt(Math.max(0, I.free + (back[short.item.id] || 0)))} left</h3><p>Count the car before you sell more.</p><div class="bar"><button class="btn ghost" data-act="csback">Back</button><button class="btn danger" data-act="csforce">Sell anyway</button></div>`);
   }
-  const nAll = sum(parts, x => x.bags), tAll = r2(sum(parts, x => x.bags * x.item.price));
+  const cp = i => C.prices && C.prices[i.id] !== undefined ? C.prices[i.id] : i.price;
+  const nAll = sum(parts, x => x.bags), tAll = r2(sum(parts, x => x.bags * cp(x.item)));
   if ((nAll > 20 || tAll > 15000) && !C.sure) {
     V.sheetKind = 'over';
     return sheet(`<h3>Sold ${bagsTxt(nAll)} for cash?</h3><p>That is <b>${money(tAll)}</b> in your hand.</p><div class="bar"><button class="btn ghost" data-act="csback">No, go back</button><button class="btn take" data-act="cssure">Yes, sold</button></div>`);
@@ -2059,8 +2077,8 @@ function saveCash() {
   if (C.edit) C.edit.forEach(id => undoEntry(id, 'fix'));
   const grp = parts.length > 1 ? uid() : '', loc = C.edit ? (C.loc || '') : (locById(S.lastLoc) ? S.lastLoc : '');
   let e = null;
-  parts.forEach(x => { e = add(Object.assign({type: 'cash', pid: null, carId: car.id, itemId: x.item.id, bags: x.bags, price: x.item.price, amount: r2(x.bags * x.item.price), loc}, C.date ? {date: C.date} : {}, grp ? {grp} : {})); });
-  const n = sum(parts, x => x.bags), total = r2(sum(parts, x => x.bags * x.item.price));
+  parts.forEach(x => { const pr = cp(x.item); e = add(Object.assign({type: 'cash', pid: null, carId: car.id, itemId: x.item.id, bags: x.bags, price: pr, amount: r2(x.bags * pr), loc}, pr !== x.item.price ? {list: x.item.price} : {}, C.date ? {date: C.date} : {}, grp ? {grp} : {})); });
+  const n = sum(parts, x => x.bags), total = r2(sum(parts, x => x.bags * cp(x.item)));
   V.lastCash = Date.now(); V.cs = null; closeSheet(); sfx('coin'); buzz(15); V.pulse = true; V.flash = e.id; render();
   savedPop(`Cash · ${money(total)}`, '#12804A');
   say(`Cash, ${bagsTxt(n)}. ${cedis(total)}.`);
@@ -2069,6 +2087,23 @@ function qtySheet() {
   const Q = V.qk;
   sheet(`<i class="grab"></i><h3>How many ${esc(unit())}s?</h3>${exprDisp(Q.v, false, esc(unit()) + 's')}${keypad('count', {act: 'qtyuse', label: 'Use ' + fmt(exprNum(Q.v))})}<div class="bar"><button class="btn ghost" data-act="qtyback">Back</button></div>`);
   V.sheetKind = 'qty';
+}
+/* the price for this sale only: pick the kind if there are several, then type the price (3.75) */
+function priceSheet() {
+  const P = V.sp, car = carById(P.carId); if (!car) return closeSheet();
+  const eff = i => P.prices[i.id] !== undefined ? P.prices[i.id] : i.price;
+  if (!P.item) {
+    V.sheetKind = 'sprice0';
+    return sheet(`<i class="grab"></i><h3>Which price?</h3>${car.items.map(i => `<button class="btn ghost" style="justify-content:flex-start" data-act="spick" data-i="${i.id}">${kindImg(i, 'sm')} ${money(eff(i))}${eff(i) !== i.price ? `<small style="margin-left:.5rem">list ${money(i.price)}</small>` : ''}</button>`).join('')}<button class="btn ghost" data-act="spback">Back</button>`);
+  }
+  const it = car.items.find(i => i.id === P.item) || car.items[0];
+  V.sheetKind = 'sprice';
+  sheet(`<i class="grab"></i><h3>Price for one ${esc(unit())}</h3><p class="small">This sale only. List price ${money(it.price)}.</p>${exprDisp(P.v, true)}${keypad('price', {act: 'spuse', label: P.v ? 'Use ' + money(exprNum(P.v)) : 'Type the price'})}<div class="bar"><button class="btn ghost" data-act="spback">Back</button><button class="btn ghost" data-act="spreset">List price</button></div>`);
+}
+function priceBack() {
+  const P = V.sp; V.sp = null; if (P && P.back === 'cash') return cashSheet();
+  if (P && P.back === 'entry') { const e = byId(P.eid); if (V.es && e) V.es.price = P.prices[P.item] !== undefined ? P.prices[P.item] : (e.list !== undefined ? e.list : e.price); return entrySheet(P.eid); }
+  return giveSheet();
 }
 function saveGive(force) {
   if (Date.now() - (V.lastSave || 0) < 800) return;
@@ -2105,7 +2140,7 @@ function saveGive(force) {
   if (!p.loc && g.loc) p.loc = g.loc;
   if (g.loc) S.lastLoc = g.loc;
   let e = null; const grp = parts.length > 1 ? uid() : '';
-  parts.forEach(x => { e = add(Object.assign({type: 'give', pid: p.id, carId: car.id, itemId: x.item.id, bags: x.bags, price: x.item.price, amount: r2(x.bags * x.item.price), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: !p.phone}, grp ? {grp} : {})); });
+  parts.forEach(x => { const pr = g.prices && g.prices[x.item.id] !== undefined ? g.prices[x.item.id] : x.item.price; e = add(Object.assign({type: 'give', pid: p.id, carId: car.id, itemId: x.item.id, bags: x.bags, price: pr, amount: r2(x.bags * pr), loc: g.loc || '', off: g.hold ? null : nowIso(), rcpt: !p.phone}, pr !== x.item.price ? {list: x.item.price} : {}, grp ? {grp} : {})); });
   V.lastSave = Date.now();
   closeSheet(); sfx('bag'); buzz(15); V.pulse = true; V.flash = e.id; render();
   savedPop(`${p.name} · ${bagsTxt(sum(parts, x => x.bags))}${g.hold ? ' kept' : ''}`, g.hold ? '#B4690E' : '#1D3FBB');
@@ -2221,13 +2256,14 @@ function entrySheet(id) {
   const p = person(e.pid);
   if (e.type === 'give') {
     const at = givenAt(e); const lp = c.linked.get(e.id);
-    if (!V.es || V.es.id !== id) V.es = {id, n: e.bags};
+    if (!V.es || V.es.id !== id) V.es = {id, n: e.bags, price: e.price};
     const head = `<i class="grab"></i><div class="hrow">${av(p, '?', 'lg')}<button class="title" data-act="eswho" style="text-align:left"><b>${esc(p ? p.name : '?')} ${svg('down', 16)}</b><small>${at ? 'Given ' + dmy(at) + ', ' + hm(at) : 'Kept since ' + hm(e.date)}${lp ? ' · paid cash' : ''}</small></button>${p ? `<button class="lnk" data-act="person" data-id="${p.id}">History ›</button>` : ''}</div>
       <button class="locchip" data-act="esloc"${e.loc ? ` style="--pc:${pc(e.loc)}"` : ''}>${svg('pin', 18)} ${e.loc ? esc(locTxt(e.loc)) : 'No place'} ${svg('down', 16)}</button>`;
     const n = V.es.n; const half = S.settings.half;
     const stepper = `<div class="step"><button class="key" data-act="esminus" aria-label="One less">−</button><div class="num">${bagsNum(n)}<small>${esc(unit())}${n > 1 ? 's' : ''}</small></div><button class="key" data-act="esplus" aria-label="One more">+</button></div>
       ${half ? `<div class="hrow" style="justify-content:center"><button class="halfbtn" data-act="eshalf">± ½</button></div>` : ''}
-      ${n !== e.bags ? `<button class="btn ink tall" data-act="essave">Change ${bagsNum(e.bags)} → ${bagsNum(n)}</button>` : ''}`;
+      <button class="tog pricetog ${Math.abs(V.es.price - e.price) > 0.001 || offAmt(e) ? 'on w' : ''}" data-act="esprice" style="width:100%">${svg('edit', 16)} ${money(V.es.price)} each${offAmt(e) ? ' · list ' + money(e.list) : ''}</button>
+      ${n !== e.bags || Math.abs(V.es.price - e.price) > 0.001 ? `<button class="btn ink tall" data-act="essave">Change ${[n !== e.bags ? bagsNum(e.bags) + ' → ' + bagsNum(n) + ' bags' : '', Math.abs(V.es.price - e.price) > 0.001 ? money(e.price) + ' → ' + money(V.es.price) : ''].filter(Boolean).join(' · ')}</button>` : ''}`;
     if (!at) return sheet(head + `
       <button class="btn ink tall" data-act="hand" data-id="${id}">${svg('check')} Hand over ${bagsTxt(e.bags)}</button>
       <div class="field"><label for="es_by">Someone else taking them? (optional)</label><input id="es_by" autocomplete="off" placeholder="Her son, her sister…"></div>
@@ -2561,7 +2597,7 @@ VIEWS.person = f => {
       const car = carById(e.carId); const ld = L.loads.find(x => x.id === e.id); const at = givenAt(e); const hand = c.hand.get(e.id); const old = e.fixes ? c.byId.get(e.fixes) : null;
       t = bagsTxt(e.bags) + (car ? ' · ' + (car.label || 'load ' + dmy(car.date)) : '');
       if (car && car.items.length > 1) { const it = car.items.find(x => x.id === e.itemId); if (it) mk = mk || kindImg(it, 'xs'); }
-      sub = [locTxt(e.loc), !at && !gone ? 'kept since ' + hm(e.date) : '', hand ? 'handed over ' + hm(hand.date) + (hand.by ? ' to ' + hand.by : '') : '', e.by ? 'to ' + e.by : '', old ? 'corrected from ' + bagsNum(old.bags) : '', c.linked.has(e.id) ? 'paid cash' : '', gone ? (kind === 'fix' ? 'corrected' : kind === 'release' ? 'released' : 'removed') : ''];
+      sub = [locTxt(e.loc), !at && !gone ? 'kept since ' + hm(e.date) : '', hand ? 'handed over ' + hm(hand.date) + (hand.by ? ' to ' + hand.by : '') : '', e.by ? 'to ' + e.by : '', priceNote(e), old ? 'corrected from ' + bagsNum(old.bags) + (Math.abs(old.price - e.price) > 0.001 ? ' at ' + money(old.price) : '') : '', c.linked.has(e.id) ? 'paid cash' : '', gone ? (kind === 'fix' ? 'corrected' : kind === 'release' ? 'released' : 'removed') : ''];
       if (gone) right = '';
       else if (!at) { mk = `<span class="mk w">${svg('clock', 16)}</span>`; right = '<span class="tag w">Kept</span>'; }
       else if (ld && ld.left <= 0.001) { mk = '<span class="mk ok">✓</span>'; right = '<span class="amt ok">Paid</span>'; }
@@ -2621,6 +2657,8 @@ function startWizard() { V.w = {s: simple() ? 'photo' : 'from', items: simple() 
 /* the words on a button that waits for a kind to be tapped: a photo, or a bag when the kinds are drawn */
 const tapWord = car => { const c = car || (V.g && carById(V.g.carId)) || (V.cs && carById(V.cs.carId)) || givingCar(); return 'Tap a ' + (c && c.items.some(i => i.photo) ? 'photo' : 'bag'); };
 /* a kind with a picture (a photo, or a colour picked): its bag is a tile you tap, even when it is the only kind */
+/* the price button: the price for this sale only */
+const priceTog = (car, prices, one, act) => { const chg = Object.keys(prices || {}).length > 0; return `<button class="tog pricetog ${chg ? 'on w' : ''}" data-act="${act}" aria-label="Price for this sale">${svg('edit', 16)} ${one !== null ? money(one) + ' each' : chg ? 'Price changed' : 'Change price'}</button>`; };
 const hasPic = it => !!(it && (it.photo || it.col));
 const newKind = () => ({id: uid(), name: '', count: 0, price: 0, photo: '', col: ''});
 function wToCount() { const W = V.w, it = W.items[W.si]; W.s = 'count'; W.tmp = it.count ? String(it.count) : W.si === 0 && S.carry ? String(S.carry) : ''; W.err = ''; return render(); }
@@ -2649,7 +2687,7 @@ VIEWS.newcar = () => {
   if (W.s === 'count') return view(kn, `How many of these ${esc(u)}s?`, W.si === 0 && S.carry ? `${bagsNum(S.carry)} from the last load are counted in` : '', `<div class="photowrap">${kindImg(it, 'sm')}</div>${exprDisp(W.tmp, false, esc(u) + 's')}`,
     `${keypad('count', {act: 'wnext', label: 'Next'})}<div class="bar">${backSq('wback')}</div>`);
   if (W.s === 'price') return view(kn, W.fromTrip ? `Selling price for one ${esc(u)}?` : `Price for one ${esc(u)}?`, W.fromTrip && it.paid ? `You paid ${money(it.paid)} · ${bagsTxt(it.count)}` : '', `<div class="photowrap">${kindImg(it, 'sm')}</div>${exprDisp(W.tmp, true)}`,
-    `${keypad('money', {act: 'wnext', label: 'Next'})}<div class="bar">${backSq('wback')}${Number(S.settings.price) ? `<button class="btn ghost" data-act="wlast">Same as last · ${money(S.settings.price)}</button>` : ''}</div>`);
+    `${keypad('price', {act: 'wnext', label: 'Next'})}<div class="bar">${backSq('wback')}${Number(S.settings.price) ? `<button class="btn ghost" data-act="wlast">Same as last · ${money(S.settings.price)}</button>` : ''}</div>`);
   if (W.s === 'more') {
     const total = sum(W.items, x => x.count);
     return view(`${W.items.length} ${W.items.length === 1 ? 'kind' : 'kinds'} · ${bagsTxt(total)}`, `Another kind of ${esc(u)}?`, 'Tap one to change it.',
@@ -2708,6 +2746,8 @@ VIEWS.report = f => {
   mid += st.stock.map(e => ln(STOCK_WORD[e.reason] || 'Stock', dmy(e.date), (e.bags > 0 ? '+' : '−') + bagsNum(Math.abs(e.bags)), 'ink')).join('');
   if (st.cash) mid += ln(`${bagsTxt(st.cash)} sold for cash`, '', '+' + money(st.cashAmt), 'ok');
   mid += ln('Given on credit', bagsTxt(st.off), money(st.credit), 'ink');
+  { const sold = S.entries.filter(e => (e.type === 'give' || e.type === 'cash') && e.carId === car.id && live(e) && offAmt(e)).sort((a, b) => cmp(b.date, a.date)), t = offTotal(sold);
+    if (sold.length) mid += `<div class="sect"><span>Price changes · ${sold.length} ${sold.length === 1 ? 'sale' : 'sales'}</span><span style="flex:none">${t >= 0 ? '−' : '+'}${money(Math.abs(t))}</span></div>` + sold.map(e => { const p = e.pid ? person(e.pid) : null, d = offAmt(e) * e.bags; return ln(esc(p ? p.name : 'Cash') + ' · ' + bagsTxt(e.bags), `${money(e.price)} each, list ${money(e.list)} · ${dmy(e.date)}`, (d >= 0 ? '−' : '+') + money(Math.abs(d)), d >= 0 ? 'owe' : 'ok'); }).join(''); }
   mid += ln('Paid so far', `${pct}% of credit`, '+' + money(st.collected), 'ok');
   mid += ln('Still out', `${people.filter(x => x.left > 0.001).length} customers`, money(st.out), '');
   if (people.length) mid += `<div class="sect"><span>Who took from this load</span></div>` + people.map(x => `<button class="row" data-act="person" data-id="${x.p.id}">${x.left <= 0.001 && !x.w ? '<span class="mk ok">✓</span>' : ''}<div class="who"><div class="name">${esc(x.p.name)}</div><div class="sub">${bagsTxt(x.bags)}${x.w ? ' · ' + bagsTxt(x.w) + ' kept' : ''}</div></div>${x.left > 0.001 ? `<span class="amt">${money(x.left)}</span>` : x.w ? '' : '<span class="amt ok">Paid</span>'}</button>`).join('');
@@ -3091,6 +3131,13 @@ function act(a, d, el) {
   case 'ghalf': { const g = V.g, id = g.kinds ? Object.keys(g.kinds)[0] : null, v0 = id ? (g.kinds[id] || 0) : g.bags;
     let v = Math.abs(v0 % 1 - 0.5) < 0.01 ? v0 - 0.5 : v0 + 0.5; if (v < 0.5) v = 0.5; if (id) { g.kinds[id] = v; g.bags = v; } else g.bags = v; return giveSheet(); }
   case 'gitem': V.g.itemId = d.i; return giveSheet();
+  case 'gprice': { const g = V.g, car = carById(g.carId); V.sp = {back: 'give', carId: car.id, prices: g.prices, item: car.items.length === 1 ? car.items[0].id : null, v: ''}; return priceSheet(); }
+  case 'csprice': { const C = V.cs, car = givingCar(); V.sp = {back: 'cash', carId: car.id, prices: C.prices, item: car.items.length === 1 ? car.items[0].id : null, v: ''}; return priceSheet(); }
+  case 'spick': V.sp.item = d.i; V.sp.v = ''; return priceSheet();
+  case 'spback': return priceBack();
+  case 'spreset': { const P = V.sp; delete P.prices[P.item]; return priceBack(); }
+  case 'spuse': { const P = V.sp, car = carById(P.carId), it = car.items.find(i => i.id === P.item) || car.items[0], n = exprNum(P.v); if (!(n > 0)) return toast('Type the price.');
+    if (P.back !== 'entry' && Math.abs(n - it.price) < 0.001) delete P.prices[it.id]; else P.prices[it.id] = n; return priceBack(); }
   case 'gk': { const g = V.g; g.kinds[d.i] = (g.kinds[d.i] || 0) + 1; g.bags = sum(Object.values(g.kinds), x => x); sfx('key'); return giveSheet(); }
   case 'gkless': { const g = V.g; g.kinds[d.i] = Math.max(0, (g.kinds[d.i] || 0) - 1); g.bags = sum(Object.values(g.kinds), x => x); return giveSheet(); }
   case 'gkn': V.qk = {v: '', kind: d.i}; return qtySheet();
@@ -3144,7 +3191,11 @@ function act(a, d, el) {
   case 'esminus': if (V.es.n >= 1.5) V.es.n -= 1; return entrySheet(V.es.id);
   case 'esplus': V.es.n = Math.min(999, V.es.n + 1); return entrySheet(V.es.id);
   case 'eshalf': { const n = V.es.n; V.es.n = Math.abs(n % 1 - 0.5) < 0.01 ? n - 0.5 : n + 0.5; if (V.es.n < 0.5) V.es.n = 0.5; return entrySheet(V.es.id); }
-  case 'essave': { const e = byId(V.es.id); const n = fixGive(V.es.id, {bags: V.es.n}); closeSheet(); V.flash = n.id; render(); return toast(`${bagsNum(e.bags)} → ${bagsNum(V.es.n)}`, []); }
+  case 'essave': { const e = byId(V.es.id), pr = V.es.price, ch = {bags: V.es.n}, list = e.list !== undefined ? e.list : e.price;
+    if (Math.abs(pr - e.price) > 0.001) { ch.price = pr; ch.list = Math.abs(pr - list) < 0.001 ? undefined : list; }
+    const n = fixGive(V.es.id, ch); closeSheet(); V.flash = n.id; render();
+    return toast(V.es.n !== e.bags && Math.abs(pr - e.price) > 0.001 ? 'Bags and price changed' : Math.abs(pr - e.price) > 0.001 ? `${money(e.price)} → ${money(pr)} each` : `${bagsNum(e.bags)} → ${bagsNum(V.es.n)}`, []); }
+  case 'esprice': { const e = byId(V.es.id), car = carById(e.carId); V.sp = {back: 'entry', eid: e.id, carId: e.carId, item: e.itemId, prices: {[e.itemId]: V.es.price}, v: ''}; return priceSheet(); }
   case 'eswho': return nameSheet(V.es.id);
   case 'esloc': { const e = byId(V.es.id); return locSheet({mode: 'entry', id: e.id, sel: e.loc}); }
   case 'nspick': { const e = byId(V.ns.id); let pid = d.id; if (!pid) { const p = {id: uid(), name: d.name.trim(), phone: '', loc: e.loc || '', note: '', created: nowIso()}; S.people.push(p); pid = p.id; }
@@ -3193,7 +3244,7 @@ function act(a, d, el) {
     const e = add({type: 'till', expected: T.expected, counted}); Q.done = e; const w = tillWord(e);
     sfx(w[1] === 'r' ? 'thud' : w[1] === 'ok' ? 'win' : 'cash'); buzz(w[1] === 'ok' ? [30, 60, 30, 60, 90] : 25); render(); tillSheet(); if (w[1] === 'ok') { coins(18); setTimeout(() => savedPop('All there', '#12804A'), 1000); } return; }
   case 'pover': V.pay.over = d.v; V.pay.err = ''; return paySheet();
-  case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.ex = String(Math.round(b)); V.pay.err = ''; V.pay.over = ''; return paySheet(); }
+  case 'payall': { const b = ledger(V.pay.pid).bal; V.pay.ex = String(r2(b)); V.pay.err = ''; V.pay.over = ''; return paySheet(); }
   case 'paydone': { if (!savePay()) return; return proofSheet(null); }
   case 'paynext': { const P = V.pay; const nx = nextPayId(P.pid); if (paySum() > 0) { if (!savePay()) return; return proofSheet(nx); } if (!nx) return closeSheet(); return openPay(nx, {ctx: 'collect', carId: V.fCar && carById(V.fCar) ? V.fCar : null}); }
   case 'pfdone': return proofDone();
@@ -3215,6 +3266,7 @@ function act(a, d, el) {
   case 'key': {
     if (V.sheetKind === 'pay') return payKey(d.k);
     if (V.sheetKind === 'qty') { V.qk.v = editNum(V.qk.v, d.k, 'count'); return qtySheet(); }
+    if (V.sheetKind === 'sprice' && V.sp) { V.sp.v = editNum(V.sp.v, d.k, 'money'); return priceSheet(); }
     if (V.sheetKind === 'till' && V.till) { V.till.ex = exprAdd(V.till.ex, d.k, 7); return tillSheet(); }
     if (V.sheetKind === 'buy' && V.b) { V.b.ex = editNum(V.b.ex, d.k, V.b.step === 'price' ? 'money' : 'count'); V.b.err = ''; return buySheet(); }
     const f = cur(); if (!f) return;
@@ -3243,7 +3295,7 @@ function act(a, d, el) {
     car.closeIds = []; car.closeCarry = 0; car.phase = 'giving'; commit(); closeSheet(); toast(`${carName(car)} is open again`); return toRoot('give'); }
   case 'price': { const car = carById(d.id); closeSheet(); if (car.items.length > 1) return sheet(`<i class="grab"></i><h3>Which price?</h3>${car.items.map(i => `<button class="btn ghost" style="justify-content:flex-start" data-act="priceitem" data-id="${car.id}" data-i="${i.id}">${kindImg(i, 'sm')} ${money(i.price)}</button>`).join('')}`); return act('priceitem', {id: car.id, i: car.items[0].id}); }
   case 'priceitem': { const car = carById(d.id); const it = car.items.find(i => i.id === d.i); closeSheet();
-    return openNum({title: `Price for one ${it.name ? it.name.toLowerCase() + ' ' : ''}${unit()}`, sub: 'From now on, for this load', mode: 'money', onSave: n => { if (!(n > 0)) return 'Type the price.'; it.price = n; S.settings.price = n; commit(); }}); }
+    return openNum({title: `Price for one ${it.name ? it.name.toLowerCase() + ' ' : ''}${unit()}`, sub: 'From now on, for this load', mode: 'price', onSave: n => { if (!(n > 0)) return 'Type the price.'; it.price = n; S.settings.price = n; commit(); }}); }
   case 'label': closeSheet(); return labelSheet(d.id);
   case 'lbchip': { const i = document.getElementById('lb_in'); if (i) i.value = d.l; return; }
   case 'lbsave': { const car = carById(d.id); car.label = (document.getElementById('lb_in').value || '').trim(); commit(); closeSheet(); return render(); }
